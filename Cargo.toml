@@ -1,0 +1,2 @@
+[workspace]
+members = ["printer", "cli", "formatter"]

@@ -1,0 +1,22 @@
+[package]
+name = "view_macro_formatter"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+pretty_printer = { path = "../printer" }
+syn-rsx = "0.9.0"
+syn = { version = "1.0.109", features = ["visit", "full", "extra-traits"] }
+prettyplease = { git = "https://github.com/bram209/prettyplease.git", features = [
+    "verbatim",
+] }
+proc-macro2 = { version = "1.0.52", features = ["span-locations"] }
+thiserror = "1.0.40"
+crop = "0.1.0"
+
+[dev-dependencies]
+indoc = "2.0.1"
+insta = "1.28.0"
+quote = "1.0.26"
