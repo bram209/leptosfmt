@@ -17,21 +17,20 @@ struct Args {
     input_pattern: String,
 
     // Maximum width of each line
-    #[arg(short, long)]
-    max_width: Option<usize>,
+    #[arg(short, long, default_value_t = 100)]
+    max_width: usize,
 
     // Number of spaces per tab
-    #[arg(short, long)]
-    tab_spaces: Option<usize>,
+    #[arg(short, long, default_value_t = 4)]
+    tab_spaces: usize,
 }
 
 fn main() {
     let args = Args::parse();
 
-    let default_settings = FormatterSettings::default();
     let settings = FormatterSettings {
-        max_width: args.max_width.unwrap_or(default_settings.max_width),
-        tab_spaces: args.tab_spaces.unwrap_or(default_settings.tab_spaces),
+        max_width: args.max_width,
+        tab_spaces: args.tab_spaces,
     };
 
     let is_dir = fs::metadata(&args.input_pattern)
