@@ -50,14 +50,12 @@ fn format_source<'a>(
     let mut edits = Vec::new();
 
     for mac in macros {
-        let span = match mac.delimiter {
-            MacroDelimiter::Paren(delim) => delim.span,
-            MacroDelimiter::Brace(delim) => delim.span,
-            MacroDelimiter::Bracket(delim) => delim.span,
-        };
-
         let start = mac.path.span().start();
-        let end = span.end();
+        let end = match mac.delimiter {
+            MacroDelimiter::Paren(delim) => delim.span.end(),
+            MacroDelimiter::Brace(delim) => delim.span.end(),
+            MacroDelimiter::Bracket(delim) => delim.span.end(),
+        };
 
         let start_byte = source.byte_of_line(start.line - 1) + start.column;
         let end_byte = source.byte_of_line(end.line - 1) + end.column;
