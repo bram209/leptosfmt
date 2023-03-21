@@ -6,8 +6,8 @@ use std::{
 
 use clap::Parser;
 use glob::glob;
+use leptosfmt_formatter::{format_file, FormatterSettings};
 use rayon::{iter::ParallelIterator, prelude::IntoParallelIterator};
-use view_macro_formatter::{format_file, FormatterSettings};
 
 /// A formatter for Leptos RSX sytnax
 #[derive(Parser, Debug)]

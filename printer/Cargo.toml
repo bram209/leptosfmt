@@ -1,5 +1,5 @@
 [package]
-name = "pretty_printer"
+name = "leptosfmt-pretty-printer"
 version = { workspace = true }
 edition = "2021"
 

@@ -1,5 +1,5 @@
 [package]
-name = "view_macro_formatter"
+name = "leptosfmt-formatter"
 version = { workspace = true }
 edition = "2021"
 authors = ["Bram Hoendervangers"]
@@ -8,7 +8,7 @@ repository = "https://github.com/bram209/leptosfmt"
 description = "view macro formatter for the Leptos web framework"
 
 [dependencies]
-pretty_printer = { path = "../printer" }
+leptosfmt-pretty-printer = { workspace = true }
 syn-rsx = "0.9.0"
 syn = { version = "1.0.109", features = ["visit", "full", "extra-traits"] }
 prettyplease = { git = "https://github.com/bram209/prettyplease.git", features = [

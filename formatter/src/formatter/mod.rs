@@ -1,4 +1,4 @@
-use pretty_printer::{Printer, PrinterSettings};
+use leptosfmt_pretty_printer::{Printer, PrinterSettings};
 
 mod attribute;
 mod element;

@@ -9,7 +9,7 @@ description = "view macro formatter CLI for the Leptos web framework"
 readme = "../README.md"
 
 [dependencies]
-view_macro_formatter = { path = "../formatter" }
+leptosfmt-formatter = { workspace = true }
 clap = { version = "4.1.11", features = ["derive"] }
 rayon = "1.7.0"
 glob = "0.3.1"

@@ -254,9 +254,29 @@ dependencies = [
  "anyhow",
  "clap",
  "glob",
+ "leptosfmt-formatter",
  "rayon",
- "view_macro_formatter",
 ]
+
+[[package]]
+name = "leptosfmt-formatter"
+version = "0.1.1"
+dependencies = [
+ "crop",
+ "indoc",
+ "insta",
+ "leptosfmt-pretty-printer",
+ "prettyplease",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+ "syn-rsx",
+ "thiserror",
+]
+
+[[package]]
+name = "leptosfmt-pretty-printer"
+version = "0.1.1"
 
 [[package]]
 name = "libc"
@@ -306,10 +326,6 @@ name = "os_str_bytes"
 version = "6.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ceedf44fb00f2d1984b0bc98102627ce622e083e49a5bacdb3e514fa4238e267"
-
-[[package]]
-name = "pretty_printer"
-version = "0.1.1"
 
 [[package]]
 name = "prettyplease"
@@ -496,22 +512,6 @@ name = "version_check"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
-
-[[package]]
-name = "view_macro_formatter"
-version = "0.1.1"
-dependencies = [
- "crop",
- "indoc",
- "insta",
- "pretty_printer",
- "prettyplease",
- "proc-macro2",
- "quote",
- "syn 1.0.109",
- "syn-rsx",
- "thiserror",
-]
 
 [[package]]
 name = "winapi"
