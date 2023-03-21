@@ -294,21 +294,6 @@ impl Printer {
     }
 
     fn print_begin(&mut self, token: BeginToken, size: isize) {
-        if cfg!(prettyplease_debug) {
-            self.out.push(match token.breaks {
-                Breaks::Consistent => '«',
-                Breaks::Inconsistent => '‹',
-            });
-            if cfg!(prettyplease_debug_indent) {
-                self.out
-                    .extend(token.offset.to_string().chars().map(|ch| match ch {
-                        '0'..='9' => ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉']
-                            [(ch as u8 - b'0') as usize],
-                        '-' => '₋',
-                        _ => unreachable!(),
-                    }));
-            }
-        }
         if size > self.space {
             self.print_stack
                 .push(PrintFrame::Broken(self.indent, token.breaks));
@@ -319,19 +304,13 @@ impl Printer {
     }
 
     fn print_end(&mut self) {
-        let breaks = match self.print_stack.pop().unwrap() {
+        match self.print_stack.pop().unwrap() {
             PrintFrame::Broken(indent, breaks) => {
                 self.indent = indent;
                 breaks
             }
             PrintFrame::Fits(breaks) => breaks,
         };
-        if cfg!(prettyplease_debug) {
-            self.out.push(match breaks {
-                Breaks::Consistent => '»',
-                Breaks::Inconsistent => '›',
-            });
-        }
     }
 
     fn print_break(&mut self, token: BreakToken, size: isize) {
@@ -348,16 +327,10 @@ impl Printer {
                 self.out.push(no_break);
                 self.space -= no_break.len_utf8() as isize;
             }
-            if cfg!(prettyplease_debug) {
-                self.out.push('·');
-            }
         } else {
             if let Some(pre_break) = token.pre_break {
                 self.print_indent();
                 self.out.push(pre_break);
-            }
-            if cfg!(prettyplease_debug) {
-                self.out.push('·');
             }
             self.out.push('\n');
             let indent = self.indent as isize + token.offset;
