@@ -67,14 +67,17 @@ fn format_source<'a>(
         });
     }
 
-    let mut last_offset = 0;
+    let mut last_offset: isize = 0;
     for edit in edits {
         let start = edit.range.start;
         let end = edit.range.end;
         let new_text = edit.new_text;
 
-        source.replace(start + last_offset..end + last_offset, &new_text);
-        last_offset += new_text.len() - (end - start);
+        source.replace(
+            (start as isize + last_offset) as usize..(end as isize + last_offset) as usize,
+            &new_text,
+        );
+        last_offset += new_text.len() as isize - (end as isize - start as isize);
     }
 
     Ok(source.to_string())
