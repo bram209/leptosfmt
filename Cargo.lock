@@ -249,7 +249,7 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "leptosfmt"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "clap",
@@ -260,13 +260,13 @@ dependencies = [
 
 [[package]]
 name = "leptosfmt-formatter"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "crop",
  "indoc",
  "insta",
  "leptosfmt-pretty-printer",
- "prettyplease",
+ "leptosfmt-prettyplease",
  "proc-macro2",
  "quote",
  "syn 1.0.109",
@@ -276,7 +276,17 @@ dependencies = [
 
 [[package]]
 name = "leptosfmt-pretty-printer"
-version = "0.1.1"
+version = "0.1.2"
+
+[[package]]
+name = "leptosfmt-prettyplease"
+version = "0.1.25"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c53da478f04c3c876f0d4ec02db3456838a6c2a2de1b7863038fb8ba9bae0113"
+dependencies = [
+ "proc-macro2",
+ "syn 1.0.109",
+]
 
 [[package]]
 name = "libc"
@@ -326,15 +336,6 @@ name = "os_str_bytes"
 version = "6.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ceedf44fb00f2d1984b0bc98102627ce622e083e49a5bacdb3e514fa4238e267"
-
-[[package]]
-name = "prettyplease"
-version = "0.1.25"
-source = "git+https://github.com/bram209/prettyplease.git#0623c624ce141ee89439c6ee61baf623b719d774"
-dependencies = [
- "proc-macro2",
- "syn 1.0.109",
-]
 
 [[package]]
 name = "proc-macro-error"
