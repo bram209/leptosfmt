@@ -53,7 +53,7 @@ impl Formatter {
     }
 
     fn expr(&mut self, expr: &syn::Expr) {
-        let formatted = prettyplease::unparse_expr(expr);
+        let formatted = leptosfmt_prettyplease::unparse_expr(expr);
         let formatted = format_expr_source(&formatted, self.settings).unwrap_or(formatted);
 
         let mut iter = formatted.lines().peekable();

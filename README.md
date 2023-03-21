@@ -4,7 +4,7 @@ A formatter for the leptos view! macro
 
 ## Install
 
-`cargo install --git https://github.com/bram209/leptosfmt.git`
+`cargo install leptosfmt`
 
 ## Usage
 
@@ -48,6 +48,7 @@ Format all .rs files ending with `_test.rs` within the examples directory
 `leptosfmt ./examples/**/*_test.rs`
 
 ## Pretty-printer algorithm
+
 The pretty-printer is based on Philip Karlton’s Mesa pretty-printer, as described in the appendix to Derek C. Oppen, “Pretty Printing” (1979), Stanford Computer Science Department STAN-CS-79-770, http://i.stanford.edu/pub/cstr/reports/cs/tr/79/770/CS-TR-79-770.pdf.
 This algorithm's implementation is taken from `prettyplease` which is adapted from `rustc_ast_pretty`.
 

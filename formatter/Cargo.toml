@@ -11,9 +11,7 @@ description = "view macro formatter for the Leptos web framework"
 leptosfmt-pretty-printer = { workspace = true }
 syn-rsx = "0.9.0"
 syn = { version = "1.0.109", features = ["visit", "full", "extra-traits"] }
-prettyplease = { git = "https://github.com/bram209/prettyplease.git", features = [
-    "verbatim",
-] }
+leptosfmt-prettyplease = { features = ["verbatim"], version = "0.1" }
 proc-macro2 = { version = "1.0.52", features = ["span-locations"] }
 thiserror = "1.0.40"
 crop = "0.1.0"

@@ -2,5 +2,7 @@
 name = "leptosfmt-pretty-printer"
 version = { workspace = true }
 edition = "2021"
+description = "leptosfmt's pretty printer based on the prettyplease crate"
+license = "MIT"
 
 [dependencies]
