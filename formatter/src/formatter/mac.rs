@@ -10,14 +10,12 @@ impl Formatter {
         let indent = mac.path.span().start().column as isize;
 
         self.printer.cbox(indent);
-        // self.printer.word(" ".repeat(indent as usize));
         self.printer.word("view! { ");
         self.printer.word(cx.to_string());
         self.printer.word(",");
         self.view_macro_nodes(tokens.collect());
         self.printer.word("}");
         self.printer.end();
-        // self.printer.offset(-indent);
     }
 
     fn view_macro_nodes(&mut self, tokens: TokenStream) {
