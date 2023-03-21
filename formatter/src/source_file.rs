@@ -50,7 +50,6 @@ fn format_source<'a>(
     let mut edits = Vec::new();
 
     for mac in macros {
-        // let view_macro: ViewMacro = mac.try_into().unwrap();
         let span = match mac.delimiter {
             MacroDelimiter::Paren(delim) => delim.span,
             MacroDelimiter::Brace(delim) => delim.span,
