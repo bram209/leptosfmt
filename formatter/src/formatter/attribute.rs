@@ -1,4 +1,4 @@
-use syn_rsx::{NodeAttribute};
+use syn_rsx::NodeAttribute;
 
 use crate::formatter::Formatter;
 

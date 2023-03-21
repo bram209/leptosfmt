@@ -1,4 +1,4 @@
-use syn_rsx::{Node, NodeElement, NodeFragment};
+use syn_rsx::{Node, NodeElement};
 
 use crate::formatter::Formatter;
 

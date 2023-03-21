@@ -54,7 +54,7 @@ impl Formatter {
 
     fn expr(&mut self, expr: &syn::Expr) {
         let formatted = prettyplease::unparse_expr(expr);
-        let formatted = format_expr_source(&formatted, self.settings.clone()).unwrap_or(formatted);
+        let formatted = format_expr_source(&formatted, self.settings).unwrap_or(formatted);
 
         let mut iter = formatted.lines().peekable();
         while let Some(line) = iter.next() {

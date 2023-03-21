@@ -1,17 +1,12 @@
 use std::{
-    error::Error,
-    fmt::format,
     fs,
     path::{Path, PathBuf},
     time::Instant,
 };
 
 use clap::Parser;
-use glob::{glob, GlobError, GlobResult};
-use rayon::{
-    iter::{IntoParallelRefIterator, ParallelIterator},
-    prelude::IntoParallelIterator,
-};
+use glob::glob;
+use rayon::{iter::ParallelIterator, prelude::IntoParallelIterator};
 use view_macro_formatter::{format_file, FormatterSettings};
 
 /// A formatter for Leptos RSX sytnax
