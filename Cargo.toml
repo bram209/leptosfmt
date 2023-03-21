@@ -1,2 +1,5 @@
 [workspace]
 members = ["printer", "cli", "formatter"]
+
+[workspace.package]
+version = "0.1.1"

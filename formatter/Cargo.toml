@@ -1,9 +1,11 @@
 [package]
 name = "view_macro_formatter"
-version = "0.1.0"
+version = { workspace = true }
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["Bram Hoendervangers"]
+license = "MIT"
+repository = "https://github.com/bram209/leptosfmt"
+description = "view macro formatter for the Leptos web framework"
 
 [dependencies]
 pretty_printer = { path = "../printer" }
