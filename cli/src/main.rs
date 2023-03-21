@@ -1,5 +1,5 @@
 use std::{
-    fs,
+    fs, panic,
     path::{Path, PathBuf},
     time::Instant,
 };
@@ -72,7 +72,8 @@ fn main() {
 }
 
 fn format_glob_result(file: &PathBuf, settings: FormatterSettings) -> anyhow::Result<()> {
-    let formatted = format_file(file, settings)?;
+    let formatted = panic::catch_unwind(|| format_file(file, settings))
+        .map_err(|e| anyhow::anyhow!(e.downcast::<String>().unwrap()))??;
     fs::write(file, formatted)?;
     Ok(())
 }

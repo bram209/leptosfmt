@@ -1,5 +1,5 @@
-use proc_macro2::TokenStream;
 use syn::{spanned::Spanned, Macro};
+use syn_rsx::Node;
 
 use super::{Formatter, FormatterSettings};
 
@@ -7,22 +7,30 @@ impl Formatter {
     pub fn view_macro(&mut self, mac: &Macro) {
         let mut tokens = mac.tokens.clone().into_iter();
         let (Some(cx), Some(_comma)) = (tokens.next(), tokens.next()) else { return; };
-        let indent = mac.path.span().start().column as isize;
+        let span_start = mac.path.span().start();
+        let indent = span_start.column as isize;
+
+        let nodes = syn_rsx::parse2(tokens.collect()).unwrap_or_else(|_| {
+            panic!(
+                "invalid rsx tokens at line: {}:{}",
+                span_start.line, span_start.column
+            )
+        });
 
         self.printer.cbox(indent);
         self.printer.word("view! { ");
         self.printer.word(cx.to_string());
         self.printer.word(",");
-        self.view_macro_nodes(tokens.collect());
+
+        self.view_macro_nodes(nodes);
         self.printer.word("}");
         self.printer.end();
     }
 
-    fn view_macro_nodes(&mut self, tokens: TokenStream) {
+    fn view_macro_nodes(&mut self, nodes: Vec<Node>) {
         self.printer.cbox_indent();
         self.printer.space();
 
-        let nodes = syn_rsx::parse2(tokens).unwrap(); // TODO error handling
         let mut iter = nodes.iter().peekable();
         while let Some(node) = iter.next() {
             self.node(node);
