@@ -22,7 +22,9 @@ impl Formatter {
     }
 
     pub fn doctype(&mut self, doctype: &NodeDoctype) {
+        self.printer.word("<!DOCTYPE ");
         self.node_value(&doctype.value);
+        self.printer.word("> ");
     }
 
     pub fn node_text(&mut self, text: &NodeText) {
@@ -72,13 +74,22 @@ impl Formatter {
 #[cfg(test)]
 mod tests {
     use crate::formatter::*;
-    use crate::test_helpers::comment;
+    use crate::test_helpers::{comment, doctype};
 
     macro_rules! format_comment {
         ($($tt:tt)*) => {{
             let comment = comment! { $($tt)* };
             let mut formatter = Formatter::new(FormatterSettings { max_width: 40, ..Default::default() });
             formatter.comment(&comment);
+            formatter.printer.eof()
+        }};
+    }
+
+    macro_rules! format_doctype {
+        ($($tt:tt)*) => {{
+            let doctype = doctype! { $($tt)* };
+            let mut formatter = Formatter::new(FormatterSettings { max_width: 40, ..Default::default() });
+            formatter.doctype(&doctype);
             formatter.printer.eof()
         }};
     }
@@ -93,5 +104,11 @@ mod tests {
     fn html_comment_long() {
         let formatted = format_comment!(<!--   "this is a very loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong comment"   -->);
         insta::assert_snapshot!(formatted, @r###"<!-- "this is a very loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong comment" -->"###);
+    }
+
+    #[test]
+    fn html_doctype() {
+        let formatted = format_doctype!(< !DOCTYPE html   >);
+        insta::assert_snapshot!(formatted, @"<!DOCTYPE html> ");
     }
 }

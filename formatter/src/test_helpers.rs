@@ -1,4 +1,4 @@
-use syn_rsx::{Node, NodeAttribute, NodeComment, NodeElement, NodeFragment};
+use syn_rsx::{Node, NodeAttribute, NodeComment, NodeDoctype, NodeElement, NodeFragment};
 
 macro_rules! attribute {
     ($($tt:tt)*) => {
@@ -36,8 +36,18 @@ macro_rules! comment {
     }};
 }
 
+macro_rules! doctype {
+    ($($tt:tt)*) => {
+        {
+        let tokens = quote::quote! { $($tt)* };
+        let nodes = syn_rsx::parse2(tokens).unwrap();
+        crate::test_helpers::get_doctype(nodes, 0)
+    }};
+}
+
 pub(crate) use attribute;
 pub(crate) use comment;
+pub(crate) use doctype;
 pub(crate) use element;
 pub(crate) use fragment;
 
@@ -67,4 +77,9 @@ pub fn get_fragment(mut nodes: Vec<Node>, fragment_index: usize) -> NodeFragment
 pub fn get_comment(mut nodes: Vec<Node>, comment_index: usize) -> NodeComment {
     let Node::Comment(comment) = nodes.swap_remove(comment_index) else { panic!("expected comment") };
     comment
+}
+
+pub fn get_doctype(mut nodes: Vec<Node>, doctype_index: usize) -> NodeDoctype {
+    let Node::Doctype(doctype) = nodes.swap_remove(doctype_index) else { panic!("expected doctype") };
+    doctype
 }
