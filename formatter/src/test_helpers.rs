@@ -1,4 +1,4 @@
-use syn_rsx::{Node, NodeAttribute, NodeElement, NodeFragment};
+use syn_rsx::{Node, NodeAttribute, NodeComment, NodeElement, NodeFragment};
 
 macro_rules! attribute {
     ($($tt:tt)*) => {
@@ -27,7 +27,17 @@ macro_rules! fragment {
     }};
 }
 
+macro_rules! comment {
+    ($($tt:tt)*) => {
+        {
+        let tokens = quote::quote! { $($tt)* };
+        let nodes = syn_rsx::parse2(tokens).unwrap();
+        crate::test_helpers::get_comment(nodes, 0)
+    }};
+}
+
 pub(crate) use attribute;
+pub(crate) use comment;
 pub(crate) use element;
 pub(crate) use fragment;
 
@@ -52,4 +62,9 @@ pub fn get_element(mut nodes: Vec<Node>, element_index: usize) -> NodeElement {
 pub fn get_fragment(mut nodes: Vec<Node>, fragment_index: usize) -> NodeFragment {
     let Node::Fragment(fragment) = nodes.swap_remove(fragment_index) else { panic!("expected fragment") };
     fragment
+}
+
+pub fn get_comment(mut nodes: Vec<Node>, comment_index: usize) -> NodeComment {
+    let Node::Comment(comment) = nodes.swap_remove(comment_index) else { panic!("expected comment") };
+    comment
 }

@@ -16,7 +16,9 @@ impl Formatter {
     }
 
     pub fn comment(&mut self, comment: &NodeComment) {
+        self.printer.word("<!-- ");
         self.node_value(&comment.value);
+        self.printer.word(" -->");
     }
 
     pub fn doctype(&mut self, doctype: &NodeDoctype) {
@@ -64,5 +66,32 @@ impl Formatter {
                 self.printer.hardbreak();
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::formatter::*;
+    use crate::test_helpers::comment;
+
+    macro_rules! format_comment {
+        ($($tt:tt)*) => {{
+            let comment = comment! { $($tt)* };
+            let mut formatter = Formatter::new(FormatterSettings { max_width: 40, ..Default::default() });
+            formatter.comment(&comment);
+            formatter.printer.eof()
+        }};
+    }
+
+    #[test]
+    fn html_comment() {
+        let formatted = format_comment!(<!--   "comment"   -->);
+        insta::assert_snapshot!(formatted, @r###"<!-- "comment" -->"###);
+    }
+
+    #[test]
+    fn html_comment_long() {
+        let formatted = format_comment!(<!--   "this is a very loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong comment"   -->);
+        insta::assert_snapshot!(formatted, @r###"<!-- "this is a very loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong comment" -->"###);
     }
 }
