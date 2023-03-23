@@ -8,6 +8,10 @@ All notable changes are documented in: [CHANGELOG.md](./CHANGELOG.md)
 
 `cargo install leptosfmt`
 
+or for trying out unreleased features:
+
+`cargo install --git https://github.com/bram209/leptosfmt.git`
+
 ## Usage
 
 ```
