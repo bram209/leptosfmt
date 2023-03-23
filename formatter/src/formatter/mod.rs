@@ -2,6 +2,7 @@ use leptosfmt_pretty_printer::{Printer, PrinterSettings};
 
 mod attribute;
 mod element;
+mod expr;
 mod fragment;
 mod mac;
 mod node;
