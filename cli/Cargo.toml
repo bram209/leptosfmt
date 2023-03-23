@@ -3,7 +3,7 @@ name = "leptosfmt"
 version = { workspace = true }
 edition = "2021"
 authors = ["Bram Hoendervangers"]
-license = "MIT"
+license = { workspace = true }
 repository = "https://github.com/bram209/leptosfmt"
 description = "view macro formatter CLI for the Leptos web framework"
 readme = "../README.md"
