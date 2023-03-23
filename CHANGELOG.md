@@ -9,14 +9,18 @@ All notable changes to this project will be documented in this file.
 - Formatting for html comments ([#1](https://github.com/bram209/leptosfmt/issues/1))
 - Formatting doctype ([#2](https://github.com/bram209/leptosfmt/issues/2))
 
+### Continuous Integration
+
+- Automate publish process ([#6](https://github.com/bram209/leptosfmt/issues/6))
+- Automatically update changelog
+
 ### Features
 
 - Changelog generation ([#5](https://github.com/bram209/leptosfmt/issues/5))
 
-### Ci
+### Miscellaneous Tasks
 
-- Automate publish process ([#6](https://github.com/bram209/leptosfmt/issues/6))
-- Automatically update changelog
+- Add CI group to changelog
 
 ### Version
 
