@@ -13,6 +13,10 @@ All notable changes to this project will be documented in this file.
 
 - Changelog generation ([#5](https://github.com/bram209/leptosfmt/issues/5))
 
+### Ci
+
+- Automate publish process ([#6](https://github.com/bram209/leptosfmt/issues/6))
+
 ### Version
 
 - 0.1.1
