@@ -81,4 +81,18 @@ mod tests {
         }
         "###);
     }
+
+    #[test]
+    fn multiline_text_indention() {
+        let a = "At Houski Inc, we are committed to protecting the privacy of our
+                       users. This privacy policy explains how we collect, use, and share
+                       information when you use our website, property data system, and APIs
+                       (collectively, the \"Services\"). By using our Services, you agree to
+                       the collection, use, and sharing of your information as described in
+                       this privacy policy. If you do not agree with our policies and
+                       practices, do not use our Services.";
+
+        dbg!(&a);
+        println!("{a}");
+    }
 }

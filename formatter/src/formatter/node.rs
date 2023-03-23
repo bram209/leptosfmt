@@ -17,18 +17,18 @@ impl Formatter {
 
     pub fn comment(&mut self, comment: &NodeComment) {
         self.printer.word("<!-- ");
-        self.node_value(&comment.value);
+        self.node_value_expr(&comment.value);
         self.printer.word(" -->");
     }
 
     pub fn doctype(&mut self, doctype: &NodeDoctype) {
         self.printer.word("<!DOCTYPE ");
-        self.node_value(&doctype.value);
+        self.node_value_expr(&doctype.value);
         self.printer.word("> ");
     }
 
     pub fn node_text(&mut self, text: &NodeText) {
-        self.node_value(&text.value);
+        self.node_value_expr(&text.value);
     }
 
     pub fn node_name(&mut self, name: &NodeName) {
@@ -36,38 +36,7 @@ impl Formatter {
     }
 
     pub fn node_block(&mut self, block: &NodeBlock) {
-        self.node_value(&block.value)
-    }
-
-    pub fn node_value(&mut self, value: &NodeValueExpr) {
-        // if single line expression, format as '{expr}' instead of '{ expr }' (prettyplease inserts a space)
-        if let syn::Expr::Block(expr_block) = value.as_ref() {
-            if expr_block.attrs.is_empty() {
-                if let [syn::Stmt::Expr(single_expr)] = &expr_block.block.stmts[..] {
-                    // wrap with braces and do NOT insert spaces
-                    self.printer.word("{");
-                    self.expr(single_expr);
-                    self.printer.word("}");
-                    return;
-                }
-            }
-        }
-
-        self.expr(value.as_ref())
-    }
-
-    fn expr(&mut self, expr: &syn::Expr) {
-        let formatted = leptosfmt_prettyplease::unparse_expr(expr);
-        let formatted = format_expr_source(&formatted, self.settings).unwrap_or(formatted);
-
-        let mut iter = formatted.lines().peekable();
-        while let Some(line) = iter.next() {
-            self.printer.word(line.to_owned());
-
-            if iter.peek().is_some() {
-                self.printer.hardbreak();
-            }
-        }
+        self.node_value_expr(&block.value)
     }
 }
 

@@ -8,7 +8,7 @@ impl Formatter {
 
         if let Some(value) = &attribute.value {
             self.printer.word("=");
-            self.node_value(value);
+            self.node_value_expr(value);
         }
     }
 }
