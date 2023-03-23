@@ -2,6 +2,8 @@
 
 A formatter for the leptos view! macro
 
+All notable changes are documented in: [CHANGELOG.md](./CHANGELOG.md)
+
 ## Install
 
 `cargo install leptosfmt`
