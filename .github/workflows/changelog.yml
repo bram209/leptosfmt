@@ -31,4 +31,4 @@ jobs:
           committer_name: GitHub Actions
           committer_email: actions@github.com
           message: '[skip ci] Update CHANGELOG.md'
-          default_author: github_actions
+          default_author: user_info

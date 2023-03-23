@@ -24,9 +24,12 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 1
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
     - name: Generate Release Notes
       run: |
-        ./.github/workflows/release-notes.py --tag ${{ env.RELEASE_VERSION }} --output notes-${{ env.RELEASE_VERSION }}.md
+        python ./.github/workflows/release-notes.py --tag ${{ env.RELEASE_VERSION }} --output notes-${{ env.RELEASE_VERSION }}.md
         cat notes-${{ env.RELEASE_VERSION }}.md
     - name: Create GitHub release
       id: release
