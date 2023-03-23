@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 ### Ci
 
 - Automate publish process ([#6](https://github.com/bram209/leptosfmt/issues/6))
+- Automatically update changelog
 
 ### Version
 
