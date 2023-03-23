@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Bug Fixes
+
+- Multiline strings ([#8](https://github.com/bram209/leptosfmt/issues/8))
+
 ### Continuous Integration
 
 - Fix changelog generation config
@@ -12,7 +16,6 @@ All notable changes to this project will be documented in this file.
 ### Miscellaneous Tasks
 
 - Set repository in printer Cargo.toml
-- Release
 
 ## [0.1.3] - 2023-03-23
 
