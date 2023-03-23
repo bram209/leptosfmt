@@ -1,10 +1,9 @@
-use crop::Rope;
 use syn::{spanned::Spanned, Macro};
 use syn_rsx::Node;
 
 use super::{Formatter, FormatterSettings};
 
-impl<'a> Formatter<'a> {
+impl Formatter<'_> {
     pub fn view_macro(&mut self, mac: &Macro) {
         let mut tokens = mac.tokens.clone().into_iter();
         let (Some(cx), Some(_comma)) = (tokens.next(), tokens.next()) else { return; };

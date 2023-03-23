@@ -2,7 +2,7 @@ use syn_rsx::{Node, NodeElement};
 
 use crate::formatter::Formatter;
 
-impl<'a> Formatter<'a> {
+impl Formatter<'_> {
     pub fn element(&mut self, element: &NodeElement) {
         let name = element.name.to_string();
         let is_void = is_void_element(&name, !element.children.is_empty());

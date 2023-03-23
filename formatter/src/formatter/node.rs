@@ -3,7 +3,7 @@ use syn_rsx::{Node, NodeBlock, NodeComment, NodeDoctype, NodeName, NodeText, Nod
 
 use crate::{formatter::Formatter, source_file::format_expr_source};
 
-impl<'a> Formatter<'a> {
+impl Formatter<'_> {
     pub fn node(&mut self, node: &Node) {
         self.write_comments(node.span().start().line - 1);
 

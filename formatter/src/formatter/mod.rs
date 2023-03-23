@@ -1,6 +1,5 @@
-use std::{collections::HashMap, marker::PhantomData};
+use std::collections::HashMap;
 
-use crop::Rope;
 use leptosfmt_pretty_printer::{Printer, PrinterSettings};
 
 mod attribute;
@@ -65,7 +64,7 @@ impl<'a> Formatter<'a> {
             comments: source
                 .lines()
                 .enumerate()
-                .filter_map(|(i, l)| l.split("//").skip(1).next().map(|l| (i, l.to_owned())))
+                .filter_map(|(i, l)| l.split("//").nth(1).map(|l| (i, l.to_owned())))
                 .collect(),
             last_line_check: None,
             source: Some(source),
@@ -77,11 +76,11 @@ impl<'a> Formatter<'a> {
 
         self.last_line_check = Some(line_index);
 
-        let mut comments = (last..=line_index)
+        let comments = (last..=line_index)
             .filter_map(|l| self.comments.remove(&l))
             .peekable();
 
-        while let Some(comment) = comments.next() {
+        for comment in comments {
             self.printer.word("//");
             self.printer.word(comment);
             self.printer.hardbreak();

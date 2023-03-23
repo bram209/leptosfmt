@@ -60,7 +60,7 @@ fn format_source<'a>(
 
         let start_byte = line_column_to_byte_index(&rope, start);
         let end_byte = line_column_to_byte_index(&rope, end);
-        let new_text = format_macro(Some(&source), mac, settings);
+        let new_text = format_macro(Some(source), mac, settings);
 
         edits.push(TextEdit {
             range: start_byte..end_byte,
