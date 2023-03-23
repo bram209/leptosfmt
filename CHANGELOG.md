@@ -9,9 +9,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - Changelog file
-- Non-doc comments (#3)
+- Non-doc comments (https://github.com/bram209/leptosfmt/pull/4)
 
 ### Fixed
 
-- HTML comments (#1)
-- HTML doctype (#2)
+- HTML comments (https://github.com/bram209/leptosfmt/pull/1)
+- HTML doctype (https://github.com/bram209/leptosfmt/pull/2)
