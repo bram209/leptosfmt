@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 
 ### Features
 
-- Changelog generation
+- Changelog generation ([#5](https://github.com/bram209/leptosfmt/issues/5))
 
 ### Version
 
