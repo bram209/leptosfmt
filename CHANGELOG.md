@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Continuous Integration
 
 - Fix changelog generation config
+- Only trigger CI when .rs file changed
 
 ### Miscellaneous Tasks
 
