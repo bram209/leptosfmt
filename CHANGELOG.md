@@ -9,8 +9,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - Changelog file
+- Non-doc comments (#3)
 
 ### Fixed
 
-- HTML Comments (#1)
-- HTML Doctype (#2)
+- HTML comments (#1)
+- HTML doctype (#2)
