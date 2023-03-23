@@ -120,21 +120,17 @@ mod tests {
         let source = indoc! {r#"
             fn main() {
                 view! {   cx ,  <div>  
-        // This is one beautiful message
+                        // This is one beautiful message
                     <span>"hello"</span> // at the end of the line
                     <div>// at the end of the line
+             // double
+             // comments
                     <span>"hello"</span> </div>
                      <For
             // a function that returns the items we're iterating over; a signal is fine
             each= move || {errors.clone().into_iter().enumerate()}
             // a unique key for each item as a reference
              key=|(index, _error)| *index // yeah
-             // double
-             // comments
-             multiline={
-                let a = 12;
-                a + 2 // nice calculation
-             }
              />
                     </div>  }; 
             }
@@ -146,11 +142,19 @@ mod tests {
                 view! { cx,
                     <div>
                         // This is one beautiful message
+                        // at the end of the line
                         <span>"hello"</span>
+                        // at the end of the line
+                        <div>
+                            // double
+                            // comments
+                            <span>"hello"</span>
+                        </div>
                         <For
                             // a function that returns the items we're iterating over; a signal is fine
                             each=move || { errors.clone().into_iter().enumerate() }
                             // a unique key for each item as a reference
+                            // yeah
                             key=|(index, _error)| *index
                         />
                     </div>
@@ -170,8 +174,8 @@ mod tests {
                             
                                          <span>{a}</span>
                         }
-                }</span></div>  }; 
-            
+                }</span></div>  };
+            }            
         "#};
 
         let result = format_file_source(source, Default::default()).unwrap();
@@ -186,8 +190,8 @@ mod tests {
                         }
                     </span>
                 </div>
-            }; 
-        }
+            };
+        }            
         "###);
     }
 

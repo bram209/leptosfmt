@@ -52,8 +52,6 @@ impl Formatter<'_> {
                     return;
                 }
             }
-
-            return;
         }
 
         self.expr(value.as_ref())

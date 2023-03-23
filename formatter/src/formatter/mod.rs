@@ -43,6 +43,7 @@ pub struct Formatter<'source> {
     pub settings: FormatterSettings,
     last_line_check: Option<usize>,
     comments: HashMap<usize, String>,
+    #[allow(unused)]
     source: Option<&'source str>,
 }
 
