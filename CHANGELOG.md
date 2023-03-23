@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [unreleased]
+## [0.1.3] - 2023-03-23
 
 ### Bug Fixes
 
@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 
 - Automate publish process ([#6](https://github.com/bram209/leptosfmt/issues/6))
 - Automatically update changelog
+- Update comitter name for automatic changelog commit
 
 ### Features
 
