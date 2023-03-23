@@ -25,7 +25,7 @@ impl Formatter {
         let formatted = format_expr_source(&formatted, self.settings).unwrap_or(formatted);
 
         let left_aligned = matches!(expr, syn::Expr::Lit(_));
-        let mut iter = formatted.lines().into_iter().peekable();
+        let mut iter = formatted.lines().peekable();
         while let Some(line) = iter.next() {
             if left_aligned {
                 self.printer.word(line.trim_start().to_owned());

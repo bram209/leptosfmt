@@ -1,6 +1,6 @@
-use syn_rsx::{Node, NodeBlock, NodeComment, NodeDoctype, NodeName, NodeText, NodeValueExpr};
+use syn_rsx::{Node, NodeBlock, NodeComment, NodeDoctype, NodeName, NodeText};
 
-use crate::{formatter::Formatter, source_file::format_expr_source};
+use crate::formatter::Formatter;
 
 impl Formatter {
     pub fn node(&mut self, node: &Node) {
