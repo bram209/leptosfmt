@@ -2,7 +2,7 @@ use syn_rsx::NodeFragment;
 
 use crate::formatter::Formatter;
 
-impl Formatter {
+impl<'a> Formatter<'a> {
     pub fn fragment(&mut self, fragment: &NodeFragment) {
         self.printer.word("<>");
         self.children(&fragment.children, 0);

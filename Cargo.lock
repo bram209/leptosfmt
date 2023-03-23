@@ -464,8 +464,7 @@ dependencies = [
 [[package]]
 name = "syn-rsx"
 version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b7b0f81c7d3e9bbe4b3005599a3e0b0bbb27bd3514f2b0567b478cc548c3736"
+source = "git+https://github.com/stoically/syn-rsx.git#149109f1420df7a11f5a69e4a9fb90bf57ec4f02"
 dependencies = [
  "proc-macro2",
  "quote",

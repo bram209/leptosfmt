@@ -1,6 +1,7 @@
 use std::{io, ops::Range};
 
 use crop::Rope;
+use proc_macro2::LineColumn;
 use syn::{parse_str, spanned::Spanned, Expr, Macro, MacroDelimiter};
 use thiserror::Error;
 
@@ -46,7 +47,7 @@ fn format_source<'a>(
     macros: Vec<&'a Macro>,
     settings: FormatterSettings,
 ) -> Result<String, FormatError> {
-    let mut source: Rope = source.parse().unwrap();
+    let mut rope: Rope = source.parse().unwrap();
     let mut edits = Vec::new();
 
     for mac in macros {
@@ -57,9 +58,9 @@ fn format_source<'a>(
             MacroDelimiter::Bracket(delim) => delim.span.end(),
         };
 
-        let start_byte = source.byte_of_line(start.line - 1) + start.column;
-        let end_byte = source.byte_of_line(end.line - 1) + end.column;
-        let new_text = format_macro(mac, settings);
+        let start_byte = line_column_to_byte_index(&rope, start);
+        let end_byte = line_column_to_byte_index(&rope, end);
+        let new_text = format_macro(Some(&source), mac, settings);
 
         edits.push(TextEdit {
             range: start_byte..end_byte,
@@ -73,14 +74,18 @@ fn format_source<'a>(
         let end = edit.range.end;
         let new_text = edit.new_text;
 
-        source.replace(
+        rope.replace(
             (start as isize + last_offset) as usize..(end as isize + last_offset) as usize,
             &new_text,
         );
         last_offset += new_text.len() as isize - (end as isize - start as isize);
     }
 
-    Ok(source.to_string())
+    Ok(rope.to_string())
+}
+
+fn line_column_to_byte_index(rope: &Rope, line_column: LineColumn) -> usize {
+    rope.byte_of_line(line_column.line - 1) + line_column.column
 }
 
 #[cfg(test)]
@@ -106,6 +111,51 @@ mod tests {
                 </div>
             }; 
         }
+
+        "###);
+    }
+
+    #[test]
+    fn with_comments() {
+        let source = indoc! {r#"
+            fn main() {
+                view! {   cx ,  <div>  
+        // This is one beautiful message
+                    <span>"hello"</span> // at the end of the line
+                    <div>// at the end of the line
+                    <span>"hello"</span> </div>
+                     <For
+            // a function that returns the items we're iterating over; a signal is fine
+            each= move || {errors.clone().into_iter().enumerate()}
+            // a unique key for each item as a reference
+             key=|(index, _error)| *index // yeah
+             // double
+             // comments
+             multiline={
+                let a = 12;
+                a + 2 // nice calculation
+             }
+             />
+                    </div>  }; 
+            }
+        "#};
+
+        let result = format_file_source(source, Default::default()).unwrap();
+        insta::assert_snapshot!(result, @r###"
+            fn main() {
+                view! { cx,
+                    <div>
+                        // This is one beautiful message
+                        <span>"hello"</span>
+                        <For
+                            // a function that returns the items we're iterating over; a signal is fine
+                            each=move || { errors.clone().into_iter().enumerate() }
+                            // a unique key for each item as a reference
+                            key=|(index, _error)| *index
+                        />
+                    </div>
+                }; 
+            }
         "###);
     }
 
@@ -121,7 +171,7 @@ mod tests {
                                          <span>{a}</span>
                         }
                 }</span></div>  }; 
-            }
+            
         "#};
 
         let result = format_file_source(source, Default::default()).unwrap();

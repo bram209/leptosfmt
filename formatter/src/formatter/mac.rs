@@ -1,9 +1,10 @@
+use crop::Rope;
 use syn::{spanned::Spanned, Macro};
 use syn_rsx::Node;
 
 use super::{Formatter, FormatterSettings};
 
-impl Formatter {
+impl<'a> Formatter<'a> {
     pub fn view_macro(&mut self, mac: &Macro) {
         let mut tokens = mac.tokens.clone().into_iter();
         let (Some(cx), Some(_comma)) = (tokens.next(), tokens.next()) else { return; };
@@ -45,8 +46,12 @@ impl Formatter {
     }
 }
 
-pub fn format_macro(mac: &Macro, settings: FormatterSettings) -> String {
-    let mut formatter = Formatter::new(settings);
+pub fn format_macro(source: Option<&str>, mac: &Macro, settings: FormatterSettings) -> String {
+    let mut formatter = match source {
+        Some(source) => Formatter::with_source(source, settings),
+        None => Formatter::new(settings),
+    };
+
     formatter.view_macro(mac);
     formatter.printer.eof()
 }
@@ -60,7 +65,7 @@ mod tests {
     macro_rules! view_macro {
         ($($tt:tt)*) => {{
             let mac: Macro = syn::parse2(quote! { $($tt)* }).unwrap();
-            format_macro(&mac, Default::default())
+            format_macro(None, &mac, Default::default())
         }}
     }
 

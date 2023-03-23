@@ -1,9 +1,12 @@
+use syn::spanned::Spanned;
 use syn_rsx::{Node, NodeBlock, NodeComment, NodeDoctype, NodeName, NodeText, NodeValueExpr};
 
 use crate::{formatter::Formatter, source_file::format_expr_source};
 
-impl Formatter {
+impl<'a> Formatter<'a> {
     pub fn node(&mut self, node: &Node) {
+        self.write_comments(node.span().start().line - 1);
+
         match node {
             Node::Element(ele) => self.element(ele),
             Node::Attribute(attr) => self.attribute(attr),
@@ -12,7 +15,7 @@ impl Formatter {
             Node::Doctype(doctype) => self.doctype(doctype),
             Node::Block(block) => self.node_block(block),
             Node::Fragment(frag) => self.fragment(frag),
-        }
+        };
     }
 
     pub fn comment(&mut self, comment: &NodeComment) {
@@ -49,6 +52,8 @@ impl Formatter {
                     return;
                 }
             }
+
+            return;
         }
 
         self.expr(value.as_ref())

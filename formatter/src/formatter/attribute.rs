@@ -2,7 +2,7 @@ use syn_rsx::NodeAttribute;
 
 use crate::formatter::Formatter;
 
-impl Formatter {
+impl<'a> Formatter<'a> {
     pub fn attribute(&mut self, attribute: &NodeAttribute) {
         self.node_name(&attribute.key);
 
