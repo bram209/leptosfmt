@@ -31,7 +31,7 @@ Options:
 
 **Single file**
 
-Format all .rs files within the current directory
+Format a specific file by name
 
 `leptosfmt ./examples/counter/src/lib.rs`
 
