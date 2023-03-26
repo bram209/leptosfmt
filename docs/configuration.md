@@ -4,52 +4,53 @@
 
 Wether or not to add braces around single expressions for attribute values.
 
-**Default value:** "Always"
-**Possible values:** "Preserve", "Always", "WhenRequired"
+- **Default value:** "AlwaysUnlessLit"
+- **Possible values:** "Always", "AlwaysUnlessLit", "WhenRequired", "Preserve"
 
 ### Examples
 
-`"Preserve"`:
+`"AlwaysUnlessLiteral"` (default):
 
 ```rust
-<div on:click=move |_| set_value(0) />      // stays untouched
-<div on:click={move |_| set_value(0)} />    // stays untouched
+<div on:click=move |_| set_value(0) disabled=is_disabled />
+<img width=100 height={200} class="banner" alt={"test"}>
+
+// BECOMES
+
+<div on:click={move |_| set_value(0)} disabled={is_disabled} />
+<img width=100 height=200 class="banner" alt="test">
 ```
 
 `"Always"`:
 
 ```rust
-<div on:click=move |_| set_value(0) />
-<div on:click={move |_| set_value(0)} />
-```
+<div on:click=move |_| set_value(0) disabled=is_disabled />
+<img width=100 height={200} class="banner" alt={"test"}>
 
-becomes
+// BECOMES
 
-```rust
-<div on:click={move |_| set_value(0)} />
-<div on:click={move |_| set_value(0)} />
+<div on:click={move |_| set_value(0)} disabled={is_disabled} />
+<img width={100} height={200} class={"banner"} alt={"test"}>
 ```
 
 `"WhenRequired"`:
 
 ```rust
-<div on:click={move |_| set_value(0)} />
+<div on:click={move |_| set_value(0)} disabled={is_disabled} />
+<img width=100 height={200} class="banner" alt={"test"}>
 
-<div class={
-  let foo = "foo";
-  let bar = "bar";
-  foo + bar
-} />
+// BECOMES
+
+<div on:click=move |_| set_value(0) disabled=is_disabled />
+<img width=100 height=200 class="banner" alt="test">
 ```
 
-becomes
+`"Preserve"`:
 
 ```rust
-<div on:click=move |_| set_value(0) />
+<div on:click=move |_| set_value(0) />                              // stays untouched
+<div on:click={move |_| set_value(0)} />                            // stays untouched
+<img width=100 height={200} class="banner" src={"./banner.jpg"}>    // stays untouched
 
-<div class={
-  let foo = "foo";
-  let bar = "bar";
-  foo + bar
-} />
 ```
+
