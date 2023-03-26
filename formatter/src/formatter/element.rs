@@ -164,7 +164,7 @@ mod tests {
         let formatted =
             format_element! { <div key=a::very::deeply::nested::module::generate_key()></div> };
 
-        insta::assert_snapshot!(formatted, @"<div key=a::very::deeply::nested::module::generate_key()></div>");
+        insta::assert_snapshot!(formatted, @"<div key={a::very::deeply::nested::module::generate_key()}></div>");
     }
 
     #[test]
@@ -172,7 +172,7 @@ mod tests {
         let formatted = format_element! { <div key=a::very::deeply::nested::module::generate_key() width=100></div> };
         insta::assert_snapshot!(formatted, @r###"
         <div
-            key=a::very::deeply::nested::module::generate_key()
+            key={a::very::deeply::nested::module::generate_key()}
             width=100
         ></div>
         "###);
