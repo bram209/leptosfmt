@@ -9,9 +9,10 @@ mod node;
 
 pub use mac::format_macro;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum AttributeValueBraceStyle {
     Always,
+    AlwaysUnlessLit,
     WhenRequired,
     Preserve,
 }
@@ -33,7 +34,7 @@ impl Default for FormatterSettings {
         Self {
             max_width: 100,
             tab_spaces: 4,
-            attr_value_brace_style: AttributeValueBraceStyle::Always,
+            attr_value_brace_style: AttributeValueBraceStyle::AlwaysUnlessLit,
         }
     }
 }

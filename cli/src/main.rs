@@ -31,7 +31,7 @@ fn main() {
     let settings = FormatterSettings {
         max_width: args.max_width,
         tab_spaces: args.tab_spaces,
-        attr_value_brace_style: AttributeValueBraceStyle::Always,
+        attr_value_brace_style: AttributeValueBraceStyle::AlwaysUnlessLit,
     };
 
     let is_dir = fs::metadata(&args.input_pattern)

@@ -1,6 +1,6 @@
 use syn_rsx::{NodeAttribute, NodeValueExpr};
 
-use crate::{formatter::Formatter, AttributeValueBraceStyle};
+use crate::{formatter::Formatter, AttributeValueBraceStyle as Braces};
 
 impl Formatter {
     pub fn attribute(&mut self, attribute: &NodeAttribute) {
@@ -14,21 +14,27 @@ impl Formatter {
 
     fn attribute_value(&mut self, value: &NodeValueExpr) {
         match self.settings.attr_value_brace_style {
-            AttributeValueBraceStyle::Always => match value.as_ref() {
+            Braces::Always | Braces::AlwaysUnlessLit => match value.as_ref() {
                 syn::Expr::Block(_) => {
-                    self.node_value_expr(value, false);
+                    self.node_value_expr(
+                        value,
+                        false,
+                        self.settings.attr_value_brace_style == Braces::AlwaysUnlessLit,
+                    );
                 }
-                syn::Expr::Lit(_) => {
-                    self.node_value_expr(value, true);
-                }
-                _ => {
-                    self.printer.word("{");
-                    self.node_value_expr(value, false);
-                    self.printer.word("}");
-                }
+                non_block_expr => match (self.settings.attr_value_brace_style, non_block_expr) {
+                    (Braces::AlwaysUnlessLit, syn::Expr::Lit(_)) => {
+                        self.node_value_expr(value, false, true)
+                    }
+                    _ => {
+                        self.printer.word("{");
+                        self.node_value_expr(value, false, false);
+                        self.printer.word("}");
+                    }
+                },
             },
-            AttributeValueBraceStyle::WhenRequired => self.node_value_expr(value, true),
-            AttributeValueBraceStyle::Preserve => self.node_value_expr(value, false),
+            Braces::WhenRequired => self.node_value_expr(value, true, true),
+            Braces::Preserve => self.node_value_expr(value, false, false),
         }
     }
 }
@@ -102,6 +108,34 @@ mod tests {
         // single expr with braces
         let f = format_attr_with_brace_style! { Always => on:click={move |_| set_value(0)} };
         assert_snapshot!(f, @"on:click={move |_| set_value(0)}");
+
+        // literal numeric value
+        let f = format_attr_with_brace_style! { Always => width=100 };
+        assert_snapshot!(f, @"width={100}");
+
+        // literal string value
+        let f = format_attr_with_brace_style! { Always => alt="test img" };
+        assert_snapshot!(f, @r###"alt={"test img"}"###);
+    }
+
+    #[test]
+    fn key_value_expr_attr_always_unless_lit_braces() {
+        // sinle expr without braces
+        let f = format_attr_with_brace_style! { AlwaysUnlessLit => on:click=move |_| set_value(0) };
+        assert_snapshot!(f, @"on:click={move |_| set_value(0)}");
+
+        // single expr with braces
+        let f =
+            format_attr_with_brace_style! { AlwaysUnlessLit => on:click={move |_| set_value(0)} };
+        assert_snapshot!(f, @"on:click={move |_| set_value(0)}");
+
+        // literal numeric value
+        let f = format_attr_with_brace_style! { AlwaysUnlessLit => width={100} };
+        assert_snapshot!(f, @"width=100");
+
+        // literal string value
+        let f = format_attr_with_brace_style! { AlwaysUnlessLit => alt="test img" };
+        assert_snapshot!(f, @r###"alt="test img""###);
     }
 
     #[test]
@@ -113,6 +147,14 @@ mod tests {
         // single expr with braces
         let f = format_attr_with_brace_style! { Preserve => on:click={move |_| set_value(0)} };
         assert_snapshot!(f, @"on:click={move |_| set_value(0)}");
+
+        // literal numeric value with braces
+        let f = format_attr_with_brace_style! { Preserve => width={100} };
+        assert_snapshot!(f, @"width={100}");
+
+        // literal string value without braces
+        let f = format_attr_with_brace_style! { Preserve => alt="test img" };
+        assert_snapshot!(f, @r###"alt="test img""###);
     }
 
     #[test]
@@ -124,5 +166,13 @@ mod tests {
         // single expr with braces
         let f = format_attr_with_brace_style! { WhenRequired => on:click={move |_| set_value(0)} };
         assert_snapshot!(f, @"on:click=move |_| set_value(0)");
+
+        // literal numeric value
+        let f = format_attr_with_brace_style! { WhenRequired => width={100} };
+        assert_snapshot!(f, @"width=100");
+
+        // literal string value
+        let f = format_attr_with_brace_style! { WhenRequired => alt={"test img"} };
+        assert_snapshot!(f, @r###"alt="test img""###);
     }
 }
