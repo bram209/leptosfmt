@@ -116,15 +116,4 @@ impl Printer {
             ..BreakToken::default()
         });
     }
-
-    #[inline]
-    pub fn enclose<S, F>(&mut self, before: S, after: S, block: F)
-    where
-        S: Into<Cow<'static, str>>,
-        F: FnOnce(),
-    {
-        self.word(before);
-        block();
-        self.word(after);
-    }
 }
