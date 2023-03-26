@@ -2,9 +2,9 @@
 
 ## attr_value_brace_style
 
-Wether or not to add braces around single expressions for attribute values.
+Whether or not to add braces around single expression attribute values.
 
-- **Default value:** "AlwaysUnlessLit" (Up for discussion)
+- **Default value:** "???" (Up for discussion)
 - **Possible values:** "Always", "AlwaysUnlessLit", "WhenRequired", "Preserve"
 
 ### Examples
@@ -50,6 +50,6 @@ Wether or not to add braces around single expressions for attribute values.
 ```rust
 <div on:click=move |_| set_value(0) />                              // stays untouched
 <div on:click={move |_| set_value(0)} />                            // stays untouched
-<img width=100 height={200} class="banner" src={"./banner.jpg"} />    // stays untouched
+<img width=100 height={200} class="banner" src={"./banner.jpg"} />  // stays untouched
 
 ```
