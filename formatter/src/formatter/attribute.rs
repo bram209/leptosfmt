@@ -13,28 +13,18 @@ impl Formatter {
     }
 
     fn attribute_value(&mut self, value: &NodeValueExpr) {
-        match self.settings.attr_value_brace_style {
-            Braces::Always | Braces::AlwaysUnlessLit => match value.as_ref() {
-                syn::Expr::Block(_) => {
-                    self.node_value_expr(
-                        value,
-                        false,
-                        self.settings.attr_value_brace_style == Braces::AlwaysUnlessLit,
-                    );
-                }
-                non_block_expr => match (self.settings.attr_value_brace_style, non_block_expr) {
-                    (Braces::AlwaysUnlessLit, syn::Expr::Lit(_)) => {
-                        self.node_value_expr(value, false, true)
-                    }
-                    _ => {
-                        self.printer.word("{");
-                        self.node_value_expr(value, false, false);
-                        self.printer.word("}");
-                    }
-                },
-            },
-            Braces::WhenRequired => self.node_value_expr(value, true, true),
-            Braces::Preserve => self.node_value_expr(value, false, false),
+        match (self.settings.attr_value_brace_style, value.as_ref()) {
+            (Braces::Always, syn::Expr::Block(_)) => self.node_value_expr(value, false, false),
+            (Braces::AlwaysUnlessLit, syn::Expr::Block(_) | syn::Expr::Lit(_)) => {
+                self.node_value_expr(value, false, true)
+            }
+            (Braces::Always | Braces::AlwaysUnlessLit, _) => {
+                self.printer.word("{");
+                self.node_value_expr(value, false, false);
+                self.printer.word("}");
+            }
+            (Braces::WhenRequired, _) => self.node_value_expr(value, true, true),
+            (Braces::Preserve, _) => self.node_value_expr(value, false, false),
         }
     }
 }
