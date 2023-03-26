@@ -34,7 +34,7 @@ impl Default for FormatterSettings {
         Self {
             max_width: 100,
             tab_spaces: 4,
-            attr_value_brace_style: AttributeValueBraceStyle::AlwaysUnlessLit,
+            attr_value_brace_style: AttributeValueBraceStyle::WhenRequired,
         }
     }
 }
