@@ -25,7 +25,7 @@ pub struct FormatterSettings {
     // Number of spaces per tab
     pub tab_spaces: usize,
 
-    // Adds braces around single expressions for attribute values
+    // Determines placement of braces around single expression attribute values
     pub attr_value_brace_style: AttributeValueBraceStyle,
 }
 
