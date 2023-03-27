@@ -1,5 +1,6 @@
 name: post-release
 on:
+  workflow_dispatch:
   push:
     tags:
     - "*.*.*"
