@@ -13,6 +13,10 @@ All notable changes to this project will be documented in this file.
 - Fix changelog generation config
 - Only trigger CI when .rs file changed
 
+### Features
+
+- Attribute value brace style ([#10](https://github.com/bram209/leptosfmt/issues/10))
+
 ### Miscellaneous Tasks
 
 - Set repository in printer Cargo.toml
