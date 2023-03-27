@@ -2,9 +2,9 @@
 members = ["printer", "cli", "formatter"]
 
 [workspace.package]
-version = "0.1.3"
+version = "0.1.4"
 license = "MIT OR Apache-2.0"
 
 [workspace.dependencies]
-leptosfmt-formatter = { path = "./formatter", version = "0.1.3" }
-leptosfmt-pretty-printer = { path = "./printer", version = "0.1.3" }
+leptosfmt-formatter = { path = "./formatter", version = "0.1.4" }
+leptosfmt-pretty-printer = { path = "./printer", version = "0.1.4" }
