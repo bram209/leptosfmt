@@ -17,18 +17,18 @@ impl Formatter {
 
     pub fn comment(&mut self, comment: &NodeComment) {
         self.printer.word("<!-- ");
-        self.node_value_expr(&comment.value);
+        self.node_value_expr(&comment.value, false, false);
         self.printer.word(" -->");
     }
 
     pub fn doctype(&mut self, doctype: &NodeDoctype) {
         self.printer.word("<!DOCTYPE ");
-        self.node_value_expr(&doctype.value);
+        self.node_value_expr(&doctype.value, false, false);
         self.printer.word("> ");
     }
 
     pub fn node_text(&mut self, text: &NodeText) {
-        self.node_value_expr(&text.value);
+        self.node_value_expr(&text.value, false, false);
     }
 
     pub fn node_name(&mut self, name: &NodeName) {
@@ -36,7 +36,7 @@ impl Formatter {
     }
 
     pub fn node_block(&mut self, block: &NodeBlock) {
-        self.node_value_expr(&block.value)
+        self.node_value_expr(&block.value, false, false);
     }
 }
 

@@ -9,6 +9,14 @@ mod node;
 
 pub use mac::format_macro;
 
+#[derive(Clone, Copy, PartialEq)]
+pub enum AttributeValueBraceStyle {
+    Always,
+    AlwaysUnlessLit,
+    WhenRequired,
+    Preserve,
+}
+
 #[derive(Clone, Copy)]
 pub struct FormatterSettings {
     // Maximum width of each line
@@ -16,6 +24,9 @@ pub struct FormatterSettings {
 
     // Number of spaces per tab
     pub tab_spaces: usize,
+
+    // Determines placement of braces around single expression attribute values
+    pub attr_value_brace_style: AttributeValueBraceStyle,
 }
 
 impl Default for FormatterSettings {
@@ -23,6 +34,7 @@ impl Default for FormatterSettings {
         Self {
             max_width: 100,
             tab_spaces: 4,
+            attr_value_brace_style: AttributeValueBraceStyle::WhenRequired,
         }
     }
 }

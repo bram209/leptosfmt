@@ -6,7 +6,7 @@ use std::{
 
 use clap::Parser;
 use glob::glob;
-use leptosfmt_formatter::{format_file, FormatterSettings};
+use leptosfmt_formatter::{format_file, AttributeValueBraceStyle, FormatterSettings};
 use rayon::{iter::ParallelIterator, prelude::IntoParallelIterator};
 
 /// A formatter for Leptos RSX sytnax
@@ -31,6 +31,7 @@ fn main() {
     let settings = FormatterSettings {
         max_width: args.max_width,
         tab_spaces: args.tab_spaces,
+        attr_value_brace_style: AttributeValueBraceStyle::AlwaysUnlessLit,
     };
 
     let is_dir = fs::metadata(&args.input_pattern)

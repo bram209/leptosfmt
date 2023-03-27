@@ -3,15 +3,26 @@ use syn_rsx::NodeValueExpr;
 use crate::{formatter::Formatter, source_file::format_expr_source};
 
 impl Formatter {
-    pub fn node_value_expr(&mut self, value: &NodeValueExpr) {
+    pub fn node_value_expr(
+        &mut self,
+        value: &NodeValueExpr,
+        unwrap_single_expr_blocks: bool,
+        unwrap_single_lit_blocks: bool,
+    ) {
         // if single line expression, format as '{expr}' instead of '{ expr }' (prettyplease inserts a space)
         if let syn::Expr::Block(expr_block) = value.as_ref() {
             if expr_block.attrs.is_empty() {
                 if let [syn::Stmt::Expr(single_expr)] = &expr_block.block.stmts[..] {
                     // wrap with braces and do NOT insert spaces
-                    self.printer.word("{");
-                    self.expr(single_expr);
-                    self.printer.word("}");
+                    if unwrap_single_expr_blocks
+                        || (unwrap_single_lit_blocks && matches!(single_expr, syn::Expr::Lit(_)))
+                    {
+                        self.expr(single_expr);
+                    } else {
+                        self.printer.word("{");
+                        self.expr(single_expr);
+                        self.printer.word("}");
+                    }
                     return;
                 }
             }
