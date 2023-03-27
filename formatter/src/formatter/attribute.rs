@@ -86,7 +86,7 @@ mod tests {
     #[test]
     fn key_value_expr_attr() {
         let formatted = format_attribute! { on:click= move |_| set_value(0) };
-        assert_snapshot!(formatted, @"on:click={move |_| set_value(0)}");
+        assert_snapshot!(formatted, @"on:click=move |_| set_value(0)");
     }
 
     #[test]
