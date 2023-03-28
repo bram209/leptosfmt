@@ -1,7 +1,7 @@
 # leptosfmt
 ![crates.io](https://img.shields.io/crates/v/leptosfmt.svg)
 ![build](https://img.shields.io/github/actions/workflow/status/bram209/leptosfmt/ci.yml)
-
+![security](https://img.shields.io/github/actions/workflow/status/bram209/leptosfmt/security-audit.yml?label=%F0%9F%9B%A1%EF%B8%8F%20security%20audit)
 
 A formatter for the leptos view! macro
 
