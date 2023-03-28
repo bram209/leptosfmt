@@ -4,7 +4,7 @@
 
 Whether or not to add braces around single expression attribute values.
 
-- **Default value:** "???" (Up for discussion)
+- **Default value:** "WhenRequired"
 - **Possible values:** "Always", "AlwaysUnlessLit", "WhenRequired", "Preserve"
 
 ### Examples
