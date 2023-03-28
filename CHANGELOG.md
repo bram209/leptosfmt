@@ -6,22 +6,33 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- Multiline strings ([#8](https://github.com/bram209/leptosfmt/issues/8))
+
+### Continuous Integration
+
+- Fix changelog generation config
+- Only trigger CI when .rs file changed
+
+### Features
+
+- Attribute value brace style ([#10](https://github.com/bram209/leptosfmt/issues/10))
+
+## [0.1.3] - 2023-03-23
+
+### Bug Fixes
+
 - Formatting for html comments ([#1](https://github.com/bram209/leptosfmt/issues/1))
 - Formatting doctype ([#2](https://github.com/bram209/leptosfmt/issues/2))
-- Multiline strings ([#8](https://github.com/bram209/leptosfmt/issues/8))
 
 ### Continuous Integration
 
 - Automate publish process ([#6](https://github.com/bram209/leptosfmt/issues/6))
 - Automatically update changelog
 - Update comitter name for automatic changelog commit
-- Fix changelog generation config
-- Only trigger CI when .rs file changed
 
 ### Features
 
 - Changelog generation ([#5](https://github.com/bram209/leptosfmt/issues/5))
-- Attribute value brace style ([#10](https://github.com/bram209/leptosfmt/issues/10))
 
 ### Miscellaneous Tasks
 
