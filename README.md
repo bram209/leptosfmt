@@ -1,7 +1,10 @@
 # leptosfmt
-![crates.io](https://img.shields.io/crates/v/leptosfmt.svg)
-![build](https://img.shields.io/github/actions/workflow/status/bram209/leptosfmt/ci.yml)
-![security](https://img.shields.io/github/actions/workflow/status/bram209/leptosfmt/security-audit.yml?label=%F0%9F%9B%A1%EF%B8%8F%20security%20audit)
+[![crates.io](https://img.shields.io/crates/v/leptosfmt.svg)](https://crates.io/crates/leptosfmt)
+[![build](https://img.shields.io/github/actions/workflow/status/bram209/leptosfmt/ci.yml)](https://github.com/bram209/leptosfmt/actions/workflows/ci.yml?query=branch%3Amain)
+[![security](https://img.shields.io/github/actions/workflow/status/bram209/leptosfmt/security-audit.yml?label=%F0%9F%9B%A1%EF%B8%8F%20security%20audit)](https://github.com/bram209/leptosfmt/actions/workflows/security-audit.yml?query=branch%3Amain)
+[![discord](https://img.shields.io/discord/1031524867910148188?color=%237289DA&label=discord%20%23leptosfmt)](https://discord.gg/YdRAhS7eQB)
+
+
 
 A formatter for the leptos view! macro
 
