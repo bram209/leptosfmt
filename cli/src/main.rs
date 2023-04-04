@@ -58,6 +58,9 @@ fn main() {
         let print_err = |path: &Path, err| {
             println!("❌ {}", path.display());
             eprintln!("\t\t{}", err);
+            if !settings.allow_changes {
+                panic!("found unformatted file, exiting");
+            }
         };
 
         match result {

@@ -25,3 +25,57 @@ pub fn format_string(file: String, settings: FormatterSettings) -> Result<String
         Ok(formatting)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use indoc::indoc;
+
+    #[test]
+    fn no_allow_changes_incorrect_formatting() {
+        let source = indoc! {r#"
+            fn main() {
+                view! {   cx ,  <div>  <span>"hello"</span></div>  };
+            }
+        "#}
+        .to_string();
+
+        let result = format_string(
+            source,
+            FormatterSettings {
+                allow_changes: false,
+                ..Default::default()
+            },
+        );
+
+        match result {
+            Err(FormatError::IncorrectFormatError) => {}
+            Ok(_) => panic!("expected result to be an err"),
+            Err(_) => panic!("expected result to be of the IncorrectFormatError variant"),
+        }
+    }
+
+    #[test]
+    fn no_allow_changes_correct_formatting() {
+        let source = indoc! {r#"
+        fn main() {
+            view! { cx,
+                <div>
+                    <span>"hello"</span>
+                </div>
+            };
+        }
+        "#}
+        .to_string();
+
+        let result = format_string(
+            source,
+            FormatterSettings {
+                allow_changes: false,
+                ..Default::default()
+            },
+        );
+
+        assert!(result.is_ok());
+    }
+}
