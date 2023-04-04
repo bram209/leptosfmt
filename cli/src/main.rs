@@ -24,7 +24,7 @@ struct Args {
     #[arg(short, long, default_value_t = 4)]
     tab_spaces: usize,
 
-    // Whether or not to update the files
+    /// Whether or not to update the files
     #[arg(short, long, default_value_t = false)]
     check: bool,
 }
