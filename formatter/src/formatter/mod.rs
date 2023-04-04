@@ -16,6 +16,9 @@ pub struct FormatterSettings {
 
     // Number of spaces per tab
     pub tab_spaces: usize,
+
+    // Whether changes should be allowed to the source files
+    pub allow_changes: bool,
 }
 
 impl Default for FormatterSettings {
@@ -23,6 +26,7 @@ impl Default for FormatterSettings {
         Self {
             max_width: 100,
             tab_spaces: 4,
+            allow_changes: true,
         }
     }
 }

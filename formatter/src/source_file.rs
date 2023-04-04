@@ -15,6 +15,8 @@ pub enum FormatError {
     IoError(#[from] io::Error),
     #[error("could not parse file")]
     ParseError(#[from] syn::Error),
+    #[error("found files that needed formatting")]
+    IncorrectFormatError,
 }
 
 #[derive(Debug)]
@@ -93,7 +95,7 @@ mod tests {
     fn it_works() {
         let source = indoc! {r#"
             fn main() {
-                view! {   cx ,  <div>  <span>"hello"</span></div>  }; 
+                view! {   cx ,  <div>  <span>"hello"</span></div>  };
             }
         "#};
 
@@ -104,7 +106,7 @@ mod tests {
                 <div>
                     <span>"hello"</span>
                 </div>
-            }; 
+            };
         }
         "###);
     }
@@ -116,11 +118,11 @@ mod tests {
                 view! {   cx ,  <div>  <span>{
                         let a = 12;
 
-                        view! { cx,             
-                            
+                        view! { cx,
+
                                          <span>{a}</span>
                         }
-                }</span></div>  }; 
+                }</span></div>  };
             }
         "#};
 
@@ -136,7 +138,7 @@ mod tests {
                         }
                     </span>
                 </div>
-            }; 
+            };
         }
         "###);
     }
@@ -145,8 +147,8 @@ mod tests {
     fn multiple() {
         let source = indoc! {r#"
             fn main() {
-                view! {   cx ,  <div>  <span>"hello"</span></div>  }; 
-                view! {   cx ,  <div>  <span>"hello"</span></div>  }; 
+                view! {   cx ,  <div>  <span>"hello"</span></div>  };
+                view! {   cx ,  <div>  <span>"hello"</span></div>  };
             }
         "#};
 
@@ -157,12 +159,12 @@ mod tests {
                 <div>
                     <span>"hello"</span>
                 </div>
-            }; 
+            };
             view! { cx,
                 <div>
                     <span>"hello"</span>
                 </div>
-            }; 
+            };
         }
         "###);
     }

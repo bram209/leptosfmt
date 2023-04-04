@@ -23,6 +23,10 @@ struct Args {
     // Number of spaces per tab
     #[arg(short, long, default_value_t = 4)]
     tab_spaces: usize,
+
+    // Whether or not to update the files
+    #[arg(short, long, default_value_t = false)]
+    check: bool,
 }
 
 fn main() {
@@ -31,6 +35,7 @@ fn main() {
     let settings = FormatterSettings {
         max_width: args.max_width,
         tab_spaces: args.tab_spaces,
+        allow_changes: !args.check,
     };
 
     let is_dir = fs::metadata(&args.input_pattern)
