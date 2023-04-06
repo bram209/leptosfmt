@@ -60,7 +60,7 @@ fn main() {
             println!("❌ {}", path.display());
             eprintln!("\t\t{}", err);
             if !settings.allow_changes {
-                panic!("found unformatted file, exiting");
+                std::process::exit(1);
             }
         };
 

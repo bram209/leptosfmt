@@ -31,7 +31,13 @@ pub(crate) fn format_file_source(
 ) -> Result<String, FormatError> {
     let ast = syn::parse_file(source)?;
     let macros = collect_macros_in_file(&ast);
-    format_source(source, macros, settings)
+
+    let formatted = format_source(source, macros, settings)?;
+    if !settings.allow_changes && source != &formatted {
+        Err(FormatError::IncorrectFormatError)
+    } else {
+        Ok(formatted)
+    }
 }
 
 pub(crate) fn format_expr_source(
@@ -167,5 +173,51 @@ mod tests {
             };
         }
         "###);
+    }
+
+    #[test]
+    fn no_allow_changes_incorrect_formatting() {
+        let source = indoc! {r#"
+            fn main() {
+                view! {   cx ,  <div>  <span>"hello"</span></div>  };
+            }
+        "#};
+
+        let result = format_file_source(
+            source,
+            FormatterSettings {
+                allow_changes: false,
+                ..Default::default()
+            },
+        );
+
+        match result {
+            Err(FormatError::IncorrectFormatError) => {}
+            Ok(_) => panic!("expected result to be an err"),
+            Err(_) => panic!("expected result to be of the IncorrectFormatError variant"),
+        }
+    }
+
+    #[test]
+    fn no_allow_changes_correct_formatting() {
+        let source = indoc! {r#"
+        fn main() {
+            view! { cx,
+                <div>
+                    <span>"hello"</span>
+                </div>
+            };
+        }
+        "#};
+
+        let result = format_file_source(
+            source,
+            FormatterSettings {
+                allow_changes: false,
+                ..Default::default()
+            },
+        );
+
+        assert!(result.is_ok());
     }
 }
