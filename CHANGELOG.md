@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Bug Fixes
+
+- Format view! macro with global class ([#21](https://github.com/bram209/leptosfmt/issues/21))
+
 ### Miscellaneous Tasks
 
 - Make macro collecting functionality public
