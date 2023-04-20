@@ -27,6 +27,9 @@ pub struct FormatterSettings {
 
     // Determines placement of braces around single expression attribute values
     pub attr_value_brace_style: AttributeValueBraceStyle,
+
+    // Whether changes should be allowed to the source files
+    pub allow_changes: bool,
 }
 
 impl Default for FormatterSettings {
@@ -35,6 +38,7 @@ impl Default for FormatterSettings {
             max_width: 100,
             tab_spaces: 4,
             attr_value_brace_style: AttributeValueBraceStyle::WhenRequired,
+            allow_changes: true,
         }
     }
 }

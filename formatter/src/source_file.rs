@@ -15,6 +15,8 @@ pub enum FormatError {
     IoError(#[from] io::Error),
     #[error("could not parse file")]
     ParseError(#[from] syn::Error),
+    #[error("found files that needed formatting")]
+    IncorrectFormatError,
 }
 
 #[derive(Debug)]
@@ -29,7 +31,13 @@ pub(crate) fn format_file_source(
 ) -> Result<String, FormatError> {
     let ast = syn::parse_file(source)?;
     let macros = collect_macros_in_file(&ast);
-    format_source(source, macros, settings)
+
+    let formatted = format_source(source, macros, settings)?;
+    if !settings.allow_changes && source != &formatted {
+        Err(FormatError::IncorrectFormatError)
+    } else {
+        Ok(formatted)
+    }
 }
 
 pub(crate) fn format_expr_source(
@@ -93,7 +101,7 @@ mod tests {
     fn it_works() {
         let source = indoc! {r#"
             fn main() {
-                view! {   cx ,  <div>  <span>"hello"</span></div>  }; 
+                view! {   cx ,  <div>  <span>"hello"</span></div>  };
             }
         "#};
 
@@ -104,7 +112,7 @@ mod tests {
                 <div>
                     <span>"hello"</span>
                 </div>
-            }; 
+            };
         }
         "###);
     }
@@ -116,11 +124,11 @@ mod tests {
                 view! {   cx ,  <div>  <span>{
                         let a = 12;
 
-                        view! { cx,             
-                            
+                        view! { cx,
+
                                          <span>{a}</span>
                         }
-                }</span></div>  }; 
+                }</span></div>  };
             }
         "#};
 
@@ -136,7 +144,7 @@ mod tests {
                         }
                     </span>
                 </div>
-            }; 
+            };
         }
         "###);
     }
@@ -145,8 +153,8 @@ mod tests {
     fn multiple() {
         let source = indoc! {r#"
             fn main() {
-                view! {   cx ,  <div>  <span>"hello"</span></div>  }; 
-                view! {   cx ,  <div>  <span>"hello"</span></div>  }; 
+                view! {   cx ,  <div>  <span>"hello"</span></div>  };
+                view! {   cx ,  <div>  <span>"hello"</span></div>  };
             }
         "#};
 
@@ -157,13 +165,59 @@ mod tests {
                 <div>
                     <span>"hello"</span>
                 </div>
-            }; 
+            };
             view! { cx,
                 <div>
                     <span>"hello"</span>
                 </div>
-            }; 
+            };
         }
         "###);
+    }
+
+    #[test]
+    fn no_allow_changes_incorrect_formatting() {
+        let source = indoc! {r#"
+            fn main() {
+                view! {   cx ,  <div>  <span>"hello"</span></div>  };
+            }
+        "#};
+
+        let result = format_file_source(
+            source,
+            FormatterSettings {
+                allow_changes: false,
+                ..Default::default()
+            },
+        );
+
+        match result {
+            Err(FormatError::IncorrectFormatError) => {}
+            Ok(_) => panic!("expected result to be an err"),
+            Err(_) => panic!("expected result to be of the IncorrectFormatError variant"),
+        }
+    }
+
+    #[test]
+    fn no_allow_changes_correct_formatting() {
+        let source = indoc! {r#"
+        fn main() {
+            view! { cx,
+                <div>
+                    <span>"hello"</span>
+                </div>
+            };
+        }
+        "#};
+
+        let result = format_file_source(
+            source,
+            FormatterSettings {
+                allow_changes: false,
+                ..Default::default()
+            },
+        );
+
+        assert!(result.is_ok());
     }
 }

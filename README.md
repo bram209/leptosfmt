@@ -29,6 +29,7 @@ Arguments:
 Options:
   -m, --max-width <MAX_WIDTH>    [default: 100]
   -t, --tab-spaces <TAB_SPACES>  [default: 4]
+  -c, --check                    Whether or not to update the files
   -h, --help                     Print help
   -V, --version                  Print version
 ```
