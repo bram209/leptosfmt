@@ -59,9 +59,7 @@ fn format_source<'a>(
 
         let start_byte = line_column_to_byte(&source, start);
         let end_byte = line_column_to_byte(&source, end);
-
         let new_text = format_macro(mac, settings);
-        dbg!(start_byte, end_byte);
 
         edits.push(TextEdit {
             range: start_byte..end_byte,
