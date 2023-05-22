@@ -57,9 +57,11 @@ fn format_source<'a>(
             MacroDelimiter::Bracket(delim) => delim.span.end(),
         };
 
-        let start_byte = source.byte_of_line(start.line - 1) + start.column;
-        let end_byte = source.byte_of_line(end.line - 1) + end.column;
+        let start_byte = line_column_to_byte(&source, start);
+        let end_byte = line_column_to_byte(&source, end);
+
         let new_text = format_macro(mac, settings);
+        dbg!(start_byte, end_byte);
 
         edits.push(TextEdit {
             range: start_byte..end_byte,
@@ -81,6 +83,13 @@ fn format_source<'a>(
     }
 
     Ok(source.to_string())
+}
+
+fn line_column_to_byte(source: &Rope, point: proc_macro2::LineColumn) -> usize {
+    let line_byte = source.byte_of_line(point.line - 1);
+    let line = source.line(point.line - 1);
+    let char_byte: usize = line.chars().take(point.column).map(|c| c.len_utf8()).sum();
+    line_byte + char_byte
 }
 
 #[cfg(test)]
@@ -161,6 +170,26 @@ mod tests {
             view! { cx,
                 <div>
                     <span>"hello"</span>
+                </div>
+            }; 
+        }
+        "###);
+    }
+
+    #[test]
+    fn with_special_characters() {
+        let source = indoc! {r#"
+            fn main() {
+                view! {   cx ,  <div>  <span>"hello²💣"</span></div>  }; 
+            }
+        "#};
+
+        let result = format_file_source(source, Default::default()).unwrap();
+        insta::assert_snapshot!(result, @r###"
+        fn main() {
+            view! { cx,
+                <div>
+                    <span>"hello²💣"</span>
                 </div>
             }; 
         }
