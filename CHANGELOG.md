@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file.
 - View! macro bytecode range when contains unicode characters larger than 1 byte ([#22](https://github.com/bram209/leptosfmt/issues/22))
 - Improve identation of view! macro ([#23](https://github.com/bram209/leptosfmt/issues/23))
 
+### Features
+
+- Read settings from a config file ([#25](https://github.com/bram209/leptosfmt/issues/25))
+
 ### Miscellaneous Tasks
 
 - Make macro collecting functionality public
