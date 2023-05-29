@@ -1,5 +1,3 @@
-use std::marker::PhantomData;
-
 use proc_macro2::LineColumn;
 use syn::{
     spanned::Spanned,
@@ -13,7 +11,6 @@ use crate::ViewMacro;
 struct ViewMacroVisitor<'ast> {
     ident_stack: Vec<LineColumn>,
     macros: Vec<ViewMacro<'ast>>,
-    _m: PhantomData<&'ast usize>,
 }
 
 impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
@@ -46,7 +43,6 @@ impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
                 .map(|v| v.column as usize)
                 .min();
 
-            dbg!(&self.ident_stack, span_line, ident);
             if let Some(view_mac) = ViewMacro::try_parse(ident, node) {
                 self.macros.push(view_mac);
             }
