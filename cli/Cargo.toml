@@ -14,3 +14,4 @@ clap = { version = "4.1.11", features = ["derive"] }
 rayon = "1.7.0"
 glob = "0.3.1"
 anyhow = "1.0.70"
+toml = "0.7.4"
