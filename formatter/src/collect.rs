@@ -34,13 +34,13 @@ impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
 
     fn visit_macro(&mut self, node: &'ast Macro) {
         if node.path.is_ident("view") {
-            let span_start = node.span().start().column as usize;
+            let span_start = node.span().start().column;
             let span_line = node.span().start().line;
             let ident = self
                 .ident_stack
                 .iter()
                 .filter(|v| v.line == span_line && v.column < span_start)
-                .map(|v| v.column as usize)
+                .map(|v| v.column)
                 .min();
 
             if let Some(view_mac) = ViewMacro::try_parse(ident, node) {

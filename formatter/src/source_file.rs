@@ -1,7 +1,7 @@
 use std::{io, ops::Range};
 
 use crop::Rope;
-use syn::{parse_str, spanned::Spanned, Expr, Macro, MacroDelimiter};
+use syn::{parse_str, spanned::Spanned, Expr, MacroDelimiter};
 use thiserror::Error;
 
 use crate::{

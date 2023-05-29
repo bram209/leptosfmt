@@ -49,7 +49,7 @@ impl Formatter {
 
         let indent = parent_ident
             .map(|i| i + self.settings.tab_spaces)
-            .unwrap_or(span.start().column as usize);
+            .unwrap_or(span.start().column);
 
         self.printer.cbox(indent as isize);
 
