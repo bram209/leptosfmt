@@ -68,7 +68,7 @@ impl Formatter {
         self.printer.end();
     }
 
-    fn view_macro_nodes(&mut self, nodes: &Vec<Node>) {
+    fn view_macro_nodes(&mut self, nodes: &[Node]) {
         self.printer.cbox_indent();
         self.printer.space();
 
