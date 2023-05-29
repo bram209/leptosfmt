@@ -47,13 +47,9 @@ impl Formatter {
             ..
         } = view_mac;
 
-        let mut indent = parent_ident
+        let indent = parent_ident
             .map(|i| i + self.settings.tab_spaces)
             .unwrap_or(span.start().column as usize);
-
-        // if indent > 0 {
-        //     indent += self.settings.tab_spaces;
-        // }
 
         self.printer.cbox(indent as isize);
 
