@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 - Format view! macro with global class ([#21](https://github.com/bram209/leptosfmt/issues/21))
 - View! macro bytecode range when contains unicode characters larger than 1 byte ([#22](https://github.com/bram209/leptosfmt/issues/22))
+- Improve identation of view! macro ([#23](https://github.com/bram209/leptosfmt/issues/23))
 
 ### Miscellaneous Tasks
 
