@@ -194,17 +194,6 @@ mod tests {
                                                                     </div>
                                                                 }.into_view(cx),
                 };
-
-                {
-                    {
-                        loop {  view! { cx,
-                                <div>
-                                    <div>"Value One"</div>
-                                </div>
-                            };
-                        }
-                    }
-                }
             }
         "#};
 
