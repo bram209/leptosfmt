@@ -88,7 +88,7 @@ fn create_settings(args: &Args) -> anyhow::Result<FormatterSettings> {
         .config_file
         .as_ref()
         .map(|path| {
-            load_config(&path)
+            load_config(path)
                 .with_context(|| format!("failed to load config file: {}", path.display()))
         })
         .unwrap_or_else(|| {
