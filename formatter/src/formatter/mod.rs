@@ -8,6 +8,7 @@ mod mac;
 mod node;
 
 pub use mac::format_macro;
+pub use mac::ViewMacro;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum AttributeValueBraceStyle {

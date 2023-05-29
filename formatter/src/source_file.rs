@@ -1,12 +1,13 @@
 use std::{io, ops::Range};
 
 use crop::Rope;
-use syn::{parse_str, spanned::Spanned, Expr, Macro, MacroDelimiter};
+use syn::{parse_str, spanned::Spanned, Expr, MacroDelimiter};
 use thiserror::Error;
 
 use crate::{
     collect::{collect_macros_in_expr, collect_macros_in_file},
     formatter::{format_macro, FormatterSettings},
+    ViewMacro,
 };
 
 #[derive(Error, Debug)]
@@ -43,13 +44,14 @@ pub(crate) fn format_expr_source(
 
 fn format_source<'a>(
     source: &'a str,
-    macros: Vec<&'a Macro>,
+    macros: Vec<ViewMacro<'a>>,
     settings: FormatterSettings,
 ) -> Result<String, FormatError> {
     let mut source: Rope = source.parse().unwrap();
     let mut edits = Vec::new();
 
-    for mac in macros {
+    for view_mac in macros {
+        let mac = view_mac.inner();
         let start = mac.path.span().start();
         let end = match mac.delimiter {
             MacroDelimiter::Paren(delim) => delim.span.end(),
@@ -59,7 +61,7 @@ fn format_source<'a>(
 
         let start_byte = line_column_to_byte(&source, start);
         let end_byte = line_column_to_byte(&source, end);
-        let new_text = format_macro(mac, settings);
+        let new_text = format_macro(&view_mac, settings);
 
         edits.push(TextEdit {
             range: start_byte..end_byte,
@@ -190,6 +192,62 @@ mod tests {
                     <span>"hello²💣"</span>
                 </div>
             }; 
+        }
+        "###);
+    }
+
+    #[test]
+    fn inside_match_case() {
+        let source = indoc! {r#"
+            use leptos::*;
+
+            enum ExampleEnum {
+                ValueOneWithAReallyLongName,
+                ValueTwoWithAReallyLongName,
+            }
+
+            #[component]
+            fn Component(cx: Scope, val: ExampleEnum) -> impl IntoView {
+                match val {
+                    ExampleEnum::ValueOneWithAReallyLongName => 
+                        view! { cx,
+                                                                    <div>
+                                                                        <div>"Value One"</div>
+                                                                    </div>
+                                                                }.into_view(cx),
+                    ExampleEnum::ValueTwoWithAReallyLongName =>  view! { cx,
+                                                                    <div>
+                                                                        <div>"Value Two"</div>
+                                                                    </div>
+                                                                }.into_view(cx),
+                };
+            }
+        "#};
+
+        let result = format_file_source(source, Default::default()).unwrap();
+        insta::assert_snapshot!(result, @r###"
+        use leptos::*;
+
+        enum ExampleEnum {
+            ValueOneWithAReallyLongName,
+            ValueTwoWithAReallyLongName,
+        }
+
+        #[component]
+        fn Component(cx: Scope, val: ExampleEnum) -> impl IntoView {
+            match val {
+                ExampleEnum::ValueOneWithAReallyLongName => 
+                    view! { cx,
+                        <div>
+                            <div>"Value One"</div>
+                        </div>
+                    }.into_view(cx),
+                ExampleEnum::ValueTwoWithAReallyLongName =>  view! { cx,
+                        <div>
+                            <div>"Value Two"</div>
+                        </div>
+                    }.into_view(cx),
+            };
         }
         "###);
     }
