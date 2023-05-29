@@ -52,6 +52,7 @@ commit_parsers = [
     { message = "^test", group = "Testing" },
     { message = "chore: Release", skip = true },
     { message = "^chore", group = "Miscellaneous Tasks" },
+    { message = "^misc", group = "Miscellaneous Tasks" },
     { body = ".*security", group = "Security" },
 ]
 # protect breaking changes from being skipped due to matching a skipping commit_parser
