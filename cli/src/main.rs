@@ -4,9 +4,10 @@ use std::{
     time::Instant,
 };
 
+use anyhow::Context;
 use clap::Parser;
 use glob::glob;
-use leptosfmt_formatter::{format_file, AttributeValueBraceStyle, FormatterSettings};
+use leptosfmt_formatter::{format_file, FormatterSettings};
 use rayon::{iter::ParallelIterator, prelude::IntoParallelIterator};
 
 /// A formatter for Leptos RSX sytnax
@@ -17,22 +18,25 @@ struct Args {
     input_pattern: String,
 
     // Maximum width of each line
-    #[arg(short, long, default_value_t = 100)]
-    max_width: usize,
+    #[arg(short, long)]
+    max_width: Option<usize>,
 
     // Number of spaces per tab
-    #[arg(short, long, default_value_t = 4)]
-    tab_spaces: usize,
+    #[arg(short, long)]
+    tab_spaces: Option<usize>,
+
+    // Config file
+    #[arg(short, long)]
+    config_file: Option<PathBuf>,
 }
 
 fn main() {
     let args = Args::parse();
 
-    let settings = FormatterSettings {
-        max_width: args.max_width,
-        tab_spaces: args.tab_spaces,
-        attr_value_brace_style: AttributeValueBraceStyle::WhenRequired,
-    };
+    let settings = create_settings(&args).unwrap();
+
+    // Print settings
+    println!("{}", toml::to_string_pretty(&settings).unwrap());
 
     let is_dir = fs::metadata(&args.input_pattern)
         .map(|meta| meta.is_dir())
@@ -77,4 +81,41 @@ fn format_glob_result(file: &PathBuf, settings: FormatterSettings) -> anyhow::Re
         .map_err(|e| anyhow::anyhow!(e.downcast::<String>().unwrap()))??;
     fs::write(file, formatted)?;
     Ok(())
+}
+
+fn create_settings(args: &Args) -> anyhow::Result<FormatterSettings> {
+    let mut settings = args
+        .config_file
+        .as_ref()
+        .map(|path| {
+            load_config(path)
+                .with_context(|| format!("failed to load config file: {}", path.display()))
+        })
+        .unwrap_or_else(|| {
+            let default_config: PathBuf = "leptosfmt.toml".into();
+            if default_config.exists() {
+                load_config(&default_config).with_context(|| {
+                    format!("failed to load config file: {}", default_config.display())
+                })
+            } else {
+                Ok(FormatterSettings::default())
+            }
+        })?;
+
+    if let Some(max_width) = args.max_width {
+        settings.max_width = max_width;
+    }
+
+    if let Some(tab_spaces) = args.tab_spaces {
+        settings.tab_spaces = tab_spaces;
+    }
+    Ok(settings)
+}
+
+fn load_config(path: &PathBuf) -> anyhow::Result<FormatterSettings> {
+    let config = fs::read_to_string(path).context("could not read config file")?;
+    let settings: FormatterSettings =
+        toml::from_str(&config).context("could not parse config file")?;
+
+    Ok(settings)
 }

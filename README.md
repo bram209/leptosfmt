@@ -27,10 +27,21 @@ Arguments:
   <INPUT_PATTERN>  A file, directory or glob
 
 Options:
-  -m, --max-width <MAX_WIDTH>    [default: 100]
-  -t, --tab-spaces <TAB_SPACES>  [default: 4]
+  -m, --max-width <MAX_WIDTH>    
+  -t, --tab-spaces <TAB_SPACES>  
+  -c, --config_file <CONFIG_FILE>          
   -h, --help                     Print help
   -V, --version                  Print version
+```
+
+## Configuration
+You can configure all settings through a `leptosfmt.toml` file.
+
+```toml
+max_width = 100
+tab_spaces = 4
+attr_value_brace_style = "WhenRequired" # "Always", "AlwaysUnlessLit", "WhenRequired" or "Preserve"
+
 ```
 
 ## Examples
