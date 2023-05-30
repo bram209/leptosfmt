@@ -2,7 +2,7 @@ use syn_rsx::{Node, NodeElement};
 
 use crate::formatter::Formatter;
 
-impl Formatter {
+impl Formatter<'_> {
     pub fn element(&mut self, element: &NodeElement) {
         let name = element.name.to_string();
         let is_void = is_void_element(&name, !element.children.is_empty());
@@ -135,9 +135,11 @@ mod tests {
     macro_rules! format_element {
         ($($tt:tt)*) => {{
             let element = element! { $($tt)* };
-            let mut formatter = Formatter::new(FormatterSettings { max_width: 40, ..Default::default() });
+            let settings = FormatterSettings { max_width: 40, ..Default::default() };
+            let mut printer = leptosfmt_pretty_printer::Printer::new((&settings).into());
+            let mut formatter = Formatter::new(settings, &mut printer);
             formatter.element(&element);
-            formatter.printer.eof()
+            printer.eof()
         }};
     }
 

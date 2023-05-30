@@ -2,7 +2,7 @@ use syn_rsx::NodeFragment;
 
 use crate::formatter::Formatter;
 
-impl Formatter {
+impl Formatter<'_> {
     pub fn fragment(&mut self, fragment: &NodeFragment) {
         self.printer.word("<>");
         self.children(&fragment.children, 0);
@@ -20,9 +20,11 @@ mod tests {
     macro_rules! format_fragment {
         ($($tt:tt)*) => {{
             let fragment = fragment! { $($tt)* };
-            let mut formatter = Formatter::new(FormatterSettings { max_width: 40, ..Default::default() });
+            let settings = FormatterSettings { max_width: 40, ..Default::default() };
+            let mut printer = leptosfmt_pretty_printer::Printer::new((&settings).into());
+            let mut formatter = Formatter::new(settings, &mut printer);
             formatter.fragment(&fragment);
-            formatter.printer.eof()
+            printer.eof()
         }};
     }
 

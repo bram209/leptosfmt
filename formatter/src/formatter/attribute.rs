@@ -2,7 +2,7 @@ use syn_rsx::{NodeAttribute, NodeValueExpr};
 
 use crate::{formatter::Formatter, AttributeValueBraceStyle as Braces};
 
-impl Formatter {
+impl Formatter<'_> {
     pub fn attribute(&mut self, attribute: &NodeAttribute) {
         self.node_name(&attribute.key);
 
@@ -32,6 +32,7 @@ impl Formatter {
 #[cfg(test)]
 mod tests {
     use insta::assert_snapshot;
+    use leptosfmt_pretty_printer::Printer;
 
     use crate::{
         formatter::{AttributeValueBraceStyle, Formatter, FormatterSettings},
@@ -41,21 +42,24 @@ mod tests {
     macro_rules! format_attribute {
         ($($tt:tt)*) => {{
             let attr = attribute! { $($tt)* };
-            let mut formatter = Formatter::new(FormatterSettings::default());
+            let mut printer = Printer::new((&FormatterSettings::default()).into());
+            let mut formatter = Formatter::new(FormatterSettings::default(), &mut printer);
             formatter.attribute(&attr);
-            formatter.printer.eof()
+            printer.eof()
         }};
     }
 
     macro_rules! format_attr_with_brace_style {
         ($style:ident => $($tt:tt)*) => {{
             let attr = attribute! { $($tt)* };
-            let mut formatter = Formatter::new(FormatterSettings {
+            let settings = FormatterSettings {
                 attr_value_brace_style:  AttributeValueBraceStyle:: $style,
                 ..FormatterSettings::default()
-        });
+            };
+            let mut printer = Printer::new((&settings).into());
+            let mut formatter = Formatter::new(settings, &mut printer);
             formatter.attribute(&attr);
-            formatter.printer.eof()
+            printer.eof()
         }};
     }
 

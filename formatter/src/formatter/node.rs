@@ -2,7 +2,7 @@ use syn_rsx::{Node, NodeBlock, NodeComment, NodeDoctype, NodeName, NodeText};
 
 use crate::formatter::Formatter;
 
-impl Formatter {
+impl Formatter<'_> {
     pub fn node(&mut self, node: &Node) {
         match node {
             Node::Element(ele) => self.element(ele),
@@ -44,22 +44,27 @@ impl Formatter {
 mod tests {
     use crate::formatter::*;
     use crate::test_helpers::{comment, doctype};
+    use leptosfmt_pretty_printer::Printer;
 
     macro_rules! format_comment {
         ($($tt:tt)*) => {{
             let comment = comment! { $($tt)* };
-            let mut formatter = Formatter::new(FormatterSettings { max_width: 40, ..Default::default() });
+            let settings = FormatterSettings { max_width: 40, ..Default::default() };
+            let mut printer = Printer::new((&settings).into());
+            let mut formatter = Formatter::new(settings, &mut printer);
             formatter.comment(&comment);
-            formatter.printer.eof()
+            printer.eof()
         }};
     }
 
     macro_rules! format_doctype {
         ($($tt:tt)*) => {{
             let doctype = doctype! { $($tt)* };
-            let mut formatter = Formatter::new(FormatterSettings { max_width: 40, ..Default::default() });
+            let settings = FormatterSettings { max_width: 40, ..Default::default() };
+            let mut printer = Printer::new((&settings).into());
+            let mut formatter = Formatter::new(settings, &mut printer);
             formatter.doctype(&doctype);
-            formatter.printer.eof()
+            printer.eof()
         }};
     }
 

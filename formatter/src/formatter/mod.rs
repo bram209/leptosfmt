@@ -53,16 +53,13 @@ impl From<&FormatterSettings> for PrinterSettings {
     }
 }
 
-pub struct Formatter {
-    pub printer: Printer,
+pub struct Formatter<'a> {
+    pub printer: &'a mut leptosfmt_pretty_printer::Printer,
     pub settings: FormatterSettings,
 }
 
-impl Formatter {
-    pub fn new(settings: FormatterSettings) -> Self {
-        Self {
-            printer: Printer::new((&settings).into()),
-            settings,
-        }
+impl<'a> Formatter<'a> {
+    pub fn new(settings: FormatterSettings, printer: &'a mut Printer) -> Self {
+        Self { printer, settings }
     }
 }
