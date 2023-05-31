@@ -1,19 +1,27 @@
-use syn_rsx::{NodeAttribute, NodeValueExpr};
+use rstml::node::{NodeAttribute, KeyedAttribute};
+use syn::Expr;
 
 use crate::{formatter::Formatter, AttributeValueBraceStyle as Braces};
 
 impl Formatter<'_> {
     pub fn attribute(&mut self, attribute: &NodeAttribute) {
+        match attribute {
+            NodeAttribute::Attribute(k) => self.keyed_attribute(k),
+            NodeAttribute::Block(b) => self.node_block(b),
+        }
+    }
+
+    pub fn keyed_attribute(&mut self, attribute: &KeyedAttribute) {
         self.node_name(&attribute.key);
 
-        if let Some(value) = &attribute.value {
+        if let Some(value) = attribute.value() {
             self.printer.word("=");
             self.attribute_value(value);
         }
     }
 
-    fn attribute_value(&mut self, value: &NodeValueExpr) {
-        match (self.settings.attr_value_brace_style, value.as_ref()) {
+    fn attribute_value(&mut self, value: &Expr) {
+        match (self.settings.attr_value_brace_style, value) {
             (Braces::Always, syn::Expr::Block(_)) => self.node_value_expr(value, false, false),
             (Braces::AlwaysUnlessLit, syn::Expr::Block(_) | syn::Expr::Lit(_)) => {
                 self.node_value_expr(value, false, true)

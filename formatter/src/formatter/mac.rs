@@ -1,7 +1,7 @@
 use leptosfmt_pretty_printer::Printer;
 use proc_macro2::{token_stream, Span, TokenStream, TokenTree};
 use syn::{spanned::Spanned, Macro};
-use syn_rsx::Node;
+use rstml::node::Node;
 
 use super::{Formatter, FormatterSettings};
 
@@ -20,7 +20,7 @@ impl<'a> ViewMacro<'a> {
         let (Some(cx), Some(_comma)) = (tokens.next(), tokens.next()) else { return None; };
 
         let Some((tokens, global_class)) = extract_global_class(tokens) else { return None; };
-        let nodes = syn_rsx::parse2(tokens).ok()?;
+        let nodes = rstml::parse2(tokens).ok()?;
 
         Some(Self {
             parent_ident,

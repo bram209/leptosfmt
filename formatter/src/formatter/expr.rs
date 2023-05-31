@@ -1,35 +1,57 @@
-use syn::ExprLit;
-use syn_rsx::NodeValueExpr;
+use syn::{Block, Expr, ExprBlock, ExprLit, LitStr};
 
 use crate::{formatter::Formatter, view_macro::ViewMacroFormatter};
 
 impl Formatter<'_> {
+    pub fn literal_str(&mut self, string: &LitStr) {
+        let val = format!("\"{}\"", string.value());
+        self.printer.word(val);
+    }
+
+    pub fn node_value_block(
+        &mut self,
+        block: &Block,
+        unwrap_single_expr_blocks: bool,
+        unwrap_single_lit_blocks: bool,
+    ) {
+        if let [syn::Stmt::Expr(single_expr, None)] = &block.stmts[..] {
+            // wrap with braces and do NOT insert spaces
+            if unwrap_single_expr_blocks
+                || (unwrap_single_lit_blocks && matches!(single_expr, syn::Expr::Lit(_)))
+            {
+                self.expr(single_expr);
+            } else {
+                self.printer.word("{");
+                self.expr(single_expr);
+                self.printer.word("}");
+            }
+            return;
+        }
+
+        self.expr(&Expr::Block(ExprBlock {
+            attrs: vec![],
+            label: None,
+            block: block.clone(),
+        }))
+    }
     pub fn node_value_expr(
         &mut self,
-        value: &NodeValueExpr,
+        value: &syn::Expr,
         unwrap_single_expr_blocks: bool,
         unwrap_single_lit_blocks: bool,
     ) {
         // if single line expression, format as '{expr}' instead of '{ expr }' (prettyplease inserts a space)
-        if let syn::Expr::Block(expr_block) = value.as_ref() {
+        if let syn::Expr::Block(expr_block) = value {
             if expr_block.attrs.is_empty() {
-                if let [syn::Stmt::Expr(single_expr, _)] = &expr_block.block.stmts[..] {
-                    // wrap with braces and do NOT insert spaces
-                    if unwrap_single_expr_blocks
-                        || (unwrap_single_lit_blocks && matches!(single_expr, syn::Expr::Lit(_)))
-                    {
-                        self.expr(single_expr);
-                    } else {
-                        self.printer.word("{");
-                        self.expr(single_expr);
-                        self.printer.word("}");
-                    }
-                    return;
-                }
+                return self.node_value_block(
+                    &expr_block.block,
+                    unwrap_single_expr_blocks,
+                    unwrap_single_lit_blocks,
+                );
             }
         }
 
-        self.expr(value.as_ref())
+        self.expr(value)
     }
 
     fn expr(&mut self, expr: &syn::Expr) {
