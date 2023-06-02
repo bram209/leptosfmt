@@ -33,10 +33,9 @@ impl Formatter<'_> {
 
     pub fn raw_text(&mut self, text: &RawText, use_source_text: bool) {
         let text = if use_source_text {
-            text.to_source_text(true)
+            text.to_source_text(false)
                 .expect("Cannot format unquoted text, no source text available, or unquoted text is used outside of element.")
-        }
-        else {
+        } else {
             text.to_token_stream_string()
         };
         // TODO: can convert it to quoted if need

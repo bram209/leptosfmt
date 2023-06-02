@@ -4,8 +4,10 @@ use crate::{formatter::Formatter, view_macro::ViewMacroFormatter};
 
 impl Formatter<'_> {
     pub fn literal_str(&mut self, string: &LitStr) {
-        let val = format!("\"{}\"", string.value());
-        self.printer.word(val);
+        self.expr(&Expr::Lit(ExprLit {
+            attrs: vec![],
+            lit: syn::Lit::Str(string.clone()),
+        }));
     }
 
     pub fn node_value_block(

@@ -19,6 +19,18 @@ macro_rules! element {
     }};
 }
 
+// Same as element, but use string representation of token stream.
+// This is usefull when testing unquoted text,
+// because current `quote!` implementation cannot provide `Span::source_text`
+// that is used in `raw_text` handler
+macro_rules! element_from_string {
+    ($val: expr) => {{
+        let tokens = <proc_macro2::TokenStream as std::str::FromStr>::from_str($val).unwrap();
+        let nodes = rstml::parse2(tokens).unwrap();
+        crate::test_helpers::get_element(nodes, 0)
+    }};
+}
+
 macro_rules! fragment {
     ($($tt:tt)*) => {
         {
@@ -50,6 +62,7 @@ pub(crate) use attribute;
 pub(crate) use comment;
 pub(crate) use doctype;
 pub(crate) use element;
+pub(crate) use element_from_string;
 pub(crate) use fragment;
 
 use crate::{Formatter, FormatterSettings};

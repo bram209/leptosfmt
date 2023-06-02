@@ -1,7 +1,7 @@
 use leptosfmt_pretty_printer::Printer;
 use proc_macro2::{token_stream, Span, TokenStream, TokenTree};
-use syn::{spanned::Spanned, Macro};
 use rstml::node::Node;
+use syn::{spanned::Spanned, Macro};
 
 use super::{Formatter, FormatterSettings};
 

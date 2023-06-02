@@ -1,4 +1,4 @@
-use rstml::node::{Node, NodeElement, NodeAttribute};
+use rstml::node::{Node, NodeAttribute, NodeElement};
 
 use crate::formatter::Formatter;
 
@@ -129,7 +129,7 @@ fn is_void_element(name: &str, has_children: bool) -> bool {
 mod tests {
     use crate::{
         formatter::FormatterSettings,
-        test_helpers::{element, format_with},
+        test_helpers::{element, element_from_string, format_with},
     };
 
     macro_rules! format_element {
@@ -138,6 +138,19 @@ mod tests {
             format_with(FormatterSettings { max_width: 40, ..Default::default() }, |formatter| {
                 formatter.element(&element)
             })
+        }};
+    }
+    macro_rules! fromat_element_from_string {
+        ($val:expr) => {{
+            let element = element_from_string! { $val };
+
+            format_with(
+                FormatterSettings {
+                    max_width: 40,
+                    ..Default::default()
+                },
+                |formatter| formatter.element(&element),
+            )
         }};
     }
 
@@ -225,5 +238,27 @@ mod tests {
             ". Increment by one is this: " {count + 1}
         </div>
         "###);
+    }
+
+    #[test]
+    fn html_unquoted_text2() {
+        let formatted = fromat_element_from_string!(r##"<div> Unquoted text with  spaces </div>"##);
+        insta::assert_snapshot!(formatted, @r#"
+        <div>
+            Unquoted text with  spaces
+        </div>"#);
+    }
+
+    #[test]
+    fn html_unquoted_text_multiline() {
+        let formatted = fromat_element_from_string!(
+            r##"<div> Unquoted text
+            with  spaces </div>"##
+        );
+        insta::assert_snapshot!(formatted, @r###"
+        <div>
+            Unquoted text
+                    with  spaces
+        </div>"###);
     }
 }

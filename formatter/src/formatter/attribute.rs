@@ -1,4 +1,4 @@
-use rstml::node::{NodeAttribute, KeyedAttribute};
+use rstml::node::{KeyedAttribute, NodeAttribute};
 use syn::Expr;
 
 use crate::{formatter::Formatter, AttributeValueBraceStyle as Braces};
