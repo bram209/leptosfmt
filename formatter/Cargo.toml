@@ -10,7 +10,7 @@ description = "view macro formatter for the Leptos web framework"
 [dependencies]
 leptosfmt-pretty-printer.workspace = true
 syn-rsx = { git = "https://github.com/dgsantana/syn-rsx.git", branch = "update_syn" }
-syn = { version = "2.0.16", features = [ "visit", "full", "extra-traits" ] }
+syn = { version = "2.0.18", features = [ "visit", "full", "extra-traits" ] }
 leptosfmt-prettyplease = { features = [
     "verbatim",
 ], path = "../../prettyplease" }
