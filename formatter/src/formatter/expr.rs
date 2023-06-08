@@ -1,24 +1,7 @@
-use leptosfmt_prettyplease::MacroFormatter;
 use syn::ExprLit;
 use syn_rsx::NodeValueExpr;
 
-use crate::{formatter::Formatter, FormatterSettings, ViewMacro};
-
-struct ViewMacroFormatter {
-    settings: FormatterSettings,
-}
-
-impl MacroFormatter for ViewMacroFormatter {
-    fn accept(&self, mac: &syn::Macro) -> bool {
-        mac.path.is_ident("view")
-    }
-
-    fn format(&self, printer: &mut leptosfmt_pretty_printer::Printer, mac: &syn::Macro) {
-        let mut formatter = Formatter::new(self.settings, printer);
-        let m = ViewMacro::try_parse(None, mac).unwrap();
-        formatter.view_macro(&m);
-    }
-}
+use crate::{formatter::Formatter, view_macro::ViewMacroFormatter};
 
 impl Formatter<'_> {
     pub fn node_value_expr(
@@ -71,9 +54,7 @@ impl Formatter<'_> {
         leptosfmt_prettyplease::unparse_expr(
             expr,
             self.printer,
-            Some(&ViewMacroFormatter {
-                settings: self.settings,
-            }),
+            Some(&ViewMacroFormatter::new(self.settings)),
         );
     }
 }

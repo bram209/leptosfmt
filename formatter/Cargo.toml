@@ -11,7 +11,7 @@ description = "view macro formatter for the Leptos web framework"
 leptosfmt-pretty-printer.workspace = true
 syn-rsx = { git = "https://github.com/dgsantana/syn-rsx.git", branch = "update_syn" }
 syn = { version = "2.0.18", features = [ "visit", "full", "extra-traits" ] }
-leptosfmt-prettyplease = { features = [ "verbatim" ], version = "0.2.10" }
+leptosfmt-prettyplease = { features = [ "verbatim" ], version = "0.2.11" }
 proc-macro2 = { version = "1.0.52", features = [ "span-locations" ] }
 thiserror = "1.0.40"
 crop = "0.3.0"
