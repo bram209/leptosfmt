@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### Miscellaneous Tasks
+
+- Share printer implementation with leptosfmt-prettyplease ([#31](https://github.com/bram209/leptosfmt/issues/31))
+
 ## [0.1.5] - 2023-05-29
 
 ### Bug Fixes
