@@ -43,17 +43,15 @@ impl Formatter<'_> {
 #[cfg(test)]
 mod tests {
     use crate::formatter::*;
-    use crate::test_helpers::{comment, doctype};
-    use leptosfmt_pretty_printer::Printer;
+    use crate::test_helpers::{comment, doctype, format_with};
 
     macro_rules! format_comment {
         ($($tt:tt)*) => {{
             let comment = comment! { $($tt)* };
             let settings = FormatterSettings { max_width: 40, ..Default::default() };
-            let mut printer = Printer::new((&settings).into());
-            let mut formatter = Formatter::new(settings, &mut printer);
-            formatter.comment(&comment);
-            printer.eof()
+            format_with(settings, |formatter| {
+                formatter.comment(&comment);
+            })
         }};
     }
 
@@ -61,10 +59,9 @@ mod tests {
         ($($tt:tt)*) => {{
             let doctype = doctype! { $($tt)* };
             let settings = FormatterSettings { max_width: 40, ..Default::default() };
-            let mut printer = Printer::new((&settings).into());
-            let mut formatter = Formatter::new(settings, &mut printer);
-            formatter.doctype(&doctype);
-            printer.eof()
+            format_with(settings, |formatter| {
+                formatter.doctype(&doctype);
+            })
         }};
     }
 

@@ -1,3 +1,4 @@
+use leptosfmt_pretty_printer::Printer;
 use proc_macro2::{token_stream, Span, TokenStream, TokenTree};
 use syn::{spanned::Spanned, Macro};
 use syn_rsx::Node;
@@ -121,7 +122,7 @@ fn extract_global_class(
 }
 
 pub fn format_macro(mac: &ViewMacro, settings: &FormatterSettings) -> String {
-    let mut printer = leptosfmt_pretty_printer::Printer::new(settings.into());
+    let mut printer = Printer::new(settings.into());
     let mut formatter = Formatter::new(*settings, &mut printer);
 
     formatter.view_macro(mac);

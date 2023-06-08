@@ -128,18 +128,16 @@ fn is_void_element(name: &str, has_children: bool) -> bool {
 #[cfg(test)]
 mod tests {
     use crate::{
-        formatter::{Formatter, FormatterSettings},
-        test_helpers::element,
+        formatter::{FormatterSettings},
+        test_helpers::{element, format_with},
     };
 
     macro_rules! format_element {
         ($($tt:tt)*) => {{
             let element = element! { $($tt)* };
-            let settings = FormatterSettings { max_width: 40, ..Default::default() };
-            let mut printer = leptosfmt_pretty_printer::Printer::new((&settings).into());
-            let mut formatter = Formatter::new(settings, &mut printer);
-            formatter.element(&element);
-            printer.eof()
+            format_with(FormatterSettings { max_width: 40, ..Default::default() }, |formatter| {
+                formatter.element(&element)
+            })
         }};
     }
 

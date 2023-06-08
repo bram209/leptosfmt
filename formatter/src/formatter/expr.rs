@@ -81,16 +81,16 @@ impl Formatter<'_> {
 #[cfg(test)]
 mod tests {
     use crate::formatter::*;
-    use crate::test_helpers::element;
+    use crate::test_helpers::{element, format_with};
 
     macro_rules! format_element {
         ($($tt:tt)*) => {{
             let comment = element! { $($tt)* };
             let settings = FormatterSettings { max_width: 40, ..Default::default() };
-            let mut printer = Printer::new((&settings).into());
-            let mut formatter = Formatter::new(settings, &mut printer);
-            formatter.element(&comment);
-            printer.eof()
+
+            format_with(settings, |formatter| {
+                formatter.element(&comment);
+            })
         }};
     }
 

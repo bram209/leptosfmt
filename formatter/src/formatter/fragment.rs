@@ -13,18 +13,17 @@ impl Formatter<'_> {
 #[cfg(test)]
 mod tests {
     use crate::{
-        formatter::{Formatter, FormatterSettings},
-        test_helpers::fragment,
+        formatter::FormatterSettings,
+        test_helpers::{format_with, fragment},
     };
 
     macro_rules! format_fragment {
         ($($tt:tt)*) => {{
             let fragment = fragment! { $($tt)* };
             let settings = FormatterSettings { max_width: 40, ..Default::default() };
-            let mut printer = leptosfmt_pretty_printer::Printer::new((&settings).into());
-            let mut formatter = Formatter::new(settings, &mut printer);
-            formatter.fragment(&fragment);
-            printer.eof()
+            format_with(settings, |formatter| {
+                formatter.fragment(&fragment);
+            })
         }};
     }
 

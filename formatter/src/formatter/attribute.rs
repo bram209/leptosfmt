@@ -32,20 +32,18 @@ impl Formatter<'_> {
 #[cfg(test)]
 mod tests {
     use insta::assert_snapshot;
-    use leptosfmt_pretty_printer::Printer;
 
     use crate::{
-        formatter::{AttributeValueBraceStyle, Formatter, FormatterSettings},
-        test_helpers::attribute,
+        formatter::{AttributeValueBraceStyle, FormatterSettings},
+        test_helpers::{attribute, format_with},
     };
 
     macro_rules! format_attribute {
         ($($tt:tt)*) => {{
             let attr = attribute! { $($tt)* };
-            let mut printer = Printer::new((&FormatterSettings::default()).into());
-            let mut formatter = Formatter::new(FormatterSettings::default(), &mut printer);
-            formatter.attribute(&attr);
-            printer.eof()
+            format_with(FormatterSettings::default(), |formatter| {
+                formatter.attribute(&attr);
+            })
         }};
     }
 
@@ -56,10 +54,10 @@ mod tests {
                 attr_value_brace_style:  AttributeValueBraceStyle:: $style,
                 ..FormatterSettings::default()
             };
-            let mut printer = Printer::new((&settings).into());
-            let mut formatter = Formatter::new(settings, &mut printer);
-            formatter.attribute(&attr);
-            printer.eof()
+
+            format_with(settings, |formatter| {
+                formatter.attribute(&attr);
+            })
         }};
     }
 
