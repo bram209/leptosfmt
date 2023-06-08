@@ -128,7 +128,7 @@ fn is_void_element(name: &str, has_children: bool) -> bool {
 #[cfg(test)]
 mod tests {
     use crate::{
-        formatter::{FormatterSettings},
+        formatter::FormatterSettings,
         test_helpers::{element, format_with},
     };
 
