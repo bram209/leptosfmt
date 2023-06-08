@@ -2,7 +2,7 @@ use syn_rsx::NodeFragment;
 
 use crate::formatter::Formatter;
 
-impl Formatter {
+impl Formatter<'_> {
     pub fn fragment(&mut self, fragment: &NodeFragment) {
         self.printer.word("<>");
         self.children(&fragment.children, 0);
@@ -13,16 +13,17 @@ impl Formatter {
 #[cfg(test)]
 mod tests {
     use crate::{
-        formatter::{Formatter, FormatterSettings},
-        test_helpers::fragment,
+        formatter::FormatterSettings,
+        test_helpers::{format_with, fragment},
     };
 
     macro_rules! format_fragment {
         ($($tt:tt)*) => {{
             let fragment = fragment! { $($tt)* };
-            let mut formatter = Formatter::new(FormatterSettings { max_width: 40, ..Default::default() });
-            formatter.fragment(&fragment);
-            formatter.printer.eof()
+            let settings = FormatterSettings { max_width: 40, ..Default::default() };
+            format_with(settings, |formatter| {
+                formatter.fragment(&fragment);
+            })
         }};
     }
 

@@ -2,7 +2,7 @@ use syn_rsx::{Node, NodeBlock, NodeComment, NodeDoctype, NodeName, NodeText};
 
 use crate::formatter::Formatter;
 
-impl Formatter {
+impl Formatter<'_> {
     pub fn node(&mut self, node: &Node) {
         match node {
             Node::Element(ele) => self.element(ele),
@@ -43,23 +43,25 @@ impl Formatter {
 #[cfg(test)]
 mod tests {
     use crate::formatter::*;
-    use crate::test_helpers::{comment, doctype};
+    use crate::test_helpers::{comment, doctype, format_with};
 
     macro_rules! format_comment {
         ($($tt:tt)*) => {{
             let comment = comment! { $($tt)* };
-            let mut formatter = Formatter::new(FormatterSettings { max_width: 40, ..Default::default() });
-            formatter.comment(&comment);
-            formatter.printer.eof()
+            let settings = FormatterSettings { max_width: 40, ..Default::default() };
+            format_with(settings, |formatter| {
+                formatter.comment(&comment);
+            })
         }};
     }
 
     macro_rules! format_doctype {
         ($($tt:tt)*) => {{
             let doctype = doctype! { $($tt)* };
-            let mut formatter = Formatter::new(FormatterSettings { max_width: 40, ..Default::default() });
-            formatter.doctype(&doctype);
-            formatter.printer.eof()
+            let settings = FormatterSettings { max_width: 40, ..Default::default() };
+            format_with(settings, |formatter| {
+                formatter.doctype(&doctype);
+            })
         }};
     }
 

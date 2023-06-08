@@ -2,7 +2,7 @@ use syn_rsx::{NodeAttribute, NodeValueExpr};
 
 use crate::{formatter::Formatter, AttributeValueBraceStyle as Braces};
 
-impl Formatter {
+impl Formatter<'_> {
     pub fn attribute(&mut self, attribute: &NodeAttribute) {
         self.node_name(&attribute.key);
 
@@ -34,28 +34,30 @@ mod tests {
     use insta::assert_snapshot;
 
     use crate::{
-        formatter::{AttributeValueBraceStyle, Formatter, FormatterSettings},
-        test_helpers::attribute,
+        formatter::{AttributeValueBraceStyle, FormatterSettings},
+        test_helpers::{attribute, format_with},
     };
 
     macro_rules! format_attribute {
         ($($tt:tt)*) => {{
             let attr = attribute! { $($tt)* };
-            let mut formatter = Formatter::new(FormatterSettings::default());
-            formatter.attribute(&attr);
-            formatter.printer.eof()
+            format_with(FormatterSettings::default(), |formatter| {
+                formatter.attribute(&attr);
+            })
         }};
     }
 
     macro_rules! format_attr_with_brace_style {
         ($style:ident => $($tt:tt)*) => {{
             let attr = attribute! { $($tt)* };
-            let mut formatter = Formatter::new(FormatterSettings {
+            let settings = FormatterSettings {
                 attr_value_brace_style:  AttributeValueBraceStyle:: $style,
                 ..FormatterSettings::default()
-        });
-            formatter.attribute(&attr);
-            formatter.printer.eof()
+            };
+
+            format_with(settings, |formatter| {
+                formatter.attribute(&attr);
+            })
         }};
     }
 

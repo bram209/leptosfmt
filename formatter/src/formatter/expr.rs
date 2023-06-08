@@ -1,8 +1,9 @@
+use syn::ExprLit;
 use syn_rsx::NodeValueExpr;
 
-use crate::{formatter::Formatter, source_file::format_expr_source};
+use crate::{formatter::Formatter, view_macro::ViewMacroFormatter};
 
-impl Formatter {
+impl Formatter<'_> {
     pub fn node_value_expr(
         &mut self,
         value: &NodeValueExpr,
@@ -12,7 +13,7 @@ impl Formatter {
         // if single line expression, format as '{expr}' instead of '{ expr }' (prettyplease inserts a space)
         if let syn::Expr::Block(expr_block) = value.as_ref() {
             if expr_block.attrs.is_empty() {
-                if let [syn::Stmt::Expr(single_expr)] = &expr_block.block.stmts[..] {
+                if let [syn::Stmt::Expr(single_expr, _)] = &expr_block.block.stmts[..] {
                     // wrap with braces and do NOT insert spaces
                     if unwrap_single_expr_blocks
                         || (unwrap_single_lit_blocks && matches!(single_expr, syn::Expr::Lit(_)))
@@ -32,36 +33,45 @@ impl Formatter {
     }
 
     fn expr(&mut self, expr: &syn::Expr) {
-        let formatted = leptosfmt_prettyplease::unparse_expr(expr);
-        let formatted = format_expr_source(&formatted, self.settings).unwrap_or(formatted);
-
-        let left_aligned = matches!(expr, syn::Expr::Lit(_));
-        let mut iter = formatted.lines().peekable();
-        while let Some(line) = iter.next() {
-            if left_aligned {
+        if let syn::Expr::Lit(ExprLit {
+            lit: syn::Lit::Str(_),
+            ..
+        }) = expr
+        {
+            use syn::__private::ToTokens;
+            let source = expr.to_token_stream().to_string();
+            let mut iter = source.lines().peekable();
+            while let Some(line) = iter.next() {
                 self.printer.word(line.trim_start().to_owned());
-            } else {
-                self.printer.word(line.to_owned());
-            };
 
-            if iter.peek().is_some() {
-                self.printer.hardbreak();
+                if iter.peek().is_some() {
+                    self.printer.hardbreak();
+                }
             }
+            return;
         }
+
+        leptosfmt_prettyplease::unparse_expr(
+            expr,
+            self.printer,
+            Some(&ViewMacroFormatter::new(self.settings)),
+        );
     }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::formatter::*;
-    use crate::test_helpers::element;
+    use crate::test_helpers::{element, format_with};
 
     macro_rules! format_element {
         ($($tt:tt)*) => {{
             let comment = element! { $($tt)* };
-            let mut formatter = Formatter::new(FormatterSettings { max_width: 40, ..Default::default() });
-            formatter.element(&comment);
-            formatter.printer.eof()
+            let settings = FormatterSettings { max_width: 40, ..Default::default() };
+
+            format_with(settings, |formatter| {
+                formatter.element(&comment);
+            })
         }};
     }
 

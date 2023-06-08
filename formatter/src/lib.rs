@@ -5,6 +5,7 @@ use source_file::{format_file_source, FormatError};
 mod collect;
 mod formatter;
 mod source_file;
+mod view_macro;
 
 #[cfg(test)]
 mod test_helpers;

@@ -57,9 +57,3 @@ pub fn collect_macros_in_file(file: &File) -> Vec<ViewMacro> {
     visitor.visit_file(file);
     visitor.macros
 }
-
-pub fn collect_macros_in_expr(expr: &Expr) -> Vec<ViewMacro> {
-    let mut visitor = ViewMacroVisitor::default();
-    visitor.visit_expr(expr);
-    visitor.macros
-}

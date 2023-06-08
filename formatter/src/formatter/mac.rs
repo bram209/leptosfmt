@@ -1,3 +1,4 @@
+use leptosfmt_pretty_printer::Printer;
 use proc_macro2::{token_stream, Span, TokenStream, TokenTree};
 use syn::{spanned::Spanned, Macro};
 use syn_rsx::Node;
@@ -36,7 +37,7 @@ impl<'a> ViewMacro<'a> {
     }
 }
 
-impl Formatter {
+impl Formatter<'_> {
     pub fn view_macro(&mut self, view_mac: &ViewMacro) {
         let ViewMacro {
             parent_ident,
@@ -120,10 +121,12 @@ fn extract_global_class(
     Some((tokens, global_class))
 }
 
-pub fn format_macro(mac: &ViewMacro, settings: FormatterSettings) -> String {
-    let mut formatter = Formatter::new(settings);
+pub fn format_macro(mac: &ViewMacro, settings: &FormatterSettings) -> String {
+    let mut printer = Printer::new(settings.into());
+    let mut formatter = Formatter::new(*settings, &mut printer);
+
     formatter.view_macro(mac);
-    formatter.printer.eof()
+    printer.eof()
 }
 
 #[cfg(test)]
@@ -136,7 +139,7 @@ mod tests {
     macro_rules! view_macro {
         ($($tt:tt)*) => {{
             let mac: Macro = syn::parse2(quote! { $($tt)* }).unwrap();
-            format_macro(&ViewMacro::try_parse(None, &mac).unwrap(), Default::default())
+            format_macro(&ViewMacro::try_parse(None, &mac).unwrap(), &Default::default())
         }}
     }
 

@@ -1,3 +1,4 @@
+use leptosfmt_pretty_printer::Printer;
 use syn_rsx::{Node, NodeAttribute, NodeComment, NodeDoctype, NodeElement, NodeFragment};
 
 macro_rules! attribute {
@@ -51,6 +52,8 @@ pub(crate) use doctype;
 pub(crate) use element;
 pub(crate) use fragment;
 
+use crate::{Formatter, FormatterSettings};
+
 pub fn get_element_attribute(
     mut nodes: Vec<Node>,
     element_index: usize,
@@ -82,4 +85,11 @@ pub fn get_comment(mut nodes: Vec<Node>, comment_index: usize) -> NodeComment {
 pub fn get_doctype(mut nodes: Vec<Node>, doctype_index: usize) -> NodeDoctype {
     let Node::Doctype(doctype) = nodes.swap_remove(doctype_index) else { panic!("expected doctype") };
     doctype
+}
+
+pub fn format_with(settings: FormatterSettings, run: impl FnOnce(&mut Formatter)) -> String {
+    let mut printer = Printer::new((&settings).into());
+    let mut formatter = Formatter::new(settings, &mut printer);
+    run(&mut formatter);
+    printer.eof()
 }

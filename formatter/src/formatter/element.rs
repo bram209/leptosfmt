@@ -2,7 +2,7 @@ use syn_rsx::{Node, NodeElement};
 
 use crate::formatter::Formatter;
 
-impl Formatter {
+impl Formatter<'_> {
     pub fn element(&mut self, element: &NodeElement) {
         let name = element.name.to_string();
         let is_void = is_void_element(&name, !element.children.is_empty());
@@ -128,16 +128,16 @@ fn is_void_element(name: &str, has_children: bool) -> bool {
 #[cfg(test)]
 mod tests {
     use crate::{
-        formatter::{Formatter, FormatterSettings},
-        test_helpers::element,
+        formatter::FormatterSettings,
+        test_helpers::{element, format_with},
     };
 
     macro_rules! format_element {
         ($($tt:tt)*) => {{
             let element = element! { $($tt)* };
-            let mut formatter = Formatter::new(FormatterSettings { max_width: 40, ..Default::default() });
-            formatter.element(&element);
-            formatter.printer.eof()
+            format_with(FormatterSettings { max_width: 40, ..Default::default() }, |formatter| {
+                formatter.element(&element)
+            })
         }};
     }
 

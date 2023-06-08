@@ -1,11 +1,11 @@
 use std::{io, ops::Range};
 
 use crop::Rope;
-use syn::{parse_str, spanned::Spanned, Expr, MacroDelimiter};
+use syn::spanned::Spanned;
 use thiserror::Error;
 
 use crate::{
-    collect::{collect_macros_in_expr, collect_macros_in_file},
+    collect::collect_macros_in_file,
     formatter::{format_macro, FormatterSettings},
     ViewMacro,
 };
@@ -33,15 +33,6 @@ pub(crate) fn format_file_source(
     format_source(source, macros, settings)
 }
 
-pub(crate) fn format_expr_source(
-    source: &str,
-    settings: FormatterSettings,
-) -> Result<String, FormatError> {
-    let ast: Expr = parse_str(source)?;
-    let macros = collect_macros_in_expr(&ast);
-    format_source(source, macros, settings)
-}
-
 fn format_source<'a>(
     source: &'a str,
     macros: Vec<ViewMacro<'a>>,
@@ -53,15 +44,10 @@ fn format_source<'a>(
     for view_mac in macros {
         let mac = view_mac.inner();
         let start = mac.path.span().start();
-        let end = match mac.delimiter {
-            MacroDelimiter::Paren(delim) => delim.span.end(),
-            MacroDelimiter::Brace(delim) => delim.span.end(),
-            MacroDelimiter::Bracket(delim) => delim.span.end(),
-        };
-
+        let end = mac.delimiter.span().close().end();
         let start_byte = line_column_to_byte(&source, start);
         let end_byte = line_column_to_byte(&source, end);
-        let new_text = format_macro(&view_mac, settings);
+        let new_text = format_macro(&view_mac, &settings);
 
         edits.push(TextEdit {
             range: start_byte..end_byte,
