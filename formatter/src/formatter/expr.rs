@@ -70,7 +70,7 @@ impl Formatter<'_> {
 
         leptosfmt_prettyplease::unparse_expr(
             expr,
-            &mut self.printer,
+            self.printer,
             Some(&ViewMacroFormatter {
                 settings: self.settings,
             }),

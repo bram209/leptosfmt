@@ -282,7 +282,7 @@ dependencies = [
  "crop",
  "indoc",
  "insta",
- "leptosfmt-pretty-printer 0.1.5",
+ "leptosfmt-pretty-printer 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "leptosfmt-prettyplease",
  "proc-macro2",
  "quote",
@@ -294,19 +294,19 @@ dependencies = [
 
 [[package]]
 name = "leptosfmt-pretty-printer"
-version = "0.1.5"
+version = "0.1.6"
 
 [[package]]
 name = "leptosfmt-pretty-printer"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "edd8122410dc111efe9e69040b1aab1eff4b433670bb540488d9ef1f93f0fc94"
+checksum = "bc570d5bcaa4786e36be800c3b1a243e98e228ba0ca9493f022f4dea03d5b041"
 
 [[package]]
 name = "leptosfmt-prettyplease"
 version = "0.2.9"
 dependencies = [
- "leptosfmt-pretty-printer 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "leptosfmt-pretty-printer 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "proc-macro2",
  "syn 2.0.18",
 ]

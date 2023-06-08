@@ -7,4 +7,4 @@ license = "MIT OR Apache-2.0"
 
 [workspace.dependencies]
 leptosfmt-formatter = { path = "./formatter", version = "0.1.5" }
-leptosfmt-pretty-printer = { path = "./printer", version = "0.1.5" }
+leptosfmt-pretty-printer = { version = "0.1.6" }
