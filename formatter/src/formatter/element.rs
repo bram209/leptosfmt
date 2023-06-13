@@ -16,7 +16,7 @@ impl Formatter<'_> {
 
     fn opening_tag(&mut self, element: &NodeElement, is_void: bool) {
         self.printer.word("<");
-        self.node_name(&element.name());
+        self.node_name(element.name());
 
         self.attributes(element.attributes());
 
@@ -140,7 +140,7 @@ mod tests {
             })
         }};
     }
-    macro_rules! fromat_element_from_string {
+    macro_rules! format_element_from_string {
         ($val:expr) => {{
             let element = element_from_string! { $val };
 
@@ -241,8 +241,17 @@ mod tests {
     }
 
     #[test]
-    fn html_unquoted_text2() {
-        let formatted = fromat_element_from_string!(r##"<div> Unquoted text with  spaces </div>"##);
+    fn html_unquoted_text() {
+        let formatted = format_element_from_string!(r##"<div>Unquoted text</div>"##);
+        insta::assert_snapshot!(formatted, @r#"
+        <div>
+            Unquoted text
+        </div>"#);
+    }
+
+    #[test]
+    fn html_unquoted_text_with_surrounding_spaces() {
+        let formatted = format_element_from_string!(r##"<div> Unquoted text with  spaces </div>"##);
         insta::assert_snapshot!(formatted, @r#"
         <div>
             Unquoted text with  spaces
@@ -251,7 +260,7 @@ mod tests {
 
     #[test]
     fn html_unquoted_text_multiline() {
-        let formatted = fromat_element_from_string!(
+        let formatted = format_element_from_string!(
             r##"<div> Unquoted text
             with  spaces </div>"##
         );

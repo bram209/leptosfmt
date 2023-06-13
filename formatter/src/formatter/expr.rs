@@ -3,11 +3,18 @@ use syn::{Block, Expr, ExprBlock, ExprLit, LitStr};
 use crate::{formatter::Formatter, view_macro::ViewMacroFormatter};
 
 impl Formatter<'_> {
-    pub fn literal_str(&mut self, string: &LitStr) {
-        self.expr(&Expr::Lit(ExprLit {
-            attrs: vec![],
-            lit: syn::Lit::Str(string.clone()),
-        }));
+    pub fn literal_str(&mut self, lit_str: &LitStr) {
+        self.printer.word("\"");
+        let string = lit_str.value();
+        let mut iter = string.lines().peekable();
+        while let Some(line) = iter.next() {
+            self.printer.word(line.trim_start().to_owned());
+
+            if iter.peek().is_some() {
+                self.printer.hardbreak();
+            }
+        }
+        self.printer.word("\"");
     }
 
     pub fn node_value_block(
@@ -58,20 +65,11 @@ impl Formatter<'_> {
 
     fn expr(&mut self, expr: &syn::Expr) {
         if let syn::Expr::Lit(ExprLit {
-            lit: syn::Lit::Str(_),
+            lit: syn::Lit::Str(lit_str),
             ..
         }) = expr
         {
-            use syn::__private::ToTokens;
-            let source = expr.to_token_stream().to_string();
-            let mut iter = source.lines().peekable();
-            while let Some(line) = iter.next() {
-                self.printer.word(line.trim_start().to_owned());
-
-                if iter.peek().is_some() {
-                    self.printer.hardbreak();
-                }
-            }
+            self.literal_str(lit_str);
             return;
         }
 
