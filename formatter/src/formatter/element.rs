@@ -260,14 +260,17 @@ mod tests {
 
     #[test]
     fn html_unquoted_text_multiline() {
-        let formatted = format_element_from_string!(
-            r##"<div> Unquoted text
-            with  spaces </div>"##
-        );
+        let formatted = format_element_from_string! {"
+        <div>
+        Unquoted text
+                with  spaces 
+        </div>
+            "};
+        //TODO: Add indentation to the rest of unquoted lines.
         insta::assert_snapshot!(formatted, @r###"
         <div>
             Unquoted text
-                    with  spaces
+                with  spaces
         </div>"###);
     }
 }

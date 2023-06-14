@@ -25,7 +25,11 @@ macro_rules! element {
 // that is used in `raw_text` handler
 macro_rules! element_from_string {
     ($val: expr) => {{
-        let tokens = <proc_macro2::TokenStream as std::str::FromStr>::from_str($val).unwrap();
+        dbg!(&$val);
+        let indented_str = indoc::indoc!($val);
+        dbg!(&indented_str);
+        let tokens =
+            <proc_macro2::TokenStream as std::str::FromStr>::from_str(indented_str).unwrap();
         let nodes = rstml::parse2(tokens).unwrap();
         crate::test_helpers::get_element(nodes, 0)
     }};
