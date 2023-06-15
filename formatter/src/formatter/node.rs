@@ -1,4 +1,5 @@
 use rstml::node::{Node, NodeBlock, NodeComment, NodeDoctype, NodeName, NodeText, RawText};
+use syn::{spanned::Spanned, LitStr};
 
 use crate::formatter::Formatter;
 
@@ -31,15 +32,17 @@ impl Formatter<'_> {
         self.literal_str(&text.value);
     }
 
-    pub fn raw_text(&mut self, text: &RawText, use_source_text: bool) {
+    pub fn raw_text(&mut self, raw_text: &RawText, use_source_text: bool) {
         let text = if use_source_text {
-            text.to_source_text(false)
+            raw_text.to_source_text(false)
                 .expect("Cannot format unquoted text, no source text available, or unquoted text is used outside of element.")
         } else {
-            text.to_token_stream_string()
+            raw_text.to_token_stream_string()
         };
+
+        self.string(&text, raw_text.span().start().column);
         // TODO: can convert it to quoted if need
-        self.printer.word(text)
+        // self.printer.word(text)
     }
 
     pub fn node_name(&mut self, name: &NodeName) {
@@ -49,7 +52,7 @@ impl Formatter<'_> {
     pub fn node_block(&mut self, block: &NodeBlock) {
         match block {
             NodeBlock::Invalid { .. } => panic!("Invalid block will not pass cargo check"), // but we can keep them instead of panic
-            NodeBlock::ValidBlock(b) => self.node_value_block(b, false, false),
+            NodeBlock::ValidBlock(b) => self.node_value_block_expr(b, false, false),
         }
     }
 }

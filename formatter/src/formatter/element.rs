@@ -266,11 +266,10 @@ mod tests {
                 with  spaces 
         </div>
             "};
-        //TODO: Add indentation to the rest of unquoted lines.
         insta::assert_snapshot!(formatted, @r###"
         <div>
             Unquoted text
-                with  spaces
+                    with  spaces
         </div>"###);
     }
 }
