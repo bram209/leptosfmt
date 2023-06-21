@@ -44,6 +44,9 @@ attr_value_brace_style = "WhenRequired" # "Always", "AlwaysUnlessLit", "WhenRequ
 
 ```
 
+To see what each setting does, the see [configuration docs](./docs/configuration.md)
+
+
 ## Examples
 
 **Single file**
