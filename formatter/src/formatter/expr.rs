@@ -1,6 +1,6 @@
 use syn::{Block, Expr, ExprBlock, ExprLit, LitStr};
 
-use crate::{formatter::Formatter, unindent, view_macro::ViewMacroFormatter};
+use crate::{formatter::Formatter, view_macro::ViewMacroFormatter};
 
 fn trim_start_with_max(str: &str, max_chars: usize) -> &str {
     let mut chars = 0;

@@ -9,7 +9,6 @@ mod view_macro;
 
 #[cfg(test)]
 mod test_helpers;
-mod unindent;
 
 pub use collect::collect_macros_in_file;
 pub use formatter::*;

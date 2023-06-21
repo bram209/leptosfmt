@@ -1,5 +1,5 @@
 use rstml::node::{Node, NodeBlock, NodeComment, NodeDoctype, NodeName, NodeText, RawText};
-use syn::{spanned::Spanned, LitStr};
+use syn::{spanned::Spanned};
 
 use crate::formatter::Formatter;
 
