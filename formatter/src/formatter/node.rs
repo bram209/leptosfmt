@@ -1,4 +1,5 @@
-use syn_rsx::{Node, NodeBlock, NodeComment, NodeDoctype, NodeName, NodeText};
+use rstml::node::{Node, NodeBlock, NodeComment, NodeDoctype, NodeName, NodeText, RawText};
+use syn::{spanned::Spanned};
 
 use crate::formatter::Formatter;
 
@@ -6,8 +7,8 @@ impl Formatter<'_> {
     pub fn node(&mut self, node: &Node) {
         match node {
             Node::Element(ele) => self.element(ele),
-            Node::Attribute(attr) => self.attribute(attr),
             Node::Text(text) => self.node_text(text),
+            Node::RawText(text) => self.raw_text(text, true),
             Node::Comment(comment) => self.comment(comment),
             Node::Doctype(doctype) => self.doctype(doctype),
             Node::Block(block) => self.node_block(block),
@@ -17,18 +18,31 @@ impl Formatter<'_> {
 
     pub fn comment(&mut self, comment: &NodeComment) {
         self.printer.word("<!-- ");
-        self.node_value_expr(&comment.value, false, false);
+        self.literal_str(&comment.value);
         self.printer.word(" -->");
     }
 
     pub fn doctype(&mut self, doctype: &NodeDoctype) {
         self.printer.word("<!DOCTYPE ");
-        self.node_value_expr(&doctype.value, false, false);
+        self.raw_text(&doctype.value, false);
         self.printer.word("> ");
     }
 
     pub fn node_text(&mut self, text: &NodeText) {
-        self.node_value_expr(&text.value, false, false);
+        self.literal_str(&text.value);
+    }
+
+    pub fn raw_text(&mut self, raw_text: &RawText, use_source_text: bool) {
+        let text = if use_source_text {
+            raw_text.to_source_text(false)
+                .expect("Cannot format unquoted text, no source text available, or unquoted text is used outside of element.")
+        } else {
+            raw_text.to_token_stream_string()
+        };
+
+        self.string(&text, raw_text.span().start().column);
+        // TODO: can convert it to quoted if need
+        // self.printer.word(text)
     }
 
     pub fn node_name(&mut self, name: &NodeName) {
@@ -36,7 +50,10 @@ impl Formatter<'_> {
     }
 
     pub fn node_block(&mut self, block: &NodeBlock) {
-        self.node_value_expr(&block.value, false, false);
+        match block {
+            NodeBlock::Invalid { .. } => panic!("Invalid block will not pass cargo check"), // but we can keep them instead of panic
+            NodeBlock::ValidBlock(b) => self.node_value_block_expr(b, false, false),
+        }
     }
 }
 

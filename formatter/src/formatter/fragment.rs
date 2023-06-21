@@ -1,4 +1,4 @@
-use syn_rsx::NodeFragment;
+use rstml::node::NodeFragment;
 
 use crate::formatter::Formatter;
 
