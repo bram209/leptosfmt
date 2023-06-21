@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Features
+
+- Migrate to rstml ([#32](https://github.com/bram209/leptosfmt/issues/32))
+
 ### Miscellaneous Tasks
 
 - Share printer implementation with leptosfmt-prettyplease ([#31](https://github.com/bram209/leptosfmt/issues/31))
