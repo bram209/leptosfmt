@@ -2,12 +2,13 @@ use std::{io, ops::Range};
 
 use crop::Rope;
 use proc_macro2::LineColumn;
-use syn::{parse_str, spanned::Spanned, Expr, Macro, MacroDelimiter};
+use syn::spanned::Spanned;
 use thiserror::Error;
 
 use crate::{
-    collect::{collect_macros_in_expr, collect_macros_in_file},
+    collect::collect_macros_in_file,
     formatter::{format_macro, FormatterSettings},
+    ViewMacro,
 };
 
 #[derive(Error, Debug)]
@@ -33,34 +34,21 @@ pub(crate) fn format_file_source(
     format_source(source, macros, settings)
 }
 
-pub(crate) fn format_expr_source(
-    source: &str,
-    settings: FormatterSettings,
-) -> Result<String, FormatError> {
-    let ast: Expr = parse_str(source)?;
-    let macros = collect_macros_in_expr(&ast);
-    format_source(source, macros, settings)
-}
-
 fn format_source<'a>(
     source: &'a str,
-    macros: Vec<&'a Macro>,
+    macros: Vec<ViewMacro<'a>>,
     settings: FormatterSettings,
 ) -> Result<String, FormatError> {
     let mut rope: Rope = source.parse().unwrap();
     let mut edits = Vec::new();
 
-    for mac in macros {
+    for view_mac in macros {
+        let mac = view_mac.inner();
         let start = mac.path.span().start();
-        let end = match mac.delimiter {
-            MacroDelimiter::Paren(delim) => delim.span.end(),
-            MacroDelimiter::Brace(delim) => delim.span.end(),
-            MacroDelimiter::Bracket(delim) => delim.span.end(),
-        };
-
-        let start_byte = line_column_to_byte_index(&rope, start);
-        let end_byte = line_column_to_byte_index(&rope, end);
-        let new_text = format_macro(Some(source), mac, settings);
+        let end = mac.delimiter.span().close().end();
+        let start_byte = line_column_to_byte(&rope, start);
+        let end_byte = line_column_to_byte(&rope, end);
+        let new_text = format_macro(&view_mac, &settings, Some(source));
 
         edits.push(TextEdit {
             range: start_byte..end_byte,
@@ -84,8 +72,11 @@ fn format_source<'a>(
     Ok(rope.to_string())
 }
 
-fn line_column_to_byte_index(rope: &Rope, line_column: LineColumn) -> usize {
-    rope.byte_of_line(line_column.line - 1) + line_column.column
+fn line_column_to_byte(source: &Rope, point: proc_macro2::LineColumn) -> usize {
+    let line_byte = source.byte_of_line(point.line - 1);
+    let line = source.line(point.line - 1);
+    let char_byte: usize = line.chars().take(point.column).map(|c| c.len_utf8()).sum();
+    line_byte + char_byte
 }
 
 #[cfg(test)]
@@ -217,6 +208,82 @@ mod tests {
                     <span>"hello"</span>
                 </div>
             }; 
+        }
+        "###);
+    }
+
+    #[test]
+    fn with_special_characters() {
+        let source = indoc! {r#"
+            fn main() {
+                view! {   cx ,  <div>  <span>"hello²💣"</span></div>  }; 
+            }
+        "#};
+
+        let result = format_file_source(source, Default::default()).unwrap();
+        insta::assert_snapshot!(result, @r###"
+        fn main() {
+            view! { cx,
+                <div>
+                    <span>"hello²💣"</span>
+                </div>
+            }; 
+        }
+        "###);
+    }
+
+    #[test]
+    fn inside_match_case() {
+        let source = indoc! {r#"
+            use leptos::*;
+
+            enum ExampleEnum {
+                ValueOneWithAReallyLongName,
+                ValueTwoWithAReallyLongName,
+            }
+
+            #[component]
+            fn Component(cx: Scope, val: ExampleEnum) -> impl IntoView {
+                match val {
+                    ExampleEnum::ValueOneWithAReallyLongName => 
+                        view! { cx,
+                                                                    <div>
+                                                                        <div>"Value One"</div>
+                                                                    </div>
+                                                                }.into_view(cx),
+                    ExampleEnum::ValueTwoWithAReallyLongName =>  view! { cx,
+                                                                    <div>
+                                                                        <div>"Value Two"</div>
+                                                                    </div>
+                                                                }.into_view(cx),
+                };
+            }
+        "#};
+
+        let result = format_file_source(source, Default::default()).unwrap();
+        insta::assert_snapshot!(result, @r###"
+        use leptos::*;
+
+        enum ExampleEnum {
+            ValueOneWithAReallyLongName,
+            ValueTwoWithAReallyLongName,
+        }
+
+        #[component]
+        fn Component(cx: Scope, val: ExampleEnum) -> impl IntoView {
+            match val {
+                ExampleEnum::ValueOneWithAReallyLongName => 
+                    view! { cx,
+                        <div>
+                            <div>"Value One"</div>
+                        </div>
+                    }.into_view(cx),
+                ExampleEnum::ValueTwoWithAReallyLongName =>  view! { cx,
+                        <div>
+                            <div>"Value Two"</div>
+                        </div>
+                    }.into_view(cx),
+            };
         }
         "###);
     }

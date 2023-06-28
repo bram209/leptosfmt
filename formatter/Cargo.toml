@@ -2,19 +2,20 @@
 name = "leptosfmt-formatter"
 version = { workspace = true }
 edition = "2021"
-authors = ["Bram Hoendervangers"]
-license = "MIT"
+authors = [ "Bram Hoendervangers" ]
+license = { workspace = true }
 repository = "https://github.com/bram209/leptosfmt"
 description = "view macro formatter for the Leptos web framework"
 
 [dependencies]
-leptosfmt-pretty-printer = { workspace = true }
-syn-rsx = { git = "https://github.com/stoically/syn-rsx.git" }
-syn = { version = "1.0.109", features = ["visit", "full", "extra-traits"] }
-leptosfmt-prettyplease = { features = ["verbatim"], version = "0.1" }
-proc-macro2 = { version = "1.0.52", features = ["span-locations"] }
+leptosfmt-pretty-printer.workspace = true
+rstml = "0.10.6"
+syn = { version = "2.0.18", features = [ "visit", "full", "extra-traits" ] }
+leptosfmt-prettyplease = { features = [ "verbatim" ], version = "0.2.11" }
+proc-macro2 = { version = "1.0.52", features = [ "span-locations" ] }
 thiserror = "1.0.40"
-crop = "0.1.0"
+crop = "0.3.0"
+serde = { version = "1.0.163", features = [ "derive" ] }
 
 [dev-dependencies]
 indoc = "2.0.1"

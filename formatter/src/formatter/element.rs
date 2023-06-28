@@ -1,24 +1,24 @@
-use syn_rsx::{Node, NodeElement};
+use rstml::node::{Node, NodeAttribute, NodeElement};
 
 use crate::formatter::Formatter;
 
 impl Formatter<'_> {
     pub fn element(&mut self, element: &NodeElement) {
-        let name = element.name.to_string();
+        let name = element.name().to_string();
         let is_void = is_void_element(&name, !element.children.is_empty());
         self.opening_tag(element, is_void);
 
         if !is_void {
-            self.children(&element.children, element.attributes.len());
+            self.children(&element.children, element.attributes().len());
             self.closing_tag(element)
         }
     }
 
     fn opening_tag(&mut self, element: &NodeElement, is_void: bool) {
         self.printer.word("<");
-        self.node_name(&element.name);
+        self.node_name(element.name());
 
-        self.attributes(&element.attributes);
+        self.attributes(element.attributes());
 
         if is_void {
             self.printer.word("/>");
@@ -29,25 +29,25 @@ impl Formatter<'_> {
 
     fn closing_tag(&mut self, element: &NodeElement) {
         self.printer.word("</");
-        self.node_name(&element.name);
+        self.node_name(element.name());
         self.printer.word(">")
     }
 
-    fn attributes(&mut self, attributes: &Vec<Node>) {
+    fn attributes(&mut self, attributes: &[NodeAttribute]) {
         if attributes.is_empty() {
             return;
         }
 
-        if let [attribute] = attributes.as_slice() {
+        if let [attribute] = attributes {
             self.printer.nbsp();
-            self.node(attribute);
+            self.attribute(attribute);
         } else {
             self.printer.cbox_indent();
             self.printer.space();
 
             let mut iter = attributes.iter().peekable();
             while let Some(attr) = iter.next() {
-                self.node(attr);
+                self.attribute(attr);
 
                 if iter.peek().is_some() {
                     self.printer.space()
@@ -128,16 +128,29 @@ fn is_void_element(name: &str, has_children: bool) -> bool {
 #[cfg(test)]
 mod tests {
     use crate::{
-        formatter::{Formatter, FormatterSettings},
-        test_helpers::element,
+        formatter::FormatterSettings,
+        test_helpers::{element, element_from_string, format_with},
     };
 
     macro_rules! format_element {
         ($($tt:tt)*) => {{
             let element = element! { $($tt)* };
-            let mut formatter = Formatter::new(FormatterSettings { max_width: 40, ..Default::default() });
-            formatter.element(&element);
-            formatter.printer.eof()
+            format_with(FormatterSettings { max_width: 40, ..Default::default() }, |formatter| {
+                formatter.element(&element)
+            })
+        }};
+    }
+    macro_rules! format_element_from_string {
+        ($val:expr) => {{
+            let element = element_from_string! { $val };
+
+            format_with(
+                FormatterSettings {
+                    max_width: 40,
+                    ..Default::default()
+                },
+                |formatter| formatter.element(&element),
+            )
         }};
     }
 
@@ -225,5 +238,38 @@ mod tests {
             ". Increment by one is this: " {count + 1}
         </div>
         "###);
+    }
+
+    #[test]
+    fn html_unquoted_text() {
+        let formatted = format_element_from_string!(r##"<div>Unquoted text</div>"##);
+        insta::assert_snapshot!(formatted, @r#"
+        <div>
+            Unquoted text
+        </div>"#);
+    }
+
+    #[test]
+    fn html_unquoted_text_with_surrounding_spaces() {
+        let formatted = format_element_from_string!(r##"<div> Unquoted text with  spaces </div>"##);
+        insta::assert_snapshot!(formatted, @r#"
+        <div>
+            Unquoted text with  spaces
+        </div>"#);
+    }
+
+    #[test]
+    fn html_unquoted_text_multiline() {
+        let formatted = format_element_from_string! {"
+        <div>
+        Unquoted text
+                with  spaces 
+        </div>
+            "};
+        insta::assert_snapshot!(formatted, @r###"
+        <div>
+            Unquoted text
+                    with  spaces
+        </div>"###);
     }
 }

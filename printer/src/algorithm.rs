@@ -44,7 +44,7 @@ enum PrintFrame {
     Broken(usize, Breaks),
 }
 
-pub const SIZE_INFINITY: isize = 0xffff;
+pub(crate) const SIZE_INFINITY: isize = 0xffff;
 
 pub struct PrinterSettings {
     // Target line width.

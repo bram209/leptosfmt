@@ -1,7 +1,7 @@
+use rstml::node::{Node, NodeBlock, NodeComment, NodeDoctype, NodeName, NodeText, RawText};
 use syn::spanned::Spanned;
-use syn_rsx::{Node, NodeBlock, NodeComment, NodeDoctype, NodeName, NodeText, NodeValueExpr};
 
-use crate::{formatter::Formatter, source_file::format_expr_source};
+use crate::formatter::Formatter;
 
 impl Formatter<'_> {
     pub fn node(&mut self, node: &Node) {
@@ -9,8 +9,8 @@ impl Formatter<'_> {
 
         match node {
             Node::Element(ele) => self.element(ele),
-            Node::Attribute(attr) => self.attribute(attr),
             Node::Text(text) => self.node_text(text),
+            Node::RawText(text) => self.raw_text(text, true),
             Node::Comment(comment) => self.comment(comment),
             Node::Doctype(doctype) => self.doctype(doctype),
             Node::Block(block) => self.node_block(block),
@@ -20,18 +20,31 @@ impl Formatter<'_> {
 
     pub fn comment(&mut self, comment: &NodeComment) {
         self.printer.word("<!-- ");
-        self.node_value(&comment.value);
+        self.literal_str(&comment.value);
         self.printer.word(" -->");
     }
 
     pub fn doctype(&mut self, doctype: &NodeDoctype) {
         self.printer.word("<!DOCTYPE ");
-        self.node_value(&doctype.value);
+        self.raw_text(&doctype.value, false);
         self.printer.word("> ");
     }
 
     pub fn node_text(&mut self, text: &NodeText) {
-        self.node_value(&text.value);
+        self.literal_str(&text.value);
+    }
+
+    pub fn raw_text(&mut self, raw_text: &RawText, use_source_text: bool) {
+        let text = if use_source_text {
+            raw_text.to_source_text(false)
+                .expect("Cannot format unquoted text, no source text available, or unquoted text is used outside of element.")
+        } else {
+            raw_text.to_token_stream_string()
+        };
+
+        self.string(&text, raw_text.span().start().column);
+        // TODO: can convert it to quoted if need
+        // self.printer.word(text)
     }
 
     pub fn node_name(&mut self, name: &NodeName) {
@@ -39,37 +52,9 @@ impl Formatter<'_> {
     }
 
     pub fn node_block(&mut self, block: &NodeBlock) {
-        self.node_value(&block.value)
-    }
-
-    pub fn node_value(&mut self, value: &NodeValueExpr) {
-        // if single line expression, format as '{expr}' instead of '{ expr }' (prettyplease inserts a space)
-        if let syn::Expr::Block(expr_block) = value.as_ref() {
-            if expr_block.attrs.is_empty() {
-                if let [syn::Stmt::Expr(single_expr)] = &expr_block.block.stmts[..] {
-                    // wrap with braces and do NOT insert spaces
-                    self.printer.word("{");
-                    self.expr(single_expr);
-                    self.printer.word("}");
-                    return;
-                }
-            }
-        }
-
-        self.expr(value.as_ref())
-    }
-
-    fn expr(&mut self, expr: &syn::Expr) {
-        let formatted = leptosfmt_prettyplease::unparse_expr(expr);
-        let formatted = format_expr_source(&formatted, self.settings).unwrap_or(formatted);
-
-        let mut iter = formatted.lines().peekable();
-        while let Some(line) = iter.next() {
-            self.printer.word(line.to_owned());
-
-            if iter.peek().is_some() {
-                self.printer.hardbreak();
-            }
+        match block {
+            NodeBlock::Invalid { .. } => panic!("Invalid block will not pass cargo check"), // but we can keep them instead of panic
+            NodeBlock::ValidBlock(b) => self.node_value_block_expr(b, false, false),
         }
     }
 }
@@ -77,23 +62,25 @@ impl Formatter<'_> {
 #[cfg(test)]
 mod tests {
     use crate::formatter::*;
-    use crate::test_helpers::{comment, doctype};
+    use crate::test_helpers::{comment, doctype, format_with};
 
     macro_rules! format_comment {
         ($($tt:tt)*) => {{
             let comment = comment! { $($tt)* };
-            let mut formatter = Formatter::new(FormatterSettings { max_width: 40, ..Default::default() });
-            formatter.comment(&comment);
-            formatter.printer.eof()
+            let settings = FormatterSettings { max_width: 40, ..Default::default() };
+            format_with(settings, |formatter| {
+                formatter.comment(&comment);
+            })
         }};
     }
 
     macro_rules! format_doctype {
         ($($tt:tt)*) => {{
             let doctype = doctype! { $($tt)* };
-            let mut formatter = Formatter::new(FormatterSettings { max_width: 40, ..Default::default() });
-            formatter.doctype(&doctype);
-            formatter.printer.eof()
+            let settings = FormatterSettings { max_width: 40, ..Default::default() };
+            format_with(settings, |formatter| {
+                formatter.doctype(&doctype);
+            })
         }};
     }
 
