@@ -1,7 +1,7 @@
 use std::{io, ops::Range};
 
 use crop::Rope;
-use proc_macro2::LineColumn;
+
 use syn::spanned::Spanned;
 use thiserror::Error;
 
