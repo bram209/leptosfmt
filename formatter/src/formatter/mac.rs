@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use leptosfmt_pretty_printer::Printer;
 use proc_macro2::{token_stream, Span, TokenStream, TokenTree};
 use rstml::node::Node;
@@ -50,7 +52,7 @@ impl Formatter<'_> {
 
         let indent = parent_ident
             .map(|i| i + self.settings.tab_spaces)
-            .unwrap_or(span.start().column);
+            .unwrap_or(0);
 
         self.printer.cbox(indent as isize);
 
@@ -125,7 +127,7 @@ pub fn format_macro(mac: &ViewMacro, settings: &FormatterSettings, source: Optio
     let mut printer = Printer::new(settings.into());
     let mut formatter = match source {
         Some(source) => Formatter::with_source(*settings, &mut printer, source),
-        None => Formatter::new(*settings, &mut printer),
+        None => Formatter::new(*settings, &mut printer, HashMap::new()),
     };
 
     formatter.view_macro(mac);

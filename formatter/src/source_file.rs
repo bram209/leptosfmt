@@ -110,7 +110,9 @@ mod tests {
     fn with_comments() {
         let source = indoc! {r#"
             fn main() {
-                view! {   cx ,  <div>  
+                view! {   cx ,  
+                    // Top level comment
+                    <div>  
                         // This is one beautiful message
                     <span>"hello"</span> // at the end of the line
                     <div>// at the end of the line
@@ -131,6 +133,7 @@ mod tests {
         insta::assert_snapshot!(result, @r###"
             fn main() {
                 view! { cx,
+                    // Top level comment
                     <div>
                         // This is one beautiful message
                         // at the end of the line
@@ -178,6 +181,48 @@ mod tests {
                         {
                             let a = 12;
                             view! { cx, <span>{a}</span> }
+                        }
+                    </span>
+                </div>
+            };
+        }            
+        "###);
+    }
+
+    #[test]
+    fn nested_with_comments() {
+        let source = indoc! {r#"
+            fn main() {
+                view! {   cx ,  
+                    // parent div
+                    <div>  
+
+                    // parent span
+                    <span>{
+                        let a = 12;
+
+                        view! { cx,             
+                            // wow, a span
+                            <span>{a}</span>
+                        }
+                }</span></div>  };
+            }            
+        "#};
+
+        let result = format_file_source(source, Default::default()).unwrap();
+        insta::assert_snapshot!(result, @r###"
+        fn main() {
+            view! { cx,
+                // parent div
+                <div>
+                    // parent span
+                    <span>
+                        {
+                            let a = 12;
+                            view! { cx,
+                                // wow, a span
+                                <span>{a}</span>
+                            }
                         }
                     </span>
                 </div>

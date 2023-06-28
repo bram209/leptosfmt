@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::collections::HashMap;
 
 use leptosfmt_pretty_printer::{Printer, PrinterSettings};
@@ -59,19 +60,20 @@ pub struct Formatter<'a> {
     pub printer: &'a mut leptosfmt_pretty_printer::Printer,
     pub settings: FormatterSettings,
     last_line_check: Option<usize>,
-    comments: HashMap<usize, String>,
-    #[allow(unused)]
-    source: Option<&'a str>,
+    comments: HashMap<usize, &'a str>,
 }
 
 impl<'a> Formatter<'a> {
-    pub fn new(settings: FormatterSettings, printer: &'a mut Printer) -> Self {
+    pub fn new(
+        settings: FormatterSettings,
+        printer: &'a mut Printer,
+        comments: HashMap<usize, &'a str>,
+    ) -> Self {
         Self {
             printer,
             settings,
-            comments: HashMap::new(),
+            comments,
             last_line_check: None,
-            source: None,
         }
     }
 
@@ -86,15 +88,14 @@ impl<'a> Formatter<'a> {
             comments: source
                 .lines()
                 .enumerate()
-                .filter_map(|(i, l)| l.split("//").nth(1).map(|l| (i, l.to_owned())))
+                .filter_map(|(i, l)| l.split("//").nth(1).map(|l| (i, l)))
                 .collect(),
             last_line_check: None,
-            source: Some(source),
         }
     }
 
     pub fn write_comments(&mut self, line_index: usize) {
-        let last = self.last_line_check.unwrap_or(line_index);
+        let last = self.last_line_check.unwrap_or(0);
 
         self.last_line_check = Some(line_index);
 
@@ -102,9 +103,9 @@ impl<'a> Formatter<'a> {
             .filter_map(|l| self.comments.remove(&l))
             .peekable();
 
-        for comment in comments {
+        for comment in comments.into_iter() {
             self.printer.word("//");
-            self.printer.word(comment);
+            self.printer.word(comment.to_string());
             self.printer.hardbreak();
         }
     }
