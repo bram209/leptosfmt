@@ -46,7 +46,6 @@ impl Formatter<'_> {
             cx,
             global_class,
             nodes,
-            
             ..
         } = view_mac;
 
