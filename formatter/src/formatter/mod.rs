@@ -58,7 +58,8 @@ impl From<&FormatterSettings> for PrinterSettings {
 pub struct Formatter<'a> {
     pub printer: &'a mut leptosfmt_pretty_printer::Printer,
     pub settings: FormatterSettings,
-    last_line_check: Option<usize>,
+    line_offset: Option<usize>,
+    start_line_offset: Option<usize>,
     comments: HashMap<usize, Option<&'a str>>,
 }
 
@@ -72,7 +73,8 @@ impl<'a> Formatter<'a> {
             printer,
             settings,
             comments,
-            last_line_check: None,
+            line_offset: None,
+            start_line_offset: None,
         }
     }
 
@@ -95,14 +97,15 @@ impl<'a> Formatter<'a> {
                     }
                 })
                 .collect(),
-            last_line_check: None,
+            line_offset: None,
+            start_line_offset: None,
         }
     }
 
     pub fn write_comments(&mut self, line_index: usize) {
-        let last = self.last_line_check.unwrap_or(0);
-
-        self.last_line_check = Some(line_index);
+        let last = self
+            .line_offset
+            .unwrap_or(self.start_line_offset.unwrap_or(0));
 
         let comments_or_empty_lines: Vec<_> = (last..=line_index)
             .filter_map(|l| self.comments.remove(&l))
@@ -116,7 +119,7 @@ impl<'a> Formatter<'a> {
                 self.printer.word(comment.to_string());
                 self.printer.hardbreak();
                 prev_is_empty_line = false;
-            } else if last != 0 {
+            } else if self.line_offset.is_some() {
                 // Do not print multiple consecutive empty lines
                 if !prev_is_empty_line {
                     self.printer.hardbreak();
@@ -125,5 +128,7 @@ impl<'a> Formatter<'a> {
                 prev_is_empty_line = true;
             }
         }
+
+        self.line_offset = Some(line_index);
     }
 }

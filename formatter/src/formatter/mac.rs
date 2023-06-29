@@ -46,8 +46,11 @@ impl Formatter<'_> {
             cx,
             global_class,
             nodes,
+            span,
             ..
         } = view_mac;
+
+        self.start_line_offset = Some(span.start().line - 1);
 
         let indent = parent_ident
             .map(|i| i + self.settings.tab_spaces)
