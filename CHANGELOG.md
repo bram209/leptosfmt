@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### Bug Fixes
+
+- Don't emit empty line when multiline opening tag ([#38](https://github.com/bram209/leptosfmt/issues/38))
+
 ## [0.1.7] - 2023-06-29
 
 ### Bug Fixes
