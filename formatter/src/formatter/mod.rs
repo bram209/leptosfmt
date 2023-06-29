@@ -13,6 +13,7 @@ pub use mac::format_macro;
 pub use mac::ViewMacro;
 use serde::Deserialize;
 use serde::Serialize;
+use syn::__private::bool;
 
 #[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
 pub enum AttributeValueBraceStyle {
@@ -59,14 +60,14 @@ pub struct Formatter<'a> {
     pub printer: &'a mut leptosfmt_pretty_printer::Printer,
     pub settings: FormatterSettings,
     last_line_check: Option<usize>,
-    comments: HashMap<usize, &'a str>,
+    comments: HashMap<usize, Option<&'a str>>,
 }
 
 impl<'a> Formatter<'a> {
     pub fn new(
         settings: FormatterSettings,
         printer: &'a mut Printer,
-        comments: HashMap<usize, &'a str>,
+        comments: HashMap<usize, Option<&'a str>>,
     ) -> Self {
         Self {
             printer,
@@ -87,7 +88,13 @@ impl<'a> Formatter<'a> {
             comments: source
                 .lines()
                 .enumerate()
-                .filter_map(|(i, l)| l.split("//").nth(1).map(|l| (i, l)))
+                .filter_map(|(i, l)| {
+                    if l.trim().is_empty() {
+                        Some((i, None))
+                    } else {
+                        l.split("//").nth(1).map(|l| (i, Some(l)))
+                    }
+                })
                 .collect(),
             last_line_check: None,
         }
@@ -95,26 +102,29 @@ impl<'a> Formatter<'a> {
 
     pub fn write_comments(&mut self, line_index: usize) {
         let last = self.last_line_check.unwrap_or(0);
-        let line_diff = self
-            .last_line_check
-            .map(|last| line_index - last)
-            .unwrap_or(0);
 
         self.last_line_check = Some(line_index);
 
-        let comments: Vec<_> = (last..=line_index)
+        let comments_or_empty_lines: Vec<_> = (last..=line_index)
             .filter_map(|l| self.comments.remove(&l))
             .collect();
 
-        let empty_lines = line_diff as isize - 1 - comments.len() as isize;
-        if empty_lines > 0 {
-            self.printer.hardbreak();
-        }
+        let mut prev_is_empty_line = false;
 
-        for comment in comments {
-            self.printer.word("//");
-            self.printer.word(comment.to_string());
-            self.printer.hardbreak();
+        for comment_or_empty in comments_or_empty_lines {
+            if let Some(comment) = comment_or_empty {
+                self.printer.word("//");
+                self.printer.word(comment.to_string());
+                self.printer.hardbreak();
+                prev_is_empty_line = false;
+            } else if last != 0 {
+                // Do not print multiple consecutive empty lines
+                if !prev_is_empty_line {
+                    self.printer.hardbreak();
+                }
+
+                prev_is_empty_line = true;
+            }
         }
     }
 }
