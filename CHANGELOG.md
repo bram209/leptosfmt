@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Features
 
 - Migrate to rstml ([#32](https://github.com/bram209/leptosfmt/issues/32))
+- Non-doc comments within rsx ([#4](https://github.com/bram209/leptosfmt/issues/4))
 
 ### Miscellaneous Tasks
 
