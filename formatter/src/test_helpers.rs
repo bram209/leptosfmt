@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use leptosfmt_pretty_printer::Printer;
 use rstml::node::{Node, NodeAttribute, NodeComment, NodeDoctype, NodeElement, NodeFragment};
 
@@ -105,7 +107,7 @@ pub fn get_doctype(mut nodes: Vec<Node>, doctype_index: usize) -> NodeDoctype {
 
 pub fn format_with(settings: FormatterSettings, run: impl FnOnce(&mut Formatter)) -> String {
     let mut printer = Printer::new((&settings).into());
-    let mut formatter = Formatter::new(settings, &mut printer);
+    let mut formatter = Formatter::new(settings, &mut printer, HashMap::new());
     run(&mut formatter);
     printer.eof()
 }

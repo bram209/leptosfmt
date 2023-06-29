@@ -41,9 +41,17 @@ impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
                 .iter()
                 .filter(|v| v.line == span_line && v.column < span_start)
                 .map(|v| v.column)
-                .min();
+                .min()
+                .unwrap_or(
+                    self.ident_stack
+                        .iter()
+                        .rev()
+                        .find(|v| v.column < span_start)
+                        .map(|i| i.column)
+                        .unwrap_or(0),
+                );
 
-            if let Some(view_mac) = ViewMacro::try_parse(ident, node) {
+            if let Some(view_mac) = ViewMacro::try_parse(Some(ident), node) {
                 self.macros.push(view_mac);
             }
         }

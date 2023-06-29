@@ -1,10 +1,12 @@
 use rstml::node::{Node, NodeBlock, NodeComment, NodeDoctype, NodeName, NodeText, RawText};
-use syn::{spanned::Spanned};
+use syn::spanned::Spanned;
 
 use crate::formatter::Formatter;
 
 impl Formatter<'_> {
     pub fn node(&mut self, node: &Node) {
+        self.write_comments(node.span().start().line - 1);
+
         match node {
             Node::Element(ele) => self.element(ele),
             Node::Text(text) => self.node_text(text),
@@ -13,7 +15,7 @@ impl Formatter<'_> {
             Node::Doctype(doctype) => self.doctype(doctype),
             Node::Block(block) => self.node_block(block),
             Node::Fragment(frag) => self.fragment(frag),
-        }
+        };
     }
 
     pub fn comment(&mut self, comment: &NodeComment) {

@@ -1,4 +1,4 @@
-use syn::{Block, Expr, ExprBlock, ExprLit, LitStr};
+use syn::{spanned::Spanned, Block, Expr, ExprBlock, ExprLit, LitStr};
 
 use crate::{formatter::Formatter, view_macro::ViewMacroFormatter};
 
@@ -93,10 +93,26 @@ impl Formatter<'_> {
             return;
         }
 
+        let start_line = expr.span().start().line;
+        let end_line = expr.span().end().line;
+
+        let comments = self
+            .comments
+            .iter()
+            .filter_map(|(line, _comment)| {
+                let line = *line;
+                if line >= start_line && line <= end_line {
+                    Some((line, *_comment))
+                } else {
+                    None
+                }
+            })
+            .collect();
+
         leptosfmt_prettyplease::unparse_expr(
             expr,
             self.printer,
-            Some(&ViewMacroFormatter::new(self.settings)),
+            Some(&ViewMacroFormatter::new(self.settings, comments)),
         );
     }
 }

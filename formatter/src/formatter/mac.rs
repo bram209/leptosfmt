@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use leptosfmt_pretty_printer::Printer;
 use proc_macro2::{token_stream, Span, TokenStream, TokenTree};
 use rstml::node::Node;
@@ -44,13 +46,12 @@ impl Formatter<'_> {
             cx,
             global_class,
             nodes,
-            span,
             ..
         } = view_mac;
 
         let indent = parent_ident
             .map(|i| i + self.settings.tab_spaces)
-            .unwrap_or(span.start().column);
+            .unwrap_or(0);
 
         self.printer.cbox(indent as isize);
 
@@ -121,9 +122,12 @@ fn extract_global_class(
     Some((tokens, global_class))
 }
 
-pub fn format_macro(mac: &ViewMacro, settings: &FormatterSettings) -> String {
+pub fn format_macro(mac: &ViewMacro, settings: &FormatterSettings, source: Option<&str>) -> String {
     let mut printer = Printer::new(settings.into());
-    let mut formatter = Formatter::new(*settings, &mut printer);
+    let mut formatter = match source {
+        Some(source) => Formatter::with_source(*settings, &mut printer, source),
+        None => Formatter::new(*settings, &mut printer, HashMap::new()),
+    };
 
     formatter.view_macro(mac);
     printer.eof()
@@ -139,7 +143,7 @@ mod tests {
     macro_rules! view_macro {
         ($($tt:tt)*) => {{
             let mac: Macro = syn::parse2(quote! { $($tt)* }).unwrap();
-            format_macro(&ViewMacro::try_parse(None, &mac).unwrap(), &Default::default())
+            format_macro(&ViewMacro::try_parse(None, &mac).unwrap(), &Default::default(), None)
         }}
     }
 

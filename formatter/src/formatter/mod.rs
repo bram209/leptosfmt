@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use leptosfmt_pretty_printer::{Printer, PrinterSettings};
 
 mod attribute;
@@ -56,10 +58,54 @@ impl From<&FormatterSettings> for PrinterSettings {
 pub struct Formatter<'a> {
     pub printer: &'a mut leptosfmt_pretty_printer::Printer,
     pub settings: FormatterSettings,
+    last_line_check: Option<usize>,
+    comments: HashMap<usize, &'a str>,
 }
 
 impl<'a> Formatter<'a> {
-    pub fn new(settings: FormatterSettings, printer: &'a mut Printer) -> Self {
-        Self { printer, settings }
+    pub fn new(
+        settings: FormatterSettings,
+        printer: &'a mut Printer,
+        comments: HashMap<usize, &'a str>,
+    ) -> Self {
+        Self {
+            printer,
+            settings,
+            comments,
+            last_line_check: None,
+        }
+    }
+
+    pub fn with_source(
+        settings: FormatterSettings,
+        printer: &'a mut Printer,
+        source: &'a str,
+    ) -> Self {
+        Self {
+            printer,
+            settings,
+            comments: source
+                .lines()
+                .enumerate()
+                .filter_map(|(i, l)| l.split("//").nth(1).map(|l| (i, l)))
+                .collect(),
+            last_line_check: None,
+        }
+    }
+
+    pub fn write_comments(&mut self, line_index: usize) {
+        let last = self.last_line_check.unwrap_or(0);
+
+        self.last_line_check = Some(line_index);
+
+        let comments = (last..=line_index)
+            .filter_map(|l| self.comments.remove(&l))
+            .peekable();
+
+        for comment in comments {
+            self.printer.word("//");
+            self.printer.word(comment.to_string());
+            self.printer.hardbreak();
+        }
     }
 }
