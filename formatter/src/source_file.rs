@@ -109,6 +109,7 @@ mod tests {
     #[test]
     fn with_comments() {
         let source = indoc! {r#"
+            // comment outside view macro
             fn main() {
                 view! {   cx ,  
                     // Top level comment
@@ -134,10 +135,13 @@ mod tests {
              // on the next line
                     </div>  }; 
             }
+
+            // comment after view macro
         "#};
 
         let result = format_file_source(source, Default::default()).unwrap();
         insta::assert_snapshot!(result, @r###"
+        // comment outside view macro
         fn main() {
             view! { cx,
                 // Top level comment
@@ -168,6 +172,8 @@ mod tests {
                 </div>
             }; 
         }
+
+        // comment after view macro
         "###);
     }
 
