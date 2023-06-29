@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 
 - Build binary for MacOS arm64
 
+### Features
+
+- Respect single empty line ([#36](https://github.com/bram209/leptosfmt/issues/36))
+
 ## [0.1.6] - 2023-06-29
 
 ### Features
