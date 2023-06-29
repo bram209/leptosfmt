@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use syn::{spanned::Spanned, Block, Expr, ExprBlock, ExprLit, LitStr};
 
 use crate::{formatter::Formatter, view_macro::ViewMacroFormatter};
@@ -100,7 +102,7 @@ impl Formatter<'_> {
         let start_line = expr.span().start().line;
         let end_line = expr.span().end().line;
 
-        let comments = self
+        let comments: HashMap<usize, _> = self
             .comments
             .iter()
             .filter_map(|(line, _comment)| {
@@ -113,7 +115,7 @@ impl Formatter<'_> {
             })
             .collect();
 
-        for (line, _) in &comments {
+        for line in comments.keys() {
             self.comments.remove(line);
         }
 
