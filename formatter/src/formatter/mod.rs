@@ -13,7 +13,6 @@ pub use mac::format_macro;
 pub use mac::ViewMacro;
 use serde::Deserialize;
 use serde::Serialize;
-use syn::__private::bool;
 
 #[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
 pub enum AttributeValueBraceStyle {
