@@ -102,7 +102,7 @@ impl<'a> Formatter<'a> {
             .filter_map(|l| self.comments.remove(&l))
             .peekable();
 
-        for comment in comments.into_iter() {
+        for comment in comments {
             self.printer.word("//");
             self.printer.word(comment.to_string());
             self.printer.hardbreak();
