@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Bug Fixes
+
+- Respect string whitespace ([#37](https://github.com/bram209/leptosfmt/issues/37))
+
 ### Continuous Integration
 
 - Build binary for MacOS arm64
