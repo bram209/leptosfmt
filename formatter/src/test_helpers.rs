@@ -103,6 +103,17 @@ pub fn get_doctype(mut nodes: Vec<Node>, doctype_index: usize) -> NodeDoctype {
     doctype
 }
 
+pub fn format_with_source(
+    settings: FormatterSettings,
+    source: &str,
+    run: impl FnOnce(&mut Formatter),
+) -> String {
+    let mut printer = Printer::new((&settings).into());
+    let mut formatter = Formatter::with_source(settings, &mut printer, source);
+    run(&mut formatter);
+    printer.eof()
+}
+
 pub fn format_with(settings: FormatterSettings, run: impl FnOnce(&mut Formatter)) -> String {
     let mut printer = Printer::new((&settings).into());
     let mut formatter = Formatter::new(settings, &mut printer, HashMap::new());

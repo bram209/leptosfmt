@@ -105,13 +105,17 @@ impl Formatter<'_> {
             .iter()
             .filter_map(|(line, _comment)| {
                 let line = *line;
-                if line >= start_line && line <= end_line {
+                if line >= start_line && line < end_line {
                     Some((line, *_comment))
                 } else {
                     None
                 }
             })
             .collect();
+
+        for (line, _) in &comments {
+            self.comments.remove(line);
+        }
 
         leptosfmt_prettyplease::unparse_expr(
             expr,

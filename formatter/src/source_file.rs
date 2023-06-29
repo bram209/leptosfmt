@@ -125,35 +125,49 @@ mod tests {
             // a unique key for each item as a reference
              key=|(index, _error)| *index // yeah
              />
+             <div> // same line comment
+             // with comment on the next line
+             </div>
+             // comments with empty lines inbetween
+
+             // and some more
+             // on the next line
                     </div>  }; 
             }
         "#};
 
         let result = format_file_source(source, Default::default()).unwrap();
         insta::assert_snapshot!(result, @r###"
-            fn main() {
-                view! { cx,
-                    // Top level comment
+        fn main() {
+            view! { cx,
+                // Top level comment
+                <div>
+                    // This is one beautiful message
+                    // at the end of the line
+                    <span>"hello"</span>
+                    // at the end of the line
                     <div>
-                        // This is one beautiful message
-                        // at the end of the line
+                        // double
+                        // comments
                         <span>"hello"</span>
-                        // at the end of the line
-                        <div>
-                            // double
-                            // comments
-                            <span>"hello"</span>
-                        </div>
-                        <For
-                            // a function that returns the items we're iterating over; a signal is fine
-                            each=move || { errors.clone().into_iter().enumerate() }
-                            // a unique key for each item as a reference
-                            // yeah
-                            key=|(index, _error)| *index
-                        />
                     </div>
-                }; 
-            }
+                    <For
+                        // a function that returns the items we're iterating over; a signal is fine
+                        each=move || { errors.clone().into_iter().enumerate() }
+                        // a unique key for each item as a reference
+                        // yeah
+                        key=|(index, _error)| *index
+                    />
+                    // same line comment
+                    <div>// with comment on the next line
+                    </div>
+                // comments with empty lines inbetween
+
+                // and some more
+                // on the next line
+                </div>
+            }; 
+        }
         "###);
     }
 

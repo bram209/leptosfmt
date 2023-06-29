@@ -6,11 +6,11 @@ use crate::{Formatter, FormatterSettings, ViewMacro};
 
 pub struct ViewMacroFormatter<'a> {
     settings: FormatterSettings,
-    comments: HashMap<usize, &'a str>,
+    comments: HashMap<usize, Option<&'a str>>,
 }
 
 impl<'a> ViewMacroFormatter<'a> {
-    pub fn new(settings: FormatterSettings, comments: HashMap<usize, &'a str>) -> Self {
+    pub fn new(settings: FormatterSettings, comments: HashMap<usize, Option<&'a str>>) -> Self {
         Self { settings, comments }
     }
 }

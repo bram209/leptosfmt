@@ -1,4 +1,5 @@
 use rstml::node::{Node, NodeAttribute, NodeElement};
+use syn::spanned::Spanned;
 
 use crate::formatter::Formatter;
 
@@ -10,6 +11,7 @@ impl Formatter<'_> {
 
         if !is_void {
             self.children(&element.children, element.attributes().len());
+            self.write_comments(element.close_tag.span().end().line - 1);
             self.closing_tag(element)
         }
     }
@@ -30,7 +32,7 @@ impl Formatter<'_> {
     fn closing_tag(&mut self, element: &NodeElement) {
         self.printer.word("</");
         self.node_name(element.name());
-        self.printer.word(">")
+        self.printer.word(">");
     }
 
     fn attributes(&mut self, attributes: &[NodeAttribute]) {
@@ -131,7 +133,7 @@ mod tests {
 
     use crate::{
         formatter::FormatterSettings,
-        test_helpers::{element, element_from_string, format_with},
+        test_helpers::{element, element_from_string, format_with, format_with_source},
     };
 
     macro_rules! format_element {
@@ -146,11 +148,12 @@ mod tests {
         ($val:expr) => {{
             let element = element_from_string! { $val };
 
-            format_with(
+            format_with_source(
                 FormatterSettings {
                     max_width: 40,
                     ..Default::default()
                 },
+                $val,
                 |formatter| formatter.element(&element),
             )
         }};
@@ -331,6 +334,29 @@ mod tests {
         <div>
             <Nav/>
             <Main/>
+        </div>
+        "###);
+    }
+
+    #[test]
+    fn other_test() {
+        let formatted = format_element_from_string!(indoc! {r#"
+            <div>
+                <div
+                    class="foo"
+                >
+                    <i class="bi-google"></i>
+                    "Sign in with google"
+                </div>
+            </div>
+        "#});
+
+        insta::assert_snapshot!(formatted, @r###"
+        <div>
+            <div class="foo">
+                <i class="bi-google"></i>
+                "Sign in with google"
+            </div>
         </div>
         "###);
     }
