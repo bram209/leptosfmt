@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.9] - 2023-06-29
+
+### Bug Fixes
+
+- Ignore comments outside view macro ([#40](https://github.com/bram209/leptosfmt/issues/40))
+
 ## [0.1.8] - 2023-06-29
 
 ### Bug Fixes
