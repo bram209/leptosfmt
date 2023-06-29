@@ -127,6 +127,8 @@ fn is_void_element(name: &str, has_children: bool) -> bool {
 
 #[cfg(test)]
 mod tests {
+    use indoc::indoc;
+
     use crate::{
         formatter::FormatterSettings,
         test_helpers::{element, element_from_string, format_with},
@@ -260,16 +262,76 @@ mod tests {
 
     #[test]
     fn html_unquoted_text_multiline() {
-        let formatted = format_element_from_string! {"
-        <div>
-        Unquoted text
-                with  spaces 
-        </div>
-            "};
+        let formatted = format_element_from_string!(indoc! {"
+            <div>
+            Unquoted text
+                    with  spaces 
+            </div>
+        "});
+
         insta::assert_snapshot!(formatted, @r###"
         <div>
             Unquoted text
                     with  spaces
         </div>"###);
+    }
+
+    #[test]
+    fn single_empty_line() {
+        let formatted = format_element_from_string!(indoc! {r#"
+            <div>
+                <Nav/>
+
+                <Main/>
+            </div>
+        "#});
+
+        insta::assert_snapshot!(formatted, @r###"
+        <div>
+            <Nav/>
+
+            <Main/>
+        </div>
+        "###);
+    }
+
+    #[test]
+    fn multiple_empty_lines() {
+        let formatted = format_element_from_string!(indoc! {r#"
+            <div>
+                <Nav/>
+
+
+
+                <Main/>
+            </div>
+        "#});
+
+        insta::assert_snapshot!(formatted, @r###"
+        <div>
+            <Nav/>
+
+            <Main/>
+        </div>
+        "###);
+    }
+
+    #[test]
+    fn surrounded_by_empty_lines() {
+        let formatted = format_element_from_string!(indoc! {r#"
+
+            <div>
+                <Nav/>
+                <Main/>
+            </div>
+
+        "#});
+
+        insta::assert_snapshot!(formatted, @r###"
+        <div>
+            <Nav/>
+            <Main/>
+        </div>
+        "###);
     }
 }

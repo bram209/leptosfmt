@@ -215,6 +215,7 @@ mod tests {
             view! { cx,
                 // parent div
                 <div>
+
                     // parent span
                     <span>
                         {

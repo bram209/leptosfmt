@@ -9,41 +9,41 @@ use crate::ViewMacro;
 
 #[derive(Default)]
 struct ViewMacroVisitor<'ast> {
-    ident_stack: Vec<LineColumn>,
+    indent_stack: Vec<LineColumn>,
     macros: Vec<ViewMacro<'ast>>,
 }
 
 impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
     fn visit_stmt(&mut self, i: &'ast syn::Stmt) {
-        self.ident_stack.push(i.span().start());
+        self.indent_stack.push(i.span().start());
         visit::visit_stmt(self, i);
-        self.ident_stack.pop();
+        self.indent_stack.pop();
     }
 
     fn visit_expr(&mut self, i: &'ast Expr) {
-        self.ident_stack.push(i.span().start());
+        self.indent_stack.push(i.span().start());
         visit::visit_expr(self, i);
-        self.ident_stack.pop();
+        self.indent_stack.pop();
     }
 
     fn visit_arm(&mut self, i: &'ast syn::Arm) {
-        self.ident_stack.push(i.span().start());
+        self.indent_stack.push(i.span().start());
         visit::visit_arm(self, i);
-        self.ident_stack.pop();
+        self.indent_stack.pop();
     }
 
     fn visit_macro(&mut self, node: &'ast Macro) {
         if node.path.is_ident("view") {
             let span_start = node.span().start().column;
             let span_line = node.span().start().line;
-            let ident = self
-                .ident_stack
+            let indent = self
+                .indent_stack
                 .iter()
                 .filter(|v| v.line == span_line && v.column < span_start)
                 .map(|v| v.column)
                 .min()
                 .unwrap_or(
-                    self.ident_stack
+                    self.indent_stack
                         .iter()
                         .rev()
                         .find(|v| v.column < span_start)
@@ -51,7 +51,7 @@ impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
                         .unwrap_or(0),
                 );
 
-            if let Some(view_mac) = ViewMacro::try_parse(Some(ident), node) {
+            if let Some(view_mac) = ViewMacro::try_parse(Some(indent), node) {
                 self.macros.push(view_mac);
             }
         }
