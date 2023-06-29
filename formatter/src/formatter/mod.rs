@@ -95,12 +95,21 @@ impl<'a> Formatter<'a> {
 
     pub fn write_comments(&mut self, line_index: usize) {
         let last = self.last_line_check.unwrap_or(0);
+        let line_diff = self
+            .last_line_check
+            .map(|last| line_index - last)
+            .unwrap_or(0);
 
         self.last_line_check = Some(line_index);
 
-        let comments = (last..=line_index)
+        let comments: Vec<_> = (last..=line_index)
             .filter_map(|l| self.comments.remove(&l))
-            .peekable();
+            .collect();
+
+        let empty_lines = line_diff as isize - 1 - comments.len() as isize;
+        if empty_lines > 0 {
+            self.printer.hardbreak();
+        }
 
         for comment in comments {
             self.printer.word("//");

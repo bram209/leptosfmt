@@ -119,6 +119,8 @@ impl Formatter<'_> {
 
 #[cfg(test)]
 mod tests {
+    use rstml::node::Node;
+
     use crate::formatter::*;
     use crate::test_helpers::{element_from_string, format_with};
 
@@ -128,7 +130,7 @@ mod tests {
             let settings = FormatterSettings { max_width: 40, ..Default::default() };
 
             format_with(settings, |formatter| {
-                formatter.element(&comment);
+                formatter.node(&Node::Element(comment));
             })
         }};
     }
