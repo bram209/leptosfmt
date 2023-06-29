@@ -16,10 +16,14 @@ fn trim_start_with_max(str: &str, max_chars: usize) -> &str {
 
 impl Formatter<'_> {
     pub fn string(&mut self, string: &str, start_column: usize) {
-        let mut iter = string.lines().peekable();
-        while let Some(line) = iter.next() {
-            self.printer
-                .word(trim_start_with_max(line, start_column).to_string());
+        let mut iter = string.lines().enumerate().peekable();
+        while let Some((line_num, line)) = iter.next() {
+            if line_num == 0 {
+                self.printer.word(line.to_string())
+            } else {
+                self.printer
+                    .word(trim_start_with_max(line, start_column).to_string());
+            }
 
             if iter.peek().is_some() {
                 self.printer.hardbreak();
@@ -148,6 +152,38 @@ mod tests {
         insta::assert_snapshot!(formatted, @r###"
         <div>
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+                sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+            Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+        </div>
+        "###);
+    }
+
+    #[test]
+    fn string_whitespace_prefix() {
+        let formatted = format_element! {r#"<div>
+                    "    foo"
+            </div>"#};
+
+        insta::assert_snapshot!(formatted, @r###"
+        <div>"    foo"</div>
+        "###);
+    }
+
+    #[test]
+    fn multiline_string_whitespace_prefix() {
+        let formatted = format_element! {r#"<div>
+                    "        Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+                        sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+                    Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+            </div>"#};
+
+        insta::assert_snapshot!(formatted, @r###"
+        <div>
+            "        Lorem ipsum dolor sit amet, consectetur adipiscing elit,
                 sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
                         Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
                 Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
