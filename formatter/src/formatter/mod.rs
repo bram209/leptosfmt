@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use crop::Rope;
+use crop::RopeSlice;
 use leptosfmt_pretty_printer::{Printer, PrinterSettings};
 
 mod attribute;
@@ -11,8 +13,14 @@ mod node;
 
 pub use mac::format_macro;
 pub use mac::ViewMacro;
+use proc_macro2::LineColumn;
+use proc_macro2::Span;
+use quote::ToTokens;
 use serde::Deserialize;
 use serde::Serialize;
+use syn::spanned::Spanned;
+
+use crate::line_column_to_byte;
 
 #[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
 pub enum AttributeValueBraceStyle {
@@ -61,6 +69,8 @@ pub struct Formatter<'a> {
     line_offset: Option<usize>,
     start_line_offset: Option<usize>,
     comments: HashMap<usize, Option<&'a str>>,
+    last_span: Option<Span>,
+    source: Option<&'a Rope>,
 }
 
 impl<'a> Formatter<'a> {
@@ -75,30 +85,65 @@ impl<'a> Formatter<'a> {
             comments,
             line_offset: None,
             start_line_offset: None,
+            last_span: None,
+            source: None,
         }
+    }
+
+    // fn token(&mut self, token: impl Token) {
+    //     self.visit_span(token);
+    // }
+
+    fn visit_span<T>(&mut self, spanned: T)
+    where
+        T: Spanned,
+        T: ToTokens,
+    {
+        dbg!(spanned.to_token_stream().to_string());
+        let span = spanned.span();
+
+        if let (Some(source), Some(last_span)) = (self.source, self.last_span) {
+            if last_span.end().line != span.start().line {
+                let text = get_text_beween_spans(source, last_span.end(), span.start().line - 1);
+                dbg!(last_span.end(), span.start(), text);
+                for (idx, line) in text.lines().skip(1).enumerate() {
+                    let line = line.to_string();
+                    // TODO if last line, make sure to skip the first span.start().column characters (NOT bytes!)
+                    let Some(comment) = line.split("//").nth(1).map(str::trim) else { continue; };
+
+                    self.printer.word("// ");
+                    self.printer.word(comment.to_owned());
+                    self.printer.hardbreak();
+                }
+            }
+        }
+
+        self.last_span = Some(span);
     }
 
     pub fn with_source(
         settings: FormatterSettings,
         printer: &'a mut Printer,
-        source: &'a str,
+        source: &'a Rope,
     ) -> Self {
         Self {
             printer,
             settings,
-            comments: source
-                .lines()
-                .enumerate()
-                .filter_map(|(i, l)| {
-                    if l.trim().is_empty() {
-                        Some((i, None))
-                    } else {
-                        l.split("//").nth(1).map(|l| (i, Some(l)))
-                    }
-                })
-                .collect(),
+            comments: HashMap::new(), // source
+            // .lines()
+            // .enumerate()
+            // .filter_map(|(i, l)| {
+            //     if l.trim().is_empty() {
+            //         Some((i, None))
+            //     } else {
+            //         l.split("//").nth(1).map(|l| (i, Some(l)))
+            //     }
+            // })
+            // .collect(),
             line_offset: None,
             start_line_offset: None,
+            last_span: None,
+            source: Some(source),
         }
     }
 
@@ -131,4 +176,22 @@ impl<'a> Formatter<'a> {
 
         self.line_offset = Some(line_index);
     }
+
+    fn tokens<T>(&mut self, tokens: &T)
+    where
+        T: ToTokens,
+        T: Spanned,
+    {
+        self.visit_span(tokens);
+        self.printer.word(tokens.to_token_stream().to_string())
+    }
+}
+
+fn get_text_beween_spans(rope: &Rope, start: LineColumn, end_line: usize) -> RopeSlice<'_> {
+    let start_byte = line_column_to_byte(rope, start);
+    let end_byte = rope.byte_of_line(end_line) + rope.line(end_line).byte_len();
+
+    dbg!(start, end_line);
+
+    return rope.byte_slice(start_byte..end_byte);
 }

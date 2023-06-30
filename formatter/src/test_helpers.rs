@@ -1,5 +1,6 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, str::FromStr};
 
+use crop::Rope;
 use leptosfmt_pretty_printer::Printer;
 use rstml::node::{Node, NodeAttribute, NodeComment, NodeDoctype, NodeElement, NodeFragment};
 
@@ -109,7 +110,8 @@ pub fn format_with_source(
     run: impl FnOnce(&mut Formatter),
 ) -> String {
     let mut printer = Printer::new((&settings).into());
-    let mut formatter = Formatter::with_source(settings, &mut printer, source);
+    let rope = Rope::from_str(source).unwrap();
+    let mut formatter = Formatter::with_source(settings, &mut printer, &rope);
     run(&mut formatter);
     printer.eof()
 }

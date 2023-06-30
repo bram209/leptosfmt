@@ -8,7 +8,7 @@ use thiserror::Error;
 use crate::{
     collect::collect_macros_in_file,
     formatter::{format_macro, FormatterSettings},
-    ViewMacro,
+    line_column_to_byte, ViewMacro,
 };
 
 #[derive(Error, Debug)]
@@ -48,7 +48,7 @@ fn format_source<'a>(
         let end = mac.delimiter.span().close().end();
         let start_byte = line_column_to_byte(&rope, start);
         let end_byte = line_column_to_byte(&rope, end);
-        let new_text = format_macro(&view_mac, &settings, Some(source));
+        let new_text = format_macro(&view_mac, &settings, Some(&rope));
 
         edits.push(TextEdit {
             range: start_byte..end_byte,
@@ -70,13 +70,6 @@ fn format_source<'a>(
     }
 
     Ok(rope.to_string())
-}
-
-fn line_column_to_byte(source: &Rope, point: proc_macro2::LineColumn) -> usize {
-    let line_byte = source.byte_of_line(point.line - 1);
-    let line = source.line(point.line - 1);
-    let char_byte: usize = line.chars().take(point.column).map(|c| c.len_utf8()).sum();
-    line_byte + char_byte
 }
 
 #[cfg(test)]
@@ -115,8 +108,8 @@ mod tests {
                     // Top level comment
                     <div>  
                         // This is one beautiful message
-                    <span>"hello"</span> // at the end of the line
-                    <div>// at the end of the line
+                    <span>"hello"</span> // at the end of the line 1
+                    <div>// at the end of the line 2
              // double
              // comments
                     <span>"hello"</span> </div>
@@ -147,9 +140,9 @@ mod tests {
                 // Top level comment
                 <div>
                     // This is one beautiful message
-                    // at the end of the line
+                    // at the end of the line 1
                     <span>"hello"</span>
-                    // at the end of the line
+                    // at the end of the line 2
                     <div>
                         // double
                         // comments
@@ -166,7 +159,6 @@ mod tests {
                     <div>// with comment on the next line
                     </div>
                 // comments with empty lines inbetween
-
                 // and some more
                 // on the next line
                 </div>

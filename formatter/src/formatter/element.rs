@@ -1,7 +1,5 @@
-use rstml::node::{Node, NodeAttribute, NodeElement};
-use syn::spanned::Spanned;
-
 use crate::formatter::Formatter;
+use rstml::node::{Node, NodeAttribute, NodeElement};
 
 impl Formatter<'_> {
     pub fn element(&mut self, element: &NodeElement) {
@@ -11,14 +9,14 @@ impl Formatter<'_> {
 
         if !is_void {
             self.children(&element.children, element.attributes().len());
-            self.write_comments(element.close_tag.span().end().line - 1);
             self.closing_tag(element)
         }
     }
 
     fn opening_tag(&mut self, element: &NodeElement, is_void: bool) {
-        self.printer.word("<");
-        self.node_name(element.name());
+        self.tokens(&element.open_tag.token_lt);
+        self.visit_span(&element.open_tag.name);
+        self.node_name(&element.open_tag.name);
 
         self.attributes(element.attributes());
 
@@ -27,9 +25,11 @@ impl Formatter<'_> {
         } else {
             self.printer.word(">")
         }
+        self.visit_span(&element.open_tag.end_tag);
     }
 
     fn closing_tag(&mut self, element: &NodeElement) {
+        self.visit_span(&element.close_tag);
         self.printer.word("</");
         self.node_name(element.name());
         self.printer.word(">");
@@ -41,14 +41,18 @@ impl Formatter<'_> {
         }
 
         if let [attribute] = attributes {
+            self.printer.cbox(0);
             self.printer.nbsp();
+            self.visit_span(attribute);
             self.attribute(attribute);
+            self.printer.end();
         } else {
             self.printer.cbox_indent();
             self.printer.space();
 
             let mut iter = attributes.iter().peekable();
             while let Some(attr) = iter.next() {
+                self.visit_span(attr);
                 self.attribute(attr);
 
                 if iter.peek().is_some() {
@@ -191,6 +195,23 @@ mod tests {
         insta::assert_snapshot!(formatted, @r###"
         <div
             key=a::very::deeply::nested::module::generate_key()
+            width=100
+        ></div>
+        "###);
+    }
+
+    #[test]
+    fn no_children_multi_attr_with_comment() {
+        let formatted = format_element_from_string!(indoc! {"
+        <div key=a
+            // width
+            width=100></div> 
+        "});
+
+        insta::assert_snapshot!(formatted, @r###"
+        <div
+            key=a
+            // width
             width=100
         ></div>
         "###);
