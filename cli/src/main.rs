@@ -51,9 +51,8 @@ fn main() {
     }
 
     if args.stdin {
-        match format_stdin_result(settings) {
-            Ok(_) => {}
-            Err(err) => eprintln!("{}", err),
+        if let Err(err) = format_stdin_result(settings) {
+            eprintln!("{}", err)
         };
     } else {
         let input_pattern = args.input_pattern.unwrap();
