@@ -54,50 +54,52 @@ fn main() {
         if let Err(err) = format_stdin_result(settings) {
             eprintln!("{}", err)
         };
-    } else {
-        let input_pattern = args.input_pattern.unwrap();
-        let is_dir = fs::metadata(&input_pattern)
-            .map(|meta| meta.is_dir())
-            .unwrap_or(false);
 
-        let glob_pattern = if is_dir {
-            format!("{}/**/*.rs", &input_pattern)
-        } else {
-            input_pattern
+        return;
+    } 
+
+    let input_pattern = args.input_pattern.unwrap();
+    let is_dir = fs::metadata(&input_pattern)
+        .map(|meta| meta.is_dir())
+        .unwrap_or(false);
+
+    let glob_pattern = if is_dir {
+        format!("{}/**/*.rs", &input_pattern)
+    } else {
+        input_pattern
+    };
+
+    let file_paths: Vec<_> = glob(&glob_pattern)
+        .expect("failed to read glob pattern")
+        .collect();
+
+    let total_files = file_paths.len();
+    let start_formatting = Instant::now();
+    file_paths.into_par_iter().for_each(|result| {
+        let print_err = |path: &Path, err| {
+            println!("❌ {}", path.display());
+            eprintln!("\t\t{}", err);
         };
 
-        let file_paths: Vec<_> = glob(&glob_pattern)
-            .expect("failed to read glob pattern")
-            .collect();
-
-        let total_files = file_paths.len();
-        let start_formatting = Instant::now();
-        file_paths.into_par_iter().for_each(|result| {
-            let print_err = |path: &Path, err| {
-                println!("❌ {}", path.display());
-                eprintln!("\t\t{}", err);
-            };
-
-            match result {
-                Ok(path) => match format_glob_result(&path, settings) {
-                    Ok(_) => {
-                        if !quiet {
-                            println!("✅ {}", path.display())
-                        }
+        match result {
+            Ok(path) => match format_glob_result(&path, settings) {
+                Ok(_) => {
+                    if !quiet {
+                        println!("✅ {}", path.display())
                     }
-                    Err(err) => print_err(&path, &err.to_string()),
-                },
-                Err(err) => print_err(err.path(), &err.error().to_string()),
-            };
-        });
-        let end_formatting = Instant::now();
-        if !quiet {
-            println!(
-                "Formatted {} files in {} ms",
-                total_files,
-                (end_formatting - start_formatting).as_millis()
-            )
-        }
+                }
+                Err(err) => print_err(&path, &err.to_string()),
+            },
+            Err(err) => print_err(err.path(), &err.error().to_string()),
+        };
+    });
+    let end_formatting = Instant::now();
+    if !quiet {
+        println!(
+            "Formatted {} files in {} ms",
+            total_files,
+            (end_formatting - start_formatting).as_millis()
+        )
     }
 }
 
