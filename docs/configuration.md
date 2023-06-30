@@ -9,7 +9,7 @@ Whether or not to add braces around single expression attribute values.
 
 ### Examples
 
-`"AlwaysUnlessLiteral"` (default):
+`"AlwaysUnlessLit"` (default):
 
 ```rust
 <div on:click=move |_| set_value(0) disabled=is_disabled />
