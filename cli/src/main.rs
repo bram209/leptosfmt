@@ -7,9 +7,9 @@ use std::{
 };
 
 use anyhow::Context;
-use clap::{Parser, builder::ArgPredicate};
+use clap::{builder::ArgPredicate, Parser};
 use glob::glob;
-use leptosfmt_formatter::{format_file,FormatterSettings, format_file_source};
+use leptosfmt_formatter::{format_file, format_file_source, FormatterSettings};
 use rayon::{iter::ParallelIterator, prelude::IntoParallelIterator};
 
 /// A formatter for Leptos RSX sytnax
@@ -35,7 +35,12 @@ struct Args {
     #[arg(short, long, default_value = "false")]
     stdin: bool,
 
-    #[arg(short, long, default_value = "false", default_value_if("stdin", ArgPredicate::IsPresent, "true"))]
+    #[arg(
+        short,
+        long,
+        default_value = "false",
+        default_value_if("stdin", ArgPredicate::IsPresent, "true")
+    )]
     quiet: bool,
 }
 
@@ -56,7 +61,7 @@ fn main() {
         };
 
         return;
-    } 
+    }
 
     let input_pattern = args.input_pattern.unwrap();
     let is_dir = fs::metadata(&input_pattern)
