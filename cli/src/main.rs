@@ -7,7 +7,7 @@ use std::{
 };
 
 use anyhow::Context;
-use clap::Parser;
+use clap::{Parser, builder::ArgPredicate};
 use glob::glob;
 use leptosfmt_formatter::{format_file, format_stdin, FormatterSettings};
 use rayon::{iter::ParallelIterator, prelude::IntoParallelIterator};
@@ -32,25 +32,25 @@ struct Args {
     #[arg(short, long)]
     config_file: Option<PathBuf>,
 
-    #[arg(short, long, default_missing_value = "false")]
-    stdin: Option<bool>,
+    #[arg(short, long, default_value = "false")]
+    stdin: bool,
 
-    #[arg(short, long, default_missing_value = "false")]
-    quiet: Option<bool>,
+    #[arg(short, long, default_value = "false", default_value_if("stdin", ArgPredicate::IsPresent, "true"))]
+    quiet: bool,
 }
 
 fn main() {
     let args = Args::parse();
 
     let settings = create_settings(&args).unwrap();
-    let quiet = args.quiet.unwrap();
+    let quiet = args.quiet;
 
     // Print settings
     if !quiet {
         println!("{}", toml::to_string_pretty(&settings).unwrap());
     }
 
-    if args.stdin.unwrap() {
+    if args.stdin {
         match format_stdin_result(settings) {
             Ok(_) => {}
             Err(err) => eprintln!("{}", err),
