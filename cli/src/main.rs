@@ -9,7 +9,7 @@ use std::{
 use anyhow::Context;
 use clap::{Parser, builder::ArgPredicate};
 use glob::glob;
-use leptosfmt_formatter::{format_file, format_stdin, FormatterSettings};
+use leptosfmt_formatter::{format_file,FormatterSettings, format_file_source};
 use rayon::{iter::ParallelIterator, prelude::IntoParallelIterator};
 
 /// A formatter for Leptos RSX sytnax
@@ -103,10 +103,10 @@ fn main() {
 }
 
 fn format_stdin_result(settings: FormatterSettings) -> anyhow::Result<()> {
-    let buf = &mut Vec::new();
-    let _ = std::io::stdin().read_to_end(buf)?;
+    let mut stdin = String::new();
+    let _ = std::io::stdin().read_to_string(&mut stdin);
 
-    let formatted = panic::catch_unwind(|| format_stdin(buf, settings))
+    let formatted = panic::catch_unwind(|| format_file_source(&stdin, settings))
         .map_err(|e| anyhow::anyhow!(e.downcast::<String>().unwrap()))??;
 
     print!("{}", formatted);
