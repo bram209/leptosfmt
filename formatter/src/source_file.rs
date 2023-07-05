@@ -25,7 +25,7 @@ struct TextEdit {
     new_text: String,
 }
 
-pub(crate) fn format_file_source(
+pub fn format_file_source(
     source: &str,
     settings: FormatterSettings,
 ) -> Result<String, FormatError> {
