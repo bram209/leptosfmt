@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Documentation
+
+- Fix typo in `"AlwaysUnlessLit"` example ([#41](https://github.com/bram209/leptosfmt/issues/41))
+
 ### Features
 
 - Add stdin and quiet mode ([#30](https://github.com/bram209/leptosfmt/issues/30))
