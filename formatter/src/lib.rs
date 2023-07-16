@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use crop::Rope;
+use crop::{Rope, RopeSlice};
 use source_file::{format_file_source, FormatError};
 
 mod collect;
@@ -20,7 +20,7 @@ pub fn format_file(path: &Path, settings: FormatterSettings) -> Result<String, F
     format_file_source(&file, settings)
 }
 
-fn line_column_to_byte(source: &Rope, point: proc_macro2::LineColumn) -> usize {
+fn line_column_to_byte(source: RopeSlice<'_>, point: proc_macro2::LineColumn) -> usize {
     let line_byte = source.byte_of_line(point.line - 1);
     let line = source.line(point.line - 1);
     let char_byte: usize = line.chars().take(point.column).map(|c| c.len_utf8()).sum();

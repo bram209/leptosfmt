@@ -66,11 +66,17 @@ impl From<&FormatterSettings> for PrinterSettings {
 pub struct Formatter<'a> {
     pub printer: &'a mut leptosfmt_pretty_printer::Printer,
     pub settings: FormatterSettings,
+    state: FormatterState<'a>,
+}
+
+
+#[derive(Clone, Debug)]
+pub struct FormatterState<'a> {
     line_offset: Option<usize>,
     start_line_offset: Option<usize>,
     comments: HashMap<usize, Option<&'a str>>,
     last_span: Option<Span>,
-    source: Option<&'a Rope>,
+    source: Option<RopeSlice<'a>>,
 }
 
 impl<'a> Formatter<'a> {
@@ -82,11 +88,47 @@ impl<'a> Formatter<'a> {
         Self {
             printer,
             settings,
-            comments,
-            line_offset: None,
+            state: FormatterState {
+                comments,
+                line_offset: None,
+                start_line_offset: None,
+                last_span: None,
+                source: None,
+            },
+        }
+    }
+
+    fn child_formatter_state(&self, span: Span) -> FormatterState<'a> {
+        let start_line = span.start().line;
+        let end_line = span.end().line;
+
+        let comments: HashMap<usize, _> = self
+            .state
+            .comments
+            .iter()
+            .filter_map(|(line, _comment)| {
+                let line = *line;
+                if line >= start_line && line < end_line {
+                    Some((line, *_comment))
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        // for line in comments.keys() {
+        //     self.state.comments.remove(line);
+        // }
+
+        FormatterState {
             start_line_offset: None,
-            last_span: None,
-            source: None,
+            comments,
+            last_span: self.state.last_span,
+            source: self
+                .state
+                .source
+                .map(|r| r.line_slice((start_line - 1..end_line - 1))),
+            line_offset: None,
         }
     }
 
@@ -102,7 +144,7 @@ impl<'a> Formatter<'a> {
         dbg!(spanned.to_token_stream().to_string());
         let span = spanned.span();
 
-        if let (Some(source), Some(last_span)) = (self.source, self.last_span) {
+        if let (Some(source), Some(last_span)) = (self.state.source, self.state.last_span) {
             if last_span.end().line != span.start().line {
                 let text = get_text_beween_spans(source, last_span.end(), span.start().line - 1);
                 dbg!(last_span.end(), span.start(), text);
@@ -118,7 +160,7 @@ impl<'a> Formatter<'a> {
             }
         }
 
-        self.last_span = Some(span);
+        self.state.last_span = Some(span);
     }
 
     pub fn with_source(
@@ -129,31 +171,34 @@ impl<'a> Formatter<'a> {
         Self {
             printer,
             settings,
-            comments: HashMap::new(), // source
-            // .lines()
-            // .enumerate()
-            // .filter_map(|(i, l)| {
-            //     if l.trim().is_empty() {
-            //         Some((i, None))
-            //     } else {
-            //         l.split("//").nth(1).map(|l| (i, Some(l)))
-            //     }
-            // })
-            // .collect(),
-            line_offset: None,
-            start_line_offset: None,
-            last_span: None,
-            source: Some(source),
+            state: FormatterState {
+                comments: HashMap::new(), // source
+                // .lines()
+                // .enumerate()
+                // .filter_map(|(i, l)| {
+                //     if l.trim().is_empty() {
+                //         Some((i, None))
+                //     } else {
+                //         l.split("//").nth(1).map(|l| (i, Some(l)))
+                //     }
+                // })
+                // .collect(),
+                line_offset: None,
+                start_line_offset: None,
+                last_span: None,
+                source: Some(source.byte_slice(..)),
+            },
         }
     }
 
     pub fn write_comments(&mut self, line_index: usize) {
         let last = self
+            .state
             .line_offset
-            .unwrap_or(self.start_line_offset.unwrap_or(0));
+            .unwrap_or(self.state.start_line_offset.unwrap_or(0));
 
         let comments_or_empty_lines: Vec<_> = (last..=line_index)
-            .filter_map(|l| self.comments.remove(&l))
+            .filter_map(|l| self.state.comments.remove(&l))
             .collect();
 
         let mut prev_is_empty_line = false;
@@ -164,7 +209,7 @@ impl<'a> Formatter<'a> {
                 self.printer.word(comment.to_string());
                 self.printer.hardbreak();
                 prev_is_empty_line = false;
-            } else if self.line_offset.is_some() {
+            } else if self.state.line_offset.is_some() {
                 // Do not print multiple consecutive empty lines
                 if !prev_is_empty_line {
                     self.printer.hardbreak();
@@ -174,7 +219,7 @@ impl<'a> Formatter<'a> {
             }
         }
 
-        self.line_offset = Some(line_index);
+        self.state.line_offset = Some(line_index);
     }
 
     fn tokens<T>(&mut self, tokens: &T)
@@ -187,7 +232,7 @@ impl<'a> Formatter<'a> {
     }
 }
 
-fn get_text_beween_spans(rope: &Rope, start: LineColumn, end_line: usize) -> RopeSlice<'_> {
+fn get_text_beween_spans(rope: RopeSlice<'_>, start: LineColumn, end_line: usize) -> RopeSlice<'_> {
     let start_byte = line_column_to_byte(rope, start);
     let end_byte = rope.byte_of_line(end_line) + rope.line(end_line).byte_len();
 

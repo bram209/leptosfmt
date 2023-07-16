@@ -13,7 +13,7 @@ struct NonDocComment {
 }
 
 struct CommentVisitor<'a> {
-    source: &'a Rope,
+    source: RopeSlice<'a>,
     last_span: Option<Span>,
     comments: Vec<NonDocComment>,
 }
@@ -65,9 +65,9 @@ impl CommentVisitor<'_> {
     }
 }
 
-fn get_text_beween_spans(rope: &Rope, start: LineColumn, end: LineColumn) -> RopeSlice<'_> {
-    let start_byte = line_column_to_byte(&rope, start);
-    let end_byte = line_column_to_byte(&rope, end);
+fn get_text_beween_spans(rope: RopeSlice<'_>, start: LineColumn, end: LineColumn) -> RopeSlice<'_> {
+    let start_byte = line_column_to_byte(rope, start);
+    let end_byte = line_column_to_byte(rope, end);
 
     return rope.byte_slice(start_byte..end_byte);
 }
