@@ -202,6 +202,28 @@ mod tests {
     }
 
     #[test]
+    fn with_url_not_comment() {
+        let source = indoc! {r#"
+            fn main() {
+                view! {   cx ,  
+                // A non-comment below
+                <Script src="//cdn.jsdelivr.net/npm/eruda"/>
+            };
+            }
+        "#};
+
+        let result = format_file_source(source, Default::default()).unwrap();
+        insta::assert_snapshot!(result, @r###"
+            fn main() {
+                view! { cx,
+                    // A non-comment below
+                    <Script src="//cdn.jsdelivr.net/npm/eruda"/>
+                };
+            }
+        "###);
+    }
+
+    // #[test]
     fn nested_with_comments() {
         let source = indoc! {r#"
             fn main() {

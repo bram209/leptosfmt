@@ -313,7 +313,6 @@ mod tests {
         insta::assert_snapshot!(formatted, @r###"
         <div>
             <Nav/>
-
             <Main/>
         </div>
         "###);
@@ -334,7 +333,6 @@ mod tests {
         insta::assert_snapshot!(formatted, @r###"
         <div>
             <Nav/>
-
             <Main/>
         </div>
         "###);

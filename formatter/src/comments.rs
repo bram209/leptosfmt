@@ -30,7 +30,9 @@ impl CommentVisitor<'_> {
                     let Some(comment) = line.split("//").nth(1).map(|l| NonDocComment {
                         line_index: last_span.end().line - 1 + idx,
                         comment: l.to_owned(),
-                    }) else { continue; };
+                    }) else {
+                        continue;
+                    };
 
                     self.comments.push(comment)
                 }
