@@ -1,11 +1,11 @@
 use crop::{Rope, RopeSlice};
 use proc_macro2::{LineColumn, Span};
 use rstml::node::{Node, NodeElement, NodeFragment};
-use syn::{bracketed, spanned::Spanned};
+use syn::spanned::Spanned;
 
 use crate::line_column_to_byte;
 
-pub fn collect_comments(nodes: Vec<Node>) {}
+pub fn collect_comments(_nodes: Vec<Node>) {}
 
 struct NonDocComment {
     comment: String,
@@ -30,7 +30,9 @@ impl CommentVisitor<'_> {
                     let Some(comment) = line.split("//").nth(1).map(|l| NonDocComment {
                         line_index: last_span.end().line - 1 + idx,
                         comment: l.to_owned(),
-                    }) else { continue; };
+                    }) else {
+                        continue;
+                    };
 
                     self.comments.push(comment)
                 }
@@ -66,8 +68,8 @@ impl CommentVisitor<'_> {
 }
 
 fn get_text_beween_spans(rope: &Rope, start: LineColumn, end: LineColumn) -> RopeSlice<'_> {
-    let start_byte = line_column_to_byte(&rope, start);
-    let end_byte = line_column_to_byte(&rope, end);
+    let start_byte = line_column_to_byte(rope, start);
+    let end_byte = line_column_to_byte(rope, end);
 
     return rope.byte_slice(start_byte..end_byte);
 }

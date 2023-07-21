@@ -38,33 +38,33 @@ mod tests {
     #[test]
     fn fragment_child_element() {
         let formatted = format_fragment! { <><span>"hello"</span></> };
-        insta::assert_snapshot!(formatted, @r###"
+        insta::assert_snapshot!(formatted, @r#"
         <>
             <span>"hello"</span>
         </>
-        "###);
+        "#);
     }
 
     #[test]
     fn fragment_child_element_single_textual() {
         let formatted = format_fragment! { <>"hello"</> };
-        insta::assert_snapshot!(formatted, @r###"<>"hello"</>"###);
+        insta::assert_snapshot!(formatted, @r#"<>"hello"</>"#);
     }
 
     #[test]
     fn fragment_child_element_two_textual() {
         let formatted = format_fragment! { <>"The count is" {count}</> };
-        insta::assert_snapshot!(formatted, @r###"<>"The count is" {count}</>"###);
+        insta::assert_snapshot!(formatted, @r#"<>"The count is" {count}</>"#);
     }
 
     #[test]
     fn fragment_child_element_many_textual() {
         let formatted = format_fragment! { <>"The current count is: " {count} ". Increment by one is this: " {count + 1}</> };
-        insta::assert_snapshot!(formatted, @r###"
+        insta::assert_snapshot!(formatted, @r#"
         <>
             "The current count is: " {count}
             ". Increment by one is this: " {count + 1}
         </>
-        "###);
+        "#);
     }
 }

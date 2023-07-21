@@ -21,7 +21,9 @@ impl MacroFormatter for ViewMacroFormatter<'_> {
             return false;
         }
 
-        let Some(m) = ViewMacro::try_parse(None, mac) else { return false; };
+        let Some(m) = ViewMacro::try_parse(None, mac) else {
+            return false;
+        };
 
         let mut formatter = Formatter::new(self.settings, printer, self.comments.clone());
         formatter.view_macro(&m);

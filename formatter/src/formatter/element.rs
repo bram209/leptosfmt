@@ -220,50 +220,50 @@ mod tests {
     #[test]
     fn child_element() {
         let formatted = format_element! { <div><span>"hello"</span></div> };
-        insta::assert_snapshot!(formatted, @r###"
+        insta::assert_snapshot!(formatted, @r#"
         <div>
             <span>"hello"</span>
         </div>
-        "###);
+        "#);
     }
 
     #[test]
     fn child_element_single_textual() {
         let formatted = format_element! { <div>"hello"</div> };
-        insta::assert_snapshot!(formatted, @r###"<div>"hello"</div>"###);
+        insta::assert_snapshot!(formatted, @r#"<div>"hello"</div>"#);
     }
 
     #[test]
     fn child_element_single_textual_single_attr() {
         let formatted = format_element! { <div key=12>"hello"</div> };
-        insta::assert_snapshot!(formatted, @r###"<div key=12>"hello"</div>"###);
+        insta::assert_snapshot!(formatted, @r#"<div key=12>"hello"</div>"#);
     }
 
     #[test]
     fn child_element_single_textual_multi_attr() {
         let formatted = format_element! { <div key=12 width=100>"hello"</div> };
-        insta::assert_snapshot!(formatted, @r###"
+        insta::assert_snapshot!(formatted, @r#"
         <div key=12 width=100>
             "hello"
         </div>
-        "###);
+        "#);
     }
 
     #[test]
     fn child_element_two_textual() {
         let formatted = format_element! { <div>"The count is" {count}</div> };
-        insta::assert_snapshot!(formatted, @r###"<div>"The count is" {count}</div>"###);
+        insta::assert_snapshot!(formatted, @r#"<div>"The count is" {count}</div>"#);
     }
 
     #[test]
     fn child_element_many_textual() {
         let formatted = format_element! { <div>"The current count is: " {count} ". Increment by one is this: " {count + 1}</div> };
-        insta::assert_snapshot!(formatted, @r###"
+        insta::assert_snapshot!(formatted, @r#"
         <div>
             "The current count is: " {count}
             ". Increment by one is this: " {count + 1}
         </div>
-        "###);
+        "#);
     }
 
     #[test]
@@ -313,7 +313,6 @@ mod tests {
         insta::assert_snapshot!(formatted, @r###"
         <div>
             <Nav/>
-
             <Main/>
         </div>
         "###);
@@ -334,7 +333,6 @@ mod tests {
         insta::assert_snapshot!(formatted, @r###"
         <div>
             <Nav/>
-
             <Main/>
         </div>
         "###);
@@ -372,13 +370,13 @@ mod tests {
             </div>
         "#});
 
-        insta::assert_snapshot!(formatted, @r###"
+        insta::assert_snapshot!(formatted, @r#"
         <div>
             <div class="foo">
                 <i class="bi-google"></i>
                 "Sign in with google"
             </div>
         </div>
-        "###);
+        "#);
     }
 }

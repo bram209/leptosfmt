@@ -75,8 +75,9 @@ pub fn get_element_attribute(
     element_index: usize,
     attribute_index: usize,
 ) -> NodeAttribute {
-    let Node::Element(element) =
-        nodes.swap_remove(element_index) else { panic!("expected element") };
+    let Node::Element(element) = nodes.swap_remove(element_index) else {
+        panic!("expected element")
+    };
     element
         .attributes()
         .get(attribute_index)
@@ -85,22 +86,30 @@ pub fn get_element_attribute(
 }
 
 pub fn get_element(mut nodes: Vec<Node>, element_index: usize) -> NodeElement {
-    let Node::Element(element) = nodes.swap_remove(element_index) else { panic!("expected element") };
+    let Node::Element(element) = nodes.swap_remove(element_index) else {
+        panic!("expected element")
+    };
     element
 }
 
 pub fn get_fragment(mut nodes: Vec<Node>, fragment_index: usize) -> NodeFragment {
-    let Node::Fragment(fragment) = nodes.swap_remove(fragment_index) else { panic!("expected fragment") };
+    let Node::Fragment(fragment) = nodes.swap_remove(fragment_index) else {
+        panic!("expected fragment")
+    };
     fragment
 }
 
 pub fn get_comment(mut nodes: Vec<Node>, comment_index: usize) -> NodeComment {
-    let Node::Comment(comment) = nodes.swap_remove(comment_index) else { panic!("expected comment") };
+    let Node::Comment(comment) = nodes.swap_remove(comment_index) else {
+        panic!("expected comment")
+    };
     comment
 }
 
 pub fn get_doctype(mut nodes: Vec<Node>, doctype_index: usize) -> NodeDoctype {
-    let Node::Doctype(doctype) = nodes.swap_remove(doctype_index) else { panic!("expected doctype") };
+    let Node::Doctype(doctype) = nodes.swap_remove(doctype_index) else {
+        panic!("expected doctype")
+    };
     doctype
 }
 

@@ -89,13 +89,13 @@ mod tests {
     #[test]
     fn html_comment() {
         let formatted = format_comment!(<!--   "comment"   -->);
-        insta::assert_snapshot!(formatted, @r###"<!-- "comment" -->"###);
+        insta::assert_snapshot!(formatted, @r#"<!-- "comment" -->"#);
     }
 
     #[test]
     fn html_comment_long() {
         let formatted = format_comment!(<!--   "this is a very loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong comment"   -->);
-        insta::assert_snapshot!(formatted, @r###"<!-- "this is a very loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong comment" -->"###);
+        insta::assert_snapshot!(formatted, @r#"<!-- "this is a very loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong comment" -->"#);
     }
 
     #[test]

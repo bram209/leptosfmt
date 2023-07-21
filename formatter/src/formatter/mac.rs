@@ -4,7 +4,7 @@ use crop::Rope;
 use leptosfmt_pretty_printer::Printer;
 use proc_macro2::{token_stream, Span, TokenStream, TokenTree};
 use rstml::node::Node;
-use syn::{spanned::Spanned, token::Comma, Macro};
+use syn::{spanned::Spanned, Macro};
 
 use super::{Formatter, FormatterSettings};
 
@@ -21,9 +21,13 @@ pub struct ViewMacro<'a> {
 impl<'a> ViewMacro<'a> {
     pub fn try_parse(parent_ident: Option<usize>, mac: &'a Macro) -> Option<Self> {
         let mut tokens = mac.tokens.clone().into_iter();
-        let (Some(cx), Some(comma)) = (tokens.next(), tokens.next()) else { return None; };
+        let (Some(cx), Some(comma)) = (tokens.next(), tokens.next()) else {
+            return None;
+        };
 
-        let Some((tokens, global_class)) = extract_global_class(tokens) else { return None; };
+        let Some((tokens, global_class)) = extract_global_class(tokens) else {
+            return None;
+        };
         let nodes = rstml::parse2(tokens).ok()?;
 
         Some(Self {
@@ -49,7 +53,7 @@ impl Formatter<'_> {
             cx,
             global_class,
             nodes,
-            span,
+
             comma,
             ..
         } = view_mac;
@@ -159,30 +163,30 @@ mod tests {
     #[test]
     fn one_liner() {
         let formatted = view_macro!(view! { cx, <div>"hi"</div> });
-        insta::assert_snapshot!(formatted, @r###"view! { cx, <div>"hi"</div> }"###);
+        insta::assert_snapshot!(formatted, @r#"view! { cx, <div>"hi"</div> }"#);
     }
 
     #[test]
     fn with_nested_nodes() {
         let formatted = view_macro!(view! { cx, <div><span>"hi"</span></div> });
-        insta::assert_snapshot!(formatted, @r###"
+        insta::assert_snapshot!(formatted, @r#"
         view! { cx,
             <div>
                 <span>"hi"</span>
             </div>
         }
-        "###);
+        "#);
     }
 
     #[test]
     fn with_global_class() {
         let formatted = view_macro!(view! { cx, class = STYLE, <div><span>"hi"</span></div> });
-        insta::assert_snapshot!(formatted, @r###"
+        insta::assert_snapshot!(formatted, @r#"
         view! { cx, class=STYLE,
             <div>
                 <span>"hi"</span>
             </div>
         }
-        "###);
+        "#);
     }
 }

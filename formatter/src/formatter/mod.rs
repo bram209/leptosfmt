@@ -106,10 +106,12 @@ impl<'a> Formatter<'a> {
             if last_span.end().line != span.start().line {
                 let text = get_text_beween_spans(source, last_span.end(), span.start().line - 1);
                 dbg!(last_span.end(), span.start(), text);
-                for (idx, line) in text.lines().skip(1).enumerate() {
+                for (_idx, line) in text.lines().skip(1).enumerate() {
                     let line = line.to_string();
                     // TODO if last line, make sure to skip the first span.start().column characters (NOT bytes!)
-                    let Some(comment) = line.split("//").nth(1).map(str::trim) else { continue; };
+                    let Some(comment) = line.split("//").nth(1).map(str::trim) else {
+                        continue;
+                    };
 
                     self.printer.word("// ");
                     self.printer.word(comment.to_owned());
