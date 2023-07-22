@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Bug Fixes
+
+- Rework doc comments ([#48](https://github.com/bram209/leptosfmt/issues/48))
+
 ### Documentation
 
 - Fix typo in `"AlwaysUnlessLit"` example ([#41](https://github.com/bram209/leptosfmt/issues/41))
