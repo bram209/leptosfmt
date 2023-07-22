@@ -14,6 +14,7 @@ impl Formatter<'_> {
             Node::Doctype(doctype) => self.doctype(doctype),
             Node::Block(block) => self.node_block(block),
         };
+
         match node {
             Node::Element(_) | Node::Fragment(_) => {}
             _ => self.visit_span(node),

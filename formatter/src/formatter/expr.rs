@@ -1,4 +1,4 @@
-use syn::{spanned::Spanned, Block, Expr, ExprBlock, ExprLit, LitStr};
+use syn::{Block, Expr, ExprBlock, ExprLit, LitStr};
 
 use crate::{formatter::Formatter, view_macro::ViewMacroFormatter};
 

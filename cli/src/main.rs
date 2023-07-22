@@ -1,13 +1,15 @@
 use std::{
-    fs, panic,
+    fs,
+    io::Read,
+    panic,
     path::{Path, PathBuf},
     time::Instant,
 };
 
 use anyhow::Context;
-use clap::Parser;
+use clap::{builder::ArgPredicate, Parser};
 use glob::glob;
-use leptosfmt_formatter::{format_file, FormatterSettings};
+use leptosfmt_formatter::{format_file, format_file_source, FormatterSettings};
 use rayon::{iter::ParallelIterator, prelude::IntoParallelIterator};
 
 /// A formatter for Leptos RSX sytnax
@@ -15,7 +17,8 @@ use rayon::{iter::ParallelIterator, prelude::IntoParallelIterator};
 #[command(author, version, about, long_about = None)]
 struct Args {
     /// A file, directory or glob
-    input_pattern: String,
+    #[arg(required_unless_present = "stdin")]
+    input_pattern: Option<String>,
 
     // Maximum width of each line
     #[arg(short, long)]
@@ -28,24 +31,47 @@ struct Args {
     // Config file
     #[arg(short, long)]
     config_file: Option<PathBuf>,
+
+    #[arg(short, long, default_value = "false")]
+    stdin: bool,
+
+    #[arg(
+        short,
+        long,
+        default_value = "false",
+        default_value_if("stdin", ArgPredicate::IsPresent, "true")
+    )]
+    quiet: bool,
 }
 
 fn main() {
     let args = Args::parse();
 
     let settings = create_settings(&args).unwrap();
+    let quiet = args.quiet;
 
     // Print settings
-    println!("{}", toml::to_string_pretty(&settings).unwrap());
+    if !quiet {
+        println!("{}", toml::to_string_pretty(&settings).unwrap());
+    }
 
-    let is_dir = fs::metadata(&args.input_pattern)
+    if args.stdin {
+        if let Err(err) = format_stdin_result(settings) {
+            eprintln!("{}", err)
+        };
+
+        return;
+    }
+
+    let input_pattern = args.input_pattern.unwrap();
+    let is_dir = fs::metadata(&input_pattern)
         .map(|meta| meta.is_dir())
         .unwrap_or(false);
 
     let glob_pattern = if is_dir {
-        format!("{}/**/*.rs", &args.input_pattern)
+        format!("{}/**/*.rs", &input_pattern)
     } else {
-        args.input_pattern
+        input_pattern
     };
 
     let file_paths: Vec<_> = glob(&glob_pattern)
@@ -62,18 +88,36 @@ fn main() {
 
         match result {
             Ok(path) => match format_glob_result(&path, settings) {
-                Ok(_) => println!("✅ {}", path.display()),
+                Ok(_) => {
+                    if !quiet {
+                        println!("✅ {}", path.display())
+                    }
+                }
                 Err(err) => print_err(&path, &err.to_string()),
             },
             Err(err) => print_err(err.path(), &err.error().to_string()),
         };
     });
     let end_formatting = Instant::now();
-    println!(
-        "Formatted {} files in {} ms",
-        total_files,
-        (end_formatting - start_formatting).as_millis()
-    )
+    if !quiet {
+        println!(
+            "Formatted {} files in {} ms",
+            total_files,
+            (end_formatting - start_formatting).as_millis()
+        )
+    }
+}
+
+fn format_stdin_result(settings: FormatterSettings) -> anyhow::Result<()> {
+    let mut stdin = String::new();
+    let _ = std::io::stdin().read_to_string(&mut stdin);
+
+    let formatted = panic::catch_unwind(|| format_file_source(&stdin, settings))
+        .map_err(|e| anyhow::anyhow!(e.downcast::<String>().unwrap()))??;
+
+    print!("{}", formatted);
+
+    Ok(())
 }
 
 fn format_glob_result(file: &PathBuf, settings: FormatterSettings) -> anyhow::Result<()> {

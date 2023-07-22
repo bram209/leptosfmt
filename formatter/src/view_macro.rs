@@ -11,11 +11,11 @@ pub struct ViewMacroFormatter<'a> {
 }
 
 impl ViewMacroFormatter<'_> {
-    pub fn new<'a>(
+    pub fn new(
         settings: FormatterSettings,
-        source: Option<&'a Rope>,
+        source: Option<&Rope>,
         last_span: Option<Span>,
-    ) -> ViewMacroFormatter<'a> {
+    ) -> ViewMacroFormatter<'_> {
         ViewMacroFormatter {
             settings,
             source,
