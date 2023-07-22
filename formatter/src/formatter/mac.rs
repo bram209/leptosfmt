@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 
+use crop::Rope;
 use leptosfmt_pretty_printer::Printer;
 use proc_macro2::{token_stream, Span, TokenStream, TokenTree};
 use rstml::node::Node;
-use syn::{spanned::Spanned, Macro};
+use syn::{spanned::Spanned, token::Comma, Macro};
 
 use super::{Formatter, FormatterSettings};
 
@@ -14,12 +15,13 @@ pub struct ViewMacro<'a> {
     pub nodes: Vec<Node>,
     pub span: Span,
     pub mac: &'a Macro,
+    pub comma: TokenTree,
 }
 
 impl<'a> ViewMacro<'a> {
     pub fn try_parse(parent_ident: Option<usize>, mac: &'a Macro) -> Option<Self> {
         let mut tokens = mac.tokens.clone().into_iter();
-        let (Some(cx), Some(_comma)) = (tokens.next(), tokens.next()) else { return None; };
+        let (Some(cx), Some(comma)) = (tokens.next(), tokens.next()) else { return None; };
 
         let Some((tokens, global_class)) = extract_global_class(tokens) else { return None; };
         let nodes = rstml::parse2(tokens).ok()?;
@@ -31,6 +33,7 @@ impl<'a> ViewMacro<'a> {
             nodes,
             span: mac.span(),
             mac,
+            comma,
         })
     }
 
@@ -47,10 +50,9 @@ impl Formatter<'_> {
             global_class,
             nodes,
             span,
+            comma,
             ..
         } = view_mac;
-
-        self.start_line_offset = Some(span.start().line - 1);
 
         let indent = parent_ident
             .map(|i| i + self.settings.tab_spaces)
@@ -58,9 +60,10 @@ impl Formatter<'_> {
 
         self.printer.cbox(indent as isize);
 
+        self.visit_span(view_mac.mac.bang_token);
         self.printer.word("view! { ");
         self.printer.word(cx.to_string());
-        self.printer.word(",");
+        self.tokens(&comma);
 
         if let Some(global_class) = global_class {
             self.printer.word(" class=");
@@ -125,11 +128,11 @@ fn extract_global_class(
     Some((tokens, global_class))
 }
 
-pub fn format_macro(mac: &ViewMacro, settings: &FormatterSettings, source: Option<&str>) -> String {
+pub fn format_macro(mac: &ViewMacro, settings: &FormatterSettings, source: Option<Rope>) -> String {
     let mut printer = Printer::new(settings.into());
     let mut formatter = match source {
         Some(source) => Formatter::with_source(*settings, &mut printer, source),
-        None => Formatter::new(*settings, &mut printer, HashMap::new()),
+        None => Formatter::new(*settings, &mut printer),
     };
 
     formatter.view_macro(mac);

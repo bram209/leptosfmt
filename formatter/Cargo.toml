@@ -16,6 +16,7 @@ proc-macro2 = { version = "1.0.52", features = [ "span-locations" ] }
 thiserror = "1.0.40"
 crop = "0.3.0"
 serde = { version = "1.0.163", features = [ "derive" ] }
+quote = "1.0.26"
 
 [dev-dependencies]
 indoc = "2.0.1"

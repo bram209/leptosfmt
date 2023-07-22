@@ -5,17 +5,21 @@ use crate::formatter::Formatter;
 
 impl Formatter<'_> {
     pub fn node(&mut self, node: &Node) {
-        self.write_comments(node.span().start().line - 1);
+        // self.write_comments(node.span().start().line - 1);
 
         match node {
             Node::Element(ele) => self.element(ele),
+            Node::Fragment(frag) => self.fragment(frag),
             Node::Text(text) => self.node_text(text),
             Node::RawText(text) => self.raw_text(text, true),
             Node::Comment(comment) => self.comment(comment),
             Node::Doctype(doctype) => self.doctype(doctype),
             Node::Block(block) => self.node_block(block),
-            Node::Fragment(frag) => self.fragment(frag),
         };
+        match node {
+            Node::Element(_) | Node::Fragment(_) => {}
+            _ => self.visit_span(node),
+        }
     }
 
     pub fn comment(&mut self, comment: &NodeComment) {
@@ -43,8 +47,6 @@ impl Formatter<'_> {
         };
 
         self.string(&text, raw_text.span().start().column);
-        // TODO: can convert it to quoted if need
-        // self.printer.word(text)
     }
 
     pub fn node_name(&mut self, name: &NodeName) {

@@ -99,30 +99,16 @@ impl Formatter<'_> {
             return;
         }
 
-        let start_line = expr.span().start().line;
-        let end_line = expr.span().end().line;
-
-        let comments: HashMap<usize, _> = self
-            .comments
-            .iter()
-            .filter_map(|(line, _comment)| {
-                let line = *line;
-                if line >= start_line && line < end_line {
-                    Some((line, *_comment))
-                } else {
-                    None
-                }
-            })
-            .collect();
-
-        for line in comments.keys() {
-            self.comments.remove(line);
-        }
+        let settings = self.settings.clone();
 
         leptosfmt_prettyplease::unparse_expr(
             expr,
-            self.printer,
-            Some(&ViewMacroFormatter::new(self.settings, comments)),
+            &mut self.printer,
+            Some(&ViewMacroFormatter::new(
+                settings,
+                self.source.clone(),
+                self.last_span,
+            )),
         );
     }
 }

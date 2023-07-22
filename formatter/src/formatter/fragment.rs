@@ -4,9 +4,11 @@ use crate::formatter::Formatter;
 
 impl Formatter<'_> {
     pub fn fragment(&mut self, fragment: &NodeFragment) {
+        self.visit_span(&fragment.tag_open);
         self.printer.word("<>");
         self.children(&fragment.children, 0);
         self.printer.word("</>");
+        self.visit_span(&fragment.tag_close);
     }
 }
 
