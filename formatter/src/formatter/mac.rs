@@ -1,10 +1,10 @@
-use std::collections::HashMap;
+
 
 use crop::Rope;
 use leptosfmt_pretty_printer::Printer;
 use proc_macro2::{token_stream, Span, TokenStream, TokenTree};
 use rstml::node::Node;
-use syn::{spanned::Spanned, token::Comma, Macro};
+use syn::{spanned::Spanned, Macro};
 
 use super::{Formatter, FormatterSettings};
 
@@ -49,7 +49,7 @@ impl Formatter<'_> {
             cx,
             global_class,
             nodes,
-            span,
+            
             comma,
             ..
         } = view_mac;

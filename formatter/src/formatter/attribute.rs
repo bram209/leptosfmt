@@ -1,5 +1,5 @@
 use rstml::node::{KeyedAttribute, NodeAttribute};
-use syn::{spanned::Spanned, Expr};
+use syn::{Expr};
 
 use crate::{formatter::Formatter, AttributeValueBraceStyle as Braces};
 

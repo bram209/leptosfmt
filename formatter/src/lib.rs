@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use crop::{Rope, RopeSlice};
+use crop::{Rope};
 use source_file::{format_file_source, FormatError};
 
 mod collect;
@@ -8,7 +8,6 @@ mod formatter;
 mod source_file;
 mod view_macro;
 
-mod comments;
 #[cfg(test)]
 mod test_helpers;
 

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+
 
 use syn::{spanned::Spanned, Block, Expr, ExprBlock, ExprLit, LitStr};
 
@@ -99,11 +99,11 @@ impl Formatter<'_> {
             return;
         }
 
-        let settings = self.settings.clone();
+        let settings = self.settings;
 
         leptosfmt_prettyplease::unparse_expr(
             expr,
-            &mut self.printer,
+            self.printer,
             Some(&ViewMacroFormatter::new(
                 settings,
                 self.source.clone(),

@@ -1,4 +1,4 @@
-use std::{collections::HashMap, str::FromStr};
+use std::{str::FromStr};
 
 use crop::Rope;
 use leptosfmt_pretty_printer::Printer;
