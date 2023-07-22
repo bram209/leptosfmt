@@ -2,11 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [unreleased]
+## [0.1.10] - 2023-07-22
 
 ### Bug Fixes
 
-- Rework doc comments ([#48](https://github.com/bram209/leptosfmt/issues/48))
+- Rework non-doc comments ([#48](https://github.com/bram209/leptosfmt/issues/48))
 
 ### Documentation
 

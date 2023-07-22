@@ -62,7 +62,7 @@ filter_commits = true
 # glob pattern for matching git tags
 tag_pattern = "[0-9]*"
 # regex for skipping tags
-skip_tags = "0.1.[1-2]"
+skip_tags = "0.1.0"
 # regex for ignoring tags
 ignore_tags = ""
 # sort the tags topologically
