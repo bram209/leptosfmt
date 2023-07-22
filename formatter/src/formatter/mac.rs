@@ -1,10 +1,8 @@
-use std::collections::HashMap;
-
 use crop::Rope;
 use leptosfmt_pretty_printer::Printer;
 use proc_macro2::{token_stream, Span, TokenStream, TokenTree};
 use rstml::node::Node;
-use syn::{spanned::Spanned, token::Comma, Macro};
+use syn::{spanned::Spanned, Macro};
 
 use super::{Formatter, FormatterSettings};
 
@@ -49,7 +47,7 @@ impl Formatter<'_> {
             cx,
             global_class,
             nodes,
-            span,
+
             comma,
             ..
         } = view_mac;
@@ -60,6 +58,7 @@ impl Formatter<'_> {
 
         self.printer.cbox(indent as isize);
 
+        self.visit_span(view_mac.mac.bang_token);
         self.printer.word("view! { ");
         self.printer.word(cx.to_string());
         self.tokens(&comma);
@@ -135,7 +134,7 @@ pub fn format_macro(
     let mut printer = Printer::new(settings.into());
     let mut formatter = match source {
         Some(source) => Formatter::with_source(*settings, &mut printer, source),
-        None => Formatter::new(*settings, &mut printer, HashMap::new()),
+        None => Formatter::new(*settings, &mut printer),
     };
 
     formatter.view_macro(mac);

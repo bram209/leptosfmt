@@ -1,12 +1,10 @@
 use rstml::node::{KeyedAttribute, NodeAttribute};
-use syn::{spanned::Spanned, Expr};
+use syn::Expr;
 
 use crate::{formatter::Formatter, AttributeValueBraceStyle as Braces};
 
 impl Formatter<'_> {
     pub fn attribute(&mut self, attribute: &NodeAttribute) {
-        self.write_comments(attribute.span().start().line - 1);
-
         match attribute {
             NodeAttribute::Attribute(k) => self.keyed_attribute(k),
             NodeAttribute::Block(b) => self.node_block(b),

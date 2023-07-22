@@ -1,17 +1,26 @@
-use std::collections::HashMap;
-
+use crop::Rope;
 use leptosfmt_prettyplease::MacroFormatter;
+use proc_macro2::Span;
 
 use crate::{Formatter, FormatterSettings, ViewMacro};
 
 pub struct ViewMacroFormatter<'a> {
     settings: FormatterSettings,
-    comments: HashMap<usize, Option<&'a str>>,
+    source: Option<&'a Rope>,
+    last_span: Option<Span>,
 }
 
-impl<'a> ViewMacroFormatter<'a> {
-    pub fn new(settings: FormatterSettings, comments: HashMap<usize, Option<&'a str>>) -> Self {
-        Self { settings, comments }
+impl ViewMacroFormatter<'_> {
+    pub fn new(
+        settings: FormatterSettings,
+        source: Option<&Rope>,
+        last_span: Option<Span>,
+    ) -> ViewMacroFormatter<'_> {
+        ViewMacroFormatter {
+            settings,
+            source,
+            last_span,
+        }
     }
 }
 
@@ -22,8 +31,13 @@ impl MacroFormatter for ViewMacroFormatter<'_> {
         }
 
         let Some(m) = ViewMacro::try_parse(None, mac) else { return false; };
+        let mut formatter = Formatter {
+            printer,
+            settings: self.settings,
+            source: self.source,
+            last_span: self.last_span,
+        };
 
-        let mut formatter = Formatter::new(self.settings, printer, self.comments.clone());
         formatter.view_macro(&m);
         true
     }

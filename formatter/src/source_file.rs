@@ -159,6 +159,7 @@ mod tests {
                     <div>// with comment on the next line
                     </div>
                 // comments with empty lines inbetween
+
                 // and some more
                 // on the next line
                 </div>
@@ -181,7 +182,7 @@ mod tests {
                                          <span>{a}</span>
                         }
                 }</span></div>  };
-            }            
+            }
         "#};
 
         let result = format_file_source(source, Default::default()).unwrap();
@@ -192,12 +193,13 @@ mod tests {
                     <span>
                         {
                             let a = 12;
+
                             view! { cx, <span>{a}</span> }
                         }
                     </span>
                 </div>
             };
-        }            
+        }
         "###);
     }
 
@@ -218,7 +220,7 @@ mod tests {
                             <span>{a}</span>
                         }
                 }</span></div>  };
-            }            
+            }
         "#};
 
         let result = format_file_source(source, Default::default()).unwrap();
@@ -232,6 +234,7 @@ mod tests {
                     <span>
                         {
                             let a = 12;
+
                             view! { cx,
                                 // wow, a span
                                 <span>{a}</span>
@@ -240,7 +243,7 @@ mod tests {
                     </span>
                 </div>
             };
-        }            
+        }
         "###);
     }
 

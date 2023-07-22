@@ -8,7 +8,6 @@ mod formatter;
 mod source_file;
 mod view_macro;
 
-mod comments;
 #[cfg(test)]
 mod test_helpers;
 

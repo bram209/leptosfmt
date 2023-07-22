@@ -1,4 +1,4 @@
-use std::{collections::HashMap, str::FromStr};
+use std::str::FromStr;
 
 use crop::Rope;
 use leptosfmt_pretty_printer::Printer;
@@ -118,7 +118,7 @@ pub fn format_with_source(
 
 pub fn format_with(settings: FormatterSettings, run: impl FnOnce(&mut Formatter)) -> String {
     let mut printer = Printer::new((&settings).into());
-    let mut formatter = Formatter::new(settings, &mut printer, HashMap::new());
+    let mut formatter = Formatter::new(settings, &mut printer);
     run(&mut formatter);
     printer.eof()
 }

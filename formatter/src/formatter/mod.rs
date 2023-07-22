@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::borrow::BorrowMut;
 
 use crop::Rope;
 use crop::RopeSlice;
@@ -66,54 +66,44 @@ impl From<&FormatterSettings> for PrinterSettings {
 pub struct Formatter<'a> {
     pub printer: &'a mut leptosfmt_pretty_printer::Printer,
     pub settings: FormatterSettings,
-    line_offset: Option<usize>,
-    start_line_offset: Option<usize>,
-    comments: HashMap<usize, Option<&'a str>>,
-    last_span: Option<Span>,
-    source: Option<&'a Rope>,
+    pub(crate) last_span: Option<Span>,
+    pub(crate) source: Option<&'a Rope>,
 }
 
 impl<'a> Formatter<'a> {
-    pub fn new(
-        settings: FormatterSettings,
-        printer: &'a mut Printer,
-        comments: HashMap<usize, Option<&'a str>>,
-    ) -> Self {
+    pub fn new(settings: FormatterSettings, printer: &'a mut Printer) -> Self {
         Self {
             printer,
             settings,
-            comments,
-            line_offset: None,
-            start_line_offset: None,
             last_span: None,
             source: None,
         }
     }
-
-    // fn token(&mut self, token: impl Token) {
-    //     self.visit_span(token);
-    // }
 
     fn visit_span<T>(&mut self, spanned: T)
     where
         T: Spanned,
         T: ToTokens,
     {
-        dbg!(spanned.to_token_stream().to_string());
         let span = spanned.span();
 
-        if let (Some(source), Some(last_span)) = (self.source, self.last_span) {
+        if let (Some(source), Some(last_span)) = (self.source.borrow_mut(), self.last_span) {
             if last_span.end().line != span.start().line {
                 let text = get_text_beween_spans(source, last_span.end(), span.start().line - 1);
-                dbg!(last_span.end(), span.start(), text);
-                for (idx, line) in text.lines().skip(1).enumerate() {
+                let mut printed_empty_line = false;
+
+                for line in text.lines().skip(1) {
                     let line = line.to_string();
                     // TODO if last line, make sure to skip the first span.start().column characters (NOT bytes!)
-                    let Some(comment) = line.split("//").nth(1).map(str::trim) else { continue; };
-
-                    self.printer.word("// ");
-                    self.printer.word(comment.to_owned());
-                    self.printer.hardbreak();
+                    if let Some(comment) = line.split("//").nth(1).map(str::trim) {
+                        self.printer.word("// ");
+                        self.printer.word(comment.to_owned());
+                        self.printer.hardbreak();
+                        printed_empty_line = false;
+                    } else if line.is_empty() && !printed_empty_line {
+                        self.printer.hardbreak();
+                        printed_empty_line = true;
+                    }
                 }
             }
         }
@@ -129,52 +119,9 @@ impl<'a> Formatter<'a> {
         Self {
             printer,
             settings,
-            comments: HashMap::new(), // source
-            // .lines()
-            // .enumerate()
-            // .filter_map(|(i, l)| {
-            //     if l.trim().is_empty() {
-            //         Some((i, None))
-            //     } else {
-            //         l.split("//").nth(1).map(|l| (i, Some(l)))
-            //     }
-            // })
-            // .collect(),
-            line_offset: None,
-            start_line_offset: None,
             last_span: None,
             source: Some(source),
         }
-    }
-
-    pub fn write_comments(&mut self, line_index: usize) {
-        let last = self
-            .line_offset
-            .unwrap_or(self.start_line_offset.unwrap_or(0));
-
-        let comments_or_empty_lines: Vec<_> = (last..=line_index)
-            .filter_map(|l| self.comments.remove(&l))
-            .collect();
-
-        let mut prev_is_empty_line = false;
-
-        for comment_or_empty in comments_or_empty_lines {
-            if let Some(comment) = comment_or_empty {
-                self.printer.word("//");
-                self.printer.word(comment.to_string());
-                self.printer.hardbreak();
-                prev_is_empty_line = false;
-            } else if self.line_offset.is_some() {
-                // Do not print multiple consecutive empty lines
-                if !prev_is_empty_line {
-                    self.printer.hardbreak();
-                }
-
-                prev_is_empty_line = true;
-            }
-        }
-
-        self.line_offset = Some(line_index);
     }
 
     fn tokens<T>(&mut self, tokens: &T)
@@ -190,8 +137,5 @@ impl<'a> Formatter<'a> {
 fn get_text_beween_spans(rope: &Rope, start: LineColumn, end_line: usize) -> RopeSlice<'_> {
     let start_byte = line_column_to_byte(rope, start);
     let end_byte = rope.byte_of_line(end_line) + rope.line(end_line).byte_len();
-
-    dbg!(start, end_line);
-
     return rope.byte_slice(start_byte..end_byte);
 }
