@@ -4,15 +4,19 @@ use proc_macro2::Span;
 
 use crate::{Formatter, FormatterSettings, ViewMacro};
 
-pub struct ViewMacroFormatter {
+pub struct ViewMacroFormatter<'a> {
     settings: FormatterSettings,
-    source: Option<Rope>,
+    source: Option<&'a Rope>,
     last_span: Option<Span>,
 }
 
-impl ViewMacroFormatter {
-    pub fn new(settings: FormatterSettings, source: Option<Rope>, last_span: Option<Span>) -> Self {
-        Self {
+impl ViewMacroFormatter<'_> {
+    pub fn new<'a>(
+        settings: FormatterSettings,
+        source: Option<&'a Rope>,
+        last_span: Option<Span>,
+    ) -> ViewMacroFormatter<'a> {
+        ViewMacroFormatter {
             settings,
             source,
             last_span,
@@ -20,7 +24,7 @@ impl ViewMacroFormatter {
     }
 }
 
-impl MacroFormatter for ViewMacroFormatter {
+impl MacroFormatter for ViewMacroFormatter<'_> {
     fn format(&self, printer: &mut leptosfmt_pretty_printer::Printer, mac: &syn::Macro) -> bool {
         if !mac.path.is_ident("view") {
             return false;
@@ -30,7 +34,7 @@ impl MacroFormatter for ViewMacroFormatter {
         let mut formatter = Formatter {
             printer,
             settings: self.settings,
-            source: self.source.clone(),
+            source: self.source,
             last_span: self.last_span,
         };
 

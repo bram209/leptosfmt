@@ -1,7 +1,5 @@
 use std::borrow::BorrowMut;
 
-
-
 use crop::Rope;
 use crop::RopeSlice;
 use leptosfmt_pretty_printer::{Printer, PrinterSettings};
@@ -69,7 +67,7 @@ pub struct Formatter<'a> {
     pub printer: &'a mut leptosfmt_pretty_printer::Printer,
     pub settings: FormatterSettings,
     pub(crate) last_span: Option<Span>,
-    pub(crate) source: Option<Rope>,
+    pub(crate) source: Option<&'a Rope>,
 }
 
 impl<'a> Formatter<'a> {
@@ -116,7 +114,7 @@ impl<'a> Formatter<'a> {
     pub fn with_source(
         settings: FormatterSettings,
         printer: &'a mut Printer,
-        source: Rope,
+        source: &'a Rope,
     ) -> Self {
         Self {
             printer,

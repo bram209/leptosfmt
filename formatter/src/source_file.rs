@@ -48,7 +48,7 @@ fn format_source<'a>(
         let end = mac.delimiter.span().close().end();
         let start_byte = line_column_to_byte(&rope, start);
         let end_byte = line_column_to_byte(&rope, end);
-        let new_text = format_macro(&view_mac, &settings, Some(rope.clone()));
+        let new_text = format_macro(&view_mac, &settings, Some(&rope));
 
         edits.push(TextEdit {
             range: start_byte..end_byte,

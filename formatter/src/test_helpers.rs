@@ -111,7 +111,7 @@ pub fn format_with_source(
 ) -> String {
     let mut printer = Printer::new((&settings).into());
     let rope = Rope::from_str(source).unwrap();
-    let mut formatter = Formatter::with_source(settings, &mut printer, rope);
+    let mut formatter = Formatter::with_source(settings, &mut printer, &rope);
     run(&mut formatter);
     printer.eof()
 }

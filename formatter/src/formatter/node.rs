@@ -5,8 +5,6 @@ use crate::formatter::Formatter;
 
 impl Formatter<'_> {
     pub fn node(&mut self, node: &Node) {
-        // self.write_comments(node.span().start().line - 1);
-
         match node {
             Node::Element(ele) => self.element(ele),
             Node::Fragment(frag) => self.fragment(frag),

@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use crop::{Rope};
+use crop::Rope;
 use source_file::{format_file_source, FormatError};
 
 mod collect;

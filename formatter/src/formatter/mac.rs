@@ -1,5 +1,3 @@
-
-
 use crop::Rope;
 use leptosfmt_pretty_printer::Printer;
 use proc_macro2::{token_stream, Span, TokenStream, TokenTree};
@@ -49,7 +47,7 @@ impl Formatter<'_> {
             cx,
             global_class,
             nodes,
-            
+
             comma,
             ..
         } = view_mac;
@@ -128,7 +126,11 @@ fn extract_global_class(
     Some((tokens, global_class))
 }
 
-pub fn format_macro(mac: &ViewMacro, settings: &FormatterSettings, source: Option<Rope>) -> String {
+pub fn format_macro(
+    mac: &ViewMacro,
+    settings: &FormatterSettings,
+    source: Option<&Rope>,
+) -> String {
     let mut printer = Printer::new(settings.into());
     let mut formatter = match source {
         Some(source) => Formatter::with_source(*settings, &mut printer, source),

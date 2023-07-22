@@ -1,5 +1,3 @@
-
-
 use syn::{spanned::Spanned, Block, Expr, ExprBlock, ExprLit, LitStr};
 
 use crate::{formatter::Formatter, view_macro::ViewMacroFormatter};
@@ -106,7 +104,7 @@ impl Formatter<'_> {
             self.printer,
             Some(&ViewMacroFormatter::new(
                 settings,
-                self.source.clone(),
+                self.source,
                 self.last_span,
             )),
         );
