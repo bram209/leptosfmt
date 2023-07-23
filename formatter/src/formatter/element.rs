@@ -43,7 +43,6 @@ impl Formatter<'_> {
         if let [attribute] = attributes {
             self.printer.cbox(0);
             self.printer.nbsp();
-            self.visit_spanned(attribute);
             self.attribute(attribute);
             self.printer.end();
         } else {
@@ -52,7 +51,6 @@ impl Formatter<'_> {
 
             let mut iter = attributes.iter().peekable();
             while let Some(attr) = iter.next() {
-                self.visit_spanned(attr);
                 self.attribute(attr);
 
                 if iter.peek().is_some() {

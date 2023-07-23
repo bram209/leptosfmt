@@ -12,6 +12,7 @@ impl Formatter<'_> {
     }
 
     pub fn keyed_attribute(&mut self, attribute: &KeyedAttribute) {
+        self.visit_spanned(&attribute.key);
         self.node_name(&attribute.key);
 
         if let Some(value) = attribute.value() {
