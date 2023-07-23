@@ -17,7 +17,7 @@ impl Formatter<'_> {
 
         match node {
             Node::Element(_) | Node::Fragment(_) => {}
-            _ => self.visit_span(node),
+            _ => self.visit_spanned(node),
         }
     }
 
