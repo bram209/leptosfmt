@@ -34,6 +34,10 @@ Options:
   -V, --version                  Print version
 ```
 
+## Known issues
+
+- **End of line** non-doc comments (with two forward slashes) are not yet supported.
+
 ## Configuration
 You can configure all settings through a `leptosfmt.toml` file.
 

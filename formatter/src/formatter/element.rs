@@ -15,7 +15,7 @@ impl Formatter<'_> {
 
     fn opening_tag(&mut self, element: &NodeElement, is_void: bool) {
         self.tokens(&element.open_tag.token_lt);
-        self.visit_span(&element.open_tag.name);
+        self.visit_spanned(&element.open_tag.name);
         self.node_name(&element.open_tag.name);
 
         self.attributes(element.attributes());
@@ -25,11 +25,11 @@ impl Formatter<'_> {
         } else {
             self.printer.word(">")
         }
-        self.visit_span(&element.open_tag.end_tag);
+        self.visit_spanned(&element.open_tag.end_tag);
     }
 
     fn closing_tag(&mut self, element: &NodeElement) {
-        self.visit_span(&element.close_tag);
+        self.visit_spanned(&element.close_tag);
         self.printer.word("</");
         self.node_name(element.name());
         self.printer.word(">");
@@ -43,7 +43,7 @@ impl Formatter<'_> {
         if let [attribute] = attributes {
             self.printer.cbox(0);
             self.printer.nbsp();
-            self.visit_span(attribute);
+            self.visit_spanned(attribute);
             self.attribute(attribute);
             self.printer.end();
         } else {
@@ -52,7 +52,7 @@ impl Formatter<'_> {
 
             let mut iter = attributes.iter().peekable();
             while let Some(attr) = iter.next() {
-                self.visit_span(attr);
+                self.visit_spanned(attr);
                 self.attribute(attr);
 
                 if iter.peek().is_some() {

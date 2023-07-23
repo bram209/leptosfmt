@@ -80,21 +80,23 @@ impl<'a> Formatter<'a> {
         }
     }
 
-    fn visit_span<T>(&mut self, spanned: T)
-    where
-        T: Spanned,
-        T: ToTokens,
-    {
-        let span = spanned.span();
-
+    fn visit_span(&mut self, span: Span) {
         if let (Some(source), Some(last_span)) = (self.source.borrow_mut(), self.last_span) {
             if last_span.end().line != span.start().line {
-                let text = get_text_beween_spans(source, last_span.end(), span.start().line - 1);
+                let text = get_text_beween_spans(source, last_span.end(), span.start());
                 let mut printed_empty_line = false;
 
-                for line in text.lines().skip(1) {
-                    let line = line.to_string();
-                    // TODO if last line, make sure to skip the first span.start().column characters (NOT bytes!)
+                let mut lines = text.lines().map(|line| line.to_string());
+                let first_line = lines.next().unwrap();
+                if first_line.trim().starts_with("//") {
+                    panic!(
+                        "End of line comments are not supported yet (at line {}): {:?}",
+                        last_span.end().line,
+                        first_line
+                    );
+                }
+
+                for line in lines {
                     if let Some(comment) = line.split("//").nth(1).map(str::trim) {
                         self.printer.word("// ");
                         self.printer.word(comment.to_owned());
@@ -109,6 +111,14 @@ impl<'a> Formatter<'a> {
         }
 
         self.last_span = Some(span);
+    }
+
+    fn visit_spanned<T>(&mut self, spanned: T)
+    where
+        T: Spanned,
+    {
+        let span = spanned.span();
+        self.visit_span(span);
     }
 
     pub fn with_source(
@@ -129,13 +139,14 @@ impl<'a> Formatter<'a> {
         T: ToTokens,
         T: Spanned,
     {
-        self.visit_span(tokens);
+        self.visit_spanned(tokens);
         self.printer.word(tokens.to_token_stream().to_string())
     }
 }
 
-fn get_text_beween_spans(rope: &Rope, start: LineColumn, end_line: usize) -> RopeSlice<'_> {
+fn get_text_beween_spans(rope: &Rope, start: LineColumn, end: LineColumn) -> RopeSlice<'_> {
     let start_byte = line_column_to_byte(rope, start);
-    let end_byte = rope.byte_of_line(end_line) + rope.line(end_line).byte_len();
+    let end_byte = line_column_to_byte(rope, end);
+
     return rope.byte_slice(start_byte..end_byte);
 }

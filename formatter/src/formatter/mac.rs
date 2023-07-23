@@ -58,7 +58,7 @@ impl Formatter<'_> {
 
         self.printer.cbox(indent as isize);
 
-        self.visit_span(view_mac.mac.bang_token);
+        self.visit_spanned(view_mac.mac.bang_token);
         self.printer.word("view! { ");
         self.printer.word(cx.to_string());
         self.tokens(&comma);
@@ -70,6 +70,7 @@ impl Formatter<'_> {
         }
 
         self.view_macro_nodes(nodes);
+        self.visit_span(view_mac.mac.delimiter.span().close());
         self.printer.word("}");
         self.printer.end();
     }
