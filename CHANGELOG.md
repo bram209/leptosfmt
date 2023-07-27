@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 ### Features
 
 - Add stdin and quiet mode ([#30](https://github.com/bram209/leptosfmt/issues/30))
+- Rework non-doc comments v2 ([#52](https://github.com/bram209/leptosfmt/issues/52))
 
 ## [0.1.9] - 2023-06-29
 
