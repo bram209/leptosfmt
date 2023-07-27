@@ -1,4 +1,6 @@
-use syn::{Block, Expr, ExprBlock, ExprLit, LitStr};
+use std::collections::HashMap;
+
+use syn::{spanned::Spanned, Block, Expr, ExprBlock, ExprLit, LitStr};
 
 use crate::{formatter::Formatter, view_macro::ViewMacroFormatter};
 
@@ -88,6 +90,8 @@ impl Formatter<'_> {
     }
 
     fn expr(&mut self, expr: &syn::Expr) {
+        let span = expr.span();
+        self.flush_comments(span.start().line - 1);
         if let syn::Expr::Lit(ExprLit {
             lit: syn::Lit::Str(lit_str),
             ..
@@ -97,15 +101,29 @@ impl Formatter<'_> {
             return;
         }
 
-        let settings = self.settings;
+        let start_line = span.start().line - 1;
+        let end_line = span.end().line - 1;
+
+        let cmt_or_wp_lines: Vec<usize> = self
+            .whitespace_and_comments
+            .iter()
+            .filter(|(line, _comment)| **line >= start_line && **line < end_line)
+            .map(|(line, _)| *line)
+            .collect();
+
+        let comments_or_whitespace = cmt_or_wp_lines
+            .into_iter()
+            .map(|line| (line, self.whitespace_and_comments.remove(&line).unwrap()))
+            .collect::<HashMap<_, _>>();
 
         leptosfmt_prettyplease::unparse_expr(
             expr,
             self.printer,
             Some(&ViewMacroFormatter::new(
-                settings,
+                self.settings,
                 self.source,
-                self.last_span,
+                self.line_offset,
+                comments_or_whitespace,
             )),
         );
     }

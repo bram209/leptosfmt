@@ -4,6 +4,7 @@ use crop::Rope;
 pub use source_file::{format_file_source, FormatError};
 
 mod collect;
+mod collect_comments;
 mod formatter;
 mod source_file;
 mod view_macro;

@@ -20,8 +20,9 @@ impl<'a> ViewMacro<'a> {
     pub fn try_parse(parent_ident: Option<usize>, mac: &'a Macro) -> Option<Self> {
         let mut tokens = mac.tokens.clone().into_iter();
         let (Some(cx), Some(comma)) = (tokens.next(), tokens.next()) else { return None; };
-
         let Some((tokens, global_class)) = extract_global_class(tokens) else { return None; };
+
+        let span = mac.span();
         let nodes = rstml::parse2(tokens).ok()?;
 
         Some(Self {
@@ -29,7 +30,7 @@ impl<'a> ViewMacro<'a> {
             cx,
             global_class,
             nodes,
-            span: mac.span(),
+            span,
             mac,
             comma,
         })
@@ -47,8 +48,6 @@ impl Formatter<'_> {
             cx,
             global_class,
             nodes,
-
-            comma,
             ..
         } = view_mac;
 
@@ -58,10 +57,10 @@ impl Formatter<'_> {
 
         self.printer.cbox(indent as isize);
 
-        self.visit_spanned(view_mac.mac.bang_token);
+        self.flush_comments(cx.span().start().line - 1);
         self.printer.word("view! { ");
         self.printer.word(cx.to_string());
-        self.tokens(&comma);
+        self.printer.word(",");
 
         if let Some(global_class) = global_class {
             self.printer.word(" class=");
@@ -69,8 +68,8 @@ impl Formatter<'_> {
             self.printer.word(",");
         }
 
+        self.trim_whitespace(nodes.first().span().start().line - 1);
         self.view_macro_nodes(nodes);
-        self.visit_span(view_mac.mac.delimiter.span().close());
         self.printer.word("}");
         self.printer.end();
     }
@@ -134,7 +133,13 @@ pub fn format_macro(
 ) -> String {
     let mut printer = Printer::new(settings.into());
     let mut formatter = match source {
-        Some(source) => Formatter::with_source(*settings, &mut printer, source),
+        Some(source) => {
+            let whitespace = crate::collect_comments::extract_whitespace_and_comments(
+                source,
+                mac.mac.tokens.clone(),
+            );
+            Formatter::with_source(*settings, &mut printer, source, whitespace)
+        }
         None => Formatter::new(*settings, &mut printer),
     };
 

@@ -60,7 +60,7 @@ impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
     }
 }
 
-pub fn collect_macros_in_file(file: &File) -> Vec<ViewMacro> {
+pub fn collect_macros_in_file(file: &File) -> Vec<ViewMacro<'_>> {
     let mut visitor = ViewMacroVisitor::default();
     visitor.visit_file(file);
     visitor.macros

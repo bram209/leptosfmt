@@ -5,6 +5,8 @@ use crate::formatter::Formatter;
 
 impl Formatter<'_> {
     pub fn node(&mut self, node: &Node) {
+        self.flush_comments(node.span().start().line - 1);
+
         match node {
             Node::Element(ele) => self.element(ele),
             Node::Fragment(frag) => self.fragment(frag),
@@ -14,11 +16,6 @@ impl Formatter<'_> {
             Node::Doctype(doctype) => self.doctype(doctype),
             Node::Block(block) => self.node_block(block),
         };
-
-        match node {
-            Node::Element(_) | Node::Fragment(_) => {}
-            _ => self.visit_spanned(node),
-        }
     }
 
     pub fn comment(&mut self, comment: &NodeComment) {

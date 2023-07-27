@@ -1,7 +1,7 @@
-use std::borrow::BorrowMut;
+use std::collections::HashMap;
 
 use crop::Rope;
-use crop::RopeSlice;
+
 use leptosfmt_pretty_printer::{Printer, PrinterSettings};
 
 mod attribute;
@@ -13,14 +13,9 @@ mod node;
 
 pub use mac::format_macro;
 pub use mac::ViewMacro;
-use proc_macro2::LineColumn;
-use proc_macro2::Span;
-use quote::ToTokens;
+
 use serde::Deserialize;
 use serde::Serialize;
-use syn::spanned::Spanned;
-
-use crate::line_column_to_byte;
 
 #[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
 pub enum AttributeValueBraceStyle {
@@ -66,8 +61,9 @@ impl From<&FormatterSettings> for PrinterSettings {
 pub struct Formatter<'a> {
     pub printer: &'a mut leptosfmt_pretty_printer::Printer,
     pub settings: FormatterSettings,
-    pub(crate) last_span: Option<Span>,
     pub(crate) source: Option<&'a Rope>,
+    pub(crate) whitespace_and_comments: HashMap<usize, Option<String>>,
+    pub(crate) line_offset: Option<usize>,
 }
 
 impl<'a> Formatter<'a> {
@@ -75,78 +71,66 @@ impl<'a> Formatter<'a> {
         Self {
             printer,
             settings,
-            last_span: None,
             source: None,
+            whitespace_and_comments: HashMap::new(),
+            line_offset: None,
         }
     }
-
-    fn visit_span(&mut self, span: Span) {
-        if let (Some(source), Some(last_span)) = (self.source.borrow_mut(), self.last_span) {
-            if last_span.end().line != span.start().line {
-                let text = get_text_beween_spans(source, last_span.end(), span.start());
-                let mut printed_empty_line = false;
-
-                let mut lines = text.lines().map(|line| line.to_string());
-                let first_line = lines.next().unwrap();
-                if first_line.trim().starts_with("//") {
-                    panic!(
-                        "End of line comments are not supported yet (at line {}): {:?}",
-                        last_span.end().line,
-                        first_line
-                    );
-                }
-
-                for line in lines {
-                    if let Some(comment) = line.split("//").nth(1).map(str::trim) {
-                        self.printer.word("// ");
-                        self.printer.word(comment.to_owned());
-                        self.printer.hardbreak();
-                        printed_empty_line = false;
-                    } else if line.is_empty() && !printed_empty_line {
-                        self.printer.hardbreak();
-                        printed_empty_line = true;
-                    }
-                }
-            }
-        }
-
-        self.last_span = Some(span);
-    }
-
-    fn visit_spanned<T>(&mut self, spanned: T)
-    where
-        T: Spanned,
-    {
-        let span = spanned.span();
-        self.visit_span(span);
-    }
-
     pub fn with_source(
         settings: FormatterSettings,
         printer: &'a mut Printer,
         source: &'a Rope,
+        comments: HashMap<usize, Option<String>>,
     ) -> Self {
         Self {
             printer,
             settings,
-            last_span: None,
             source: Some(source),
+            whitespace_and_comments: comments,
+            line_offset: None,
         }
     }
 
-    fn tokens<T>(&mut self, tokens: &T)
-    where
-        T: ToTokens,
-        T: Spanned,
-    {
-        self.visit_spanned(tokens);
-        self.printer.word(tokens.to_token_stream().to_string())
+    pub fn trim_whitespace(&mut self, line_index: usize) {
+        // keep removing whitespace until we reach the current line or a comment
+        let last = self.line_offset.unwrap_or(0);
+
+        for line in last..=line_index {
+            if let Some(entry) = self.whitespace_and_comments.get(&line) {
+                if entry.is_none() {
+                    self.whitespace_and_comments.remove(&line);
+                } else {
+                    return;
+                }
+            }
+        }
     }
-}
 
-fn get_text_beween_spans(rope: &Rope, start: LineColumn, end: LineColumn) -> RopeSlice<'_> {
-    let start_byte = line_column_to_byte(rope, start);
-    let end_byte = line_column_to_byte(rope, end);
+    pub fn flush_comments(&mut self, line_index: usize) {
+        let last = self.line_offset.unwrap_or(0);
 
-    return rope.byte_slice(start_byte..end_byte);
+        let comments_or_empty_lines: Vec<_> = (last..=line_index)
+            .filter_map(|l| self.whitespace_and_comments.remove(&l))
+            .collect();
+
+        let mut prev_is_empty_line = false;
+
+        for comment_or_empty in comments_or_empty_lines {
+            if let Some(comment) = comment_or_empty {
+                self.printer.word("// ");
+                self.printer.word(comment);
+                self.printer.hardbreak();
+                prev_is_empty_line = false;
+            } else if self.line_offset.is_some() {
+                // Do not print multiple consecutive empty lines
+                if !prev_is_empty_line {
+                    self.printer.hardbreak();
+                }
+
+                prev_is_empty_line = true;
+            }
+        }
+
+        self.line_offset = Some(line_index);
+    }
 }

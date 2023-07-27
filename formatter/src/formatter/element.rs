@@ -1,5 +1,6 @@
 use crate::formatter::Formatter;
 use rstml::node::{Node, NodeAttribute, NodeElement};
+use syn::spanned::Spanned;
 
 impl Formatter<'_> {
     pub fn element(&mut self, element: &NodeElement) {
@@ -9,13 +10,13 @@ impl Formatter<'_> {
 
         if !is_void {
             self.children(&element.children, element.attributes().len());
+            self.flush_comments(element.close_tag.span().end().line - 1);
             self.closing_tag(element)
         }
     }
 
     fn opening_tag(&mut self, element: &NodeElement, is_void: bool) {
-        self.tokens(&element.open_tag.token_lt);
-        self.visit_spanned(&element.open_tag.name);
+        self.printer.word("<");
         self.node_name(&element.open_tag.name);
 
         self.attributes(element.attributes());
@@ -25,11 +26,9 @@ impl Formatter<'_> {
         } else {
             self.printer.word(">")
         }
-        self.visit_spanned(&element.open_tag.end_tag);
     }
 
     fn closing_tag(&mut self, element: &NodeElement) {
-        self.visit_spanned(&element.close_tag);
         self.printer.word("</");
         self.node_name(element.name());
         self.printer.word(">");
