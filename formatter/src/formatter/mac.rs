@@ -8,30 +8,54 @@ use super::{Formatter, FormatterSettings};
 
 pub struct ViewMacro<'a> {
     pub parent_ident: Option<usize>,
-    pub cx: TokenTree,
+    pub cx: Option<TokenTree>,
     pub global_class: Option<TokenTree>,
     pub nodes: Vec<Node>,
     pub span: Span,
     pub mac: &'a Macro,
-    pub comma: TokenTree,
+    pub comma: Option<TokenTree>,
 }
 
 impl<'a> ViewMacro<'a> {
     pub fn try_parse(parent_ident: Option<usize>, mac: &'a Macro) -> Option<Self> {
         let mut tokens = mac.tokens.clone().into_iter();
-        let (Some(cx), Some(comma)) = (tokens.next(), tokens.next()) else { return None; };
+        let (cx, comma) = (tokens.next(), tokens.next());
+
+        let mut no_explicit_scope = true;
+        dbg!(&cx, &comma);
+
+        // If the second token is not a comma, then leptos 0.5+ is being used, where reactive scope does not have to be manually specified.
+        if let Some(TokenTree::Punct(punct)) = &comma {
+            if punct.as_char() == ',' {
+                no_explicit_scope = false;
+            }
+        };
+
+        let (cx, comma) = if no_explicit_scope {
+            tokens = [cx, comma]
+                .into_iter()
+                .flatten()
+                .chain(tokens)
+                .collect::<TokenStream>()
+                .into_iter();
+            (None, None)
+        } else {
+            (cx, comma)
+        };
+
         let Some((tokens, global_class)) = extract_global_class(tokens) else { return None; };
 
         let span = mac.span();
         let nodes = rstml::parse2(tokens).ok()?;
+        dbg!(&nodes);
 
         Some(Self {
             parent_ident,
-            cx,
             global_class,
             nodes,
             span,
             mac,
+            cx,
             comma,
         })
     }
@@ -58,9 +82,13 @@ impl Formatter<'_> {
         self.printer.cbox(indent as isize);
 
         self.flush_comments(cx.span().start().line - 1);
-        self.printer.word("view! { ");
-        self.printer.word(cx.to_string());
-        self.printer.word(",");
+        self.printer.word("view! {");
+
+        if let Some(cx) = cx {
+            self.printer.word(" ");
+            self.printer.word(cx.to_string());
+            self.printer.word(",");
+        }
 
         if let Some(global_class) = global_class {
             self.printer.word(" class=");
@@ -184,6 +212,30 @@ mod tests {
         let formatted = view_macro!(view! { cx, class = STYLE, <div><span>"hi"</span></div> });
         insta::assert_snapshot!(formatted, @r###"
         view! { cx, class=STYLE,
+            <div>
+                <span>"hi"</span>
+            </div>
+        }
+        "###);
+    }
+
+    #[test]
+    fn no_reactive_scope() {
+        let formatted = view_macro!(view! { <div><span>"hi"</span></div> });
+        insta::assert_snapshot!(formatted, @r###"
+        view! {
+            <div>
+                <span>"hi"</span>
+            </div>
+        }
+        "###);
+    }
+
+    #[test]
+    fn no_reactive_scope_with_global_class() {
+        let formatted = view_macro!(view! { class = STYLE, <div><span>"hi"</span></div> });
+        insta::assert_snapshot!(formatted, @r###"
+        view! { class=STYLE,
             <div>
                 <span>"hi"</span>
             </div>
