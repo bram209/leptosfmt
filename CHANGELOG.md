@@ -20,6 +20,10 @@ All notable changes to this project will be documented in this file.
 - Rework non-doc comments v2 ([#52](https://github.com/bram209/leptosfmt/issues/52))
 - Support leptos 0.5+ ([#53](https://github.com/bram209/leptosfmt/issues/53))
 
+### Miscellaneous Tasks
+
+- Remove dbg! (Closes: #55) ([#56](https://github.com/bram209/leptosfmt/issues/56))
+
 ## [0.1.9] - 2023-06-29
 
 ### Bug Fixes
