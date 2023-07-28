@@ -79,6 +79,41 @@ mod tests {
     use super::*;
 
     #[test]
+    fn rustfmt_leptosfmt_indent_difference() {
+        let source = indoc! {r#"
+        // Valid Rust formatted code
+        #[component]
+        pub(crate) fn Error(cx: Scope, message: Option<String>) -> impl IntoView {
+            view! { cx,
+              <div>
+                Example
+              </div>
+            }
+        }
+        "#};
+
+        let result = format_file_source(
+            source,
+            FormatterSettings {
+                tab_spaces: 2,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        insta::assert_snapshot!(result, @r###"
+        // Valid Rust formatted code
+        #[component]
+        pub(crate) fn Error(cx: Scope, message: Option<String>) -> impl IntoView {
+            view! { cx,
+              <div>
+                Example
+              </div>
+            }
+        }
+        "###);
+    }
+
+    #[test]
     fn it_works() {
         let source = indoc! {r#"
             fn main() {

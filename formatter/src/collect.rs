@@ -51,13 +51,33 @@ impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
                         .unwrap_or(0),
                 );
 
-            if let Some(view_mac) = ViewMacro::try_parse(Some(indent), node) {
+            let rustfmt_indent = detect_rustfmt_indent(&self.indent_stack);
+            if let Some(view_mac) =
+                ViewMacro::try_parse(Some(indent + rustfmt_indent.unwrap_or(0)), node)
+            {
                 self.macros.push(view_mac);
             }
         }
 
         visit::visit_macro(self, node);
     }
+}
+
+fn detect_rustfmt_indent(stack: &[LineColumn]) -> Option<usize> {
+    if let [lc] = stack {
+        return Some(lc.column);
+    }
+
+    let mut iter = stack.iter().peekable();
+    while let Some(lc) = iter.next() {
+        if let Some(next) = iter.peek() {
+            if next.line > lc.line && next.column > lc.column {
+                return Some(next.column - lc.column);
+            }
+        }
+    }
+
+    None
 }
 
 pub fn collect_macros_in_file(file: &File) -> Vec<ViewMacro<'_>> {
