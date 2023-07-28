@@ -22,7 +22,6 @@ impl<'a> ViewMacro<'a> {
         let (cx, comma) = (tokens.next(), tokens.next());
 
         let mut no_explicit_scope = true;
-        dbg!(&cx, &comma);
 
         // If the second token is not a comma, then leptos 0.5+ is being used, where reactive scope does not have to be manually specified.
         if let Some(TokenTree::Punct(punct)) = &comma {
@@ -47,7 +46,6 @@ impl<'a> ViewMacro<'a> {
 
         let span = mac.span();
         let nodes = rstml::parse2(tokens).ok()?;
-        dbg!(&nodes);
 
         Some(Self {
             parent_ident,
