@@ -30,7 +30,8 @@ pub fn format_file_source(
     settings: FormatterSettings,
 ) -> Result<String, FormatError> {
     let ast = syn::parse_file(source)?;
-    let macros = collect_macros_in_file(&ast);
+    let rope = Rope::try_from(source).unwrap();
+    let macros = collect_macros_in_file(&ast, &rope);
     format_source(source, macros, settings)
 }
 
@@ -331,6 +332,30 @@ mod tests {
     }
 
     #[test]
+    fn multiline_view_with_variable_binding() {
+        let source = indoc! {r#"
+        #[component]
+        fn test2(cx: Scope) -> impl IntoView {
+            let x = view! { cx, <div><span>Hello</span></div> };
+        }
+        "#};
+
+        let result = format_file_source(source, Default::default()).unwrap();
+        insta::assert_snapshot!(result, @r###"
+        #[component]
+        fn test2(cx: Scope) -> impl IntoView {
+            let x = view! { cx,
+                <div>
+                    <span>
+                        Hello
+                    </span>
+                </div>
+            };
+        }
+        "###);
+    }
+
+    #[test]
     fn inside_match_case() {
         let source = indoc! {r#"
             use leptos::*;
@@ -377,10 +402,10 @@ mod tests {
                         </div>
                     }.into_view(cx),
                 ExampleEnum::ValueTwoWithAReallyLongName =>  view! { cx,
-                        <div>
-                            <div>"Value Two"</div>
-                        </div>
-                    }.into_view(cx),
+                    <div>
+                        <div>"Value Two"</div>
+                    </div>
+                }.into_view(cx),
             };
         }
         "###);
