@@ -30,25 +30,25 @@ pub fn format_file_source(
     settings: FormatterSettings,
 ) -> Result<String, FormatError> {
     let ast = syn::parse_file(source)?;
-    let macros = collect_macros_in_file(&ast);
-    format_source(source, macros, settings)
+    let rope = Rope::try_from(source).unwrap();
+    let (mut rope, macros) = collect_macros_in_file(&ast, rope);
+    format_source(&mut rope, macros, settings)
 }
 
-fn format_source<'a>(
-    source: &'a str,
-    macros: Vec<ViewMacro<'a>>,
+fn format_source(
+    source: &mut Rope,
+    macros: Vec<ViewMacro<'_>>,
     settings: FormatterSettings,
 ) -> Result<String, FormatError> {
-    let mut rope: Rope = source.parse().unwrap();
     let mut edits = Vec::new();
 
     for view_mac in macros {
         let mac = view_mac.inner();
         let start = mac.path.span().start();
         let end = mac.delimiter.span().close().end();
-        let start_byte = line_column_to_byte(&rope, start);
-        let end_byte = line_column_to_byte(&rope, end);
-        let new_text = format_macro(&view_mac, &settings, Some(&rope));
+        let start_byte = line_column_to_byte(source, start);
+        let end_byte = line_column_to_byte(source, end);
+        let new_text = format_macro(&view_mac, &settings, Some(source));
 
         edits.push(TextEdit {
             range: start_byte..end_byte,
@@ -62,14 +62,14 @@ fn format_source<'a>(
         let end = edit.range.end;
         let new_text = edit.new_text;
 
-        rope.replace(
+        source.replace(
             (start as isize + last_offset) as usize..(end as isize + last_offset) as usize,
             &new_text,
         );
         last_offset += new_text.len() as isize - (end as isize - start as isize);
     }
 
-    Ok(rope.to_string())
+    Ok(source.to_string())
 }
 
 #[cfg(test)]
@@ -77,6 +77,41 @@ mod tests {
     use indoc::indoc;
 
     use super::*;
+
+    #[test]
+    fn rustfmt_leptosfmt_indent_difference() {
+        let source = indoc! {r#"
+        // Valid Rust formatted code
+        #[component]
+        pub(crate) fn Error(cx: Scope, message: Option<String>) -> impl IntoView {
+            view! { cx,
+              <div>
+                Example
+              </div>
+            }
+        }
+        "#};
+
+        let result = format_file_source(
+            source,
+            FormatterSettings {
+                tab_spaces: 2,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        insta::assert_snapshot!(result, @r###"
+        // Valid Rust formatted code
+        #[component]
+        pub(crate) fn Error(cx: Scope, message: Option<String>) -> impl IntoView {
+            view! { cx,
+              <div>
+                Example
+              </div>
+            }
+        }
+        "###);
+    }
 
     #[test]
     fn it_works() {
@@ -296,6 +331,30 @@ mod tests {
     }
 
     #[test]
+    fn multiline_view_with_variable_binding() {
+        let source = indoc! {r#"
+        #[component]
+        fn test2(cx: Scope) -> impl IntoView {
+            let x = view! { cx, <div><span>Hello</span></div> };
+        }
+        "#};
+
+        let result = format_file_source(source, Default::default()).unwrap();
+        insta::assert_snapshot!(result, @r###"
+        #[component]
+        fn test2(cx: Scope) -> impl IntoView {
+            let x = view! { cx,
+                <div>
+                    <span>
+                        Hello
+                    </span>
+                </div>
+            };
+        }
+        "###);
+    }
+
+    #[test]
     fn inside_match_case() {
         let source = indoc! {r#"
             use leptos::*;
@@ -342,10 +401,10 @@ mod tests {
                         </div>
                     }.into_view(cx),
                 ExampleEnum::ValueTwoWithAReallyLongName =>  view! { cx,
-                        <div>
-                            <div>"Value Two"</div>
-                        </div>
-                    }.into_view(cx),
+                    <div>
+                        <div>"Value Two"</div>
+                    </div>
+                }.into_view(cx),
             };
         }
         "###);

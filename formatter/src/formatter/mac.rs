@@ -66,18 +66,14 @@ impl<'a> ViewMacro<'a> {
 impl Formatter<'_> {
     pub fn view_macro(&mut self, view_mac: &ViewMacro) {
         let ViewMacro {
-            parent_ident,
+            parent_ident: parent_indent,
             cx,
             global_class,
             nodes,
             ..
         } = view_mac;
 
-        let indent = parent_ident
-            .map(|i| i + self.settings.tab_spaces)
-            .unwrap_or(0);
-
-        self.printer.cbox(indent as isize);
+        self.printer.cbox(parent_indent.unwrap_or(0) as isize);
 
         self.flush_comments(cx.span().start().line - 1);
         self.printer.word("view! {");
