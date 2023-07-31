@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Rework non-doc comments ([#48](https://github.com/bram209/leptosfmt/issues/48))
 - Implement workaround for non-doc comments ([#49](https://github.com/bram209/leptosfmt/issues/49))
 - Comment extracting in attribute with block expr
+- View macro indentation issues ([#59](https://github.com/bram209/leptosfmt/issues/59))
 
 ### Documentation
 
