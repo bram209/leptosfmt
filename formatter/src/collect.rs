@@ -9,7 +9,7 @@ use crate::ViewMacro;
 
 struct ViewMacroVisitor<'ast> {
     macros: Vec<ViewMacro<'ast>>,
-    source: &'ast Rope,
+    source: Rope,
 }
 
 impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
@@ -32,12 +32,12 @@ impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
     }
 }
 
-pub fn collect_macros_in_file<'a>(file: &'a File, source: &'a Rope) -> Vec<ViewMacro<'a>> {
+pub fn collect_macros_in_file(file: &File, source: Rope) -> (Rope, Vec<ViewMacro<'_>>) {
     let mut visitor = ViewMacroVisitor {
         source,
         macros: Vec::new(),
     };
 
     visitor.visit_file(file);
-    visitor.macros
+    (visitor.source, visitor.macros)
 }
