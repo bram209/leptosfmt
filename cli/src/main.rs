@@ -16,9 +16,9 @@ use rayon::{iter::ParallelIterator, prelude::IntoParallelIterator};
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    /// A file, directory or glob
+    /// A space separated list of file, directory or glob
     #[arg(required_unless_present = "stdin")]
-    input_pattern: Option<String>,
+    input_patterns: Option<Vec<String>>,
 
     // Maximum width of each line
     #[arg(short, long)]
@@ -63,19 +63,22 @@ fn main() {
         return;
     }
 
-    let input_pattern = args.input_pattern.unwrap();
-    let is_dir = fs::metadata(&input_pattern)
-        .map(|meta| meta.is_dir())
-        .unwrap_or(false);
-
-    let glob_pattern = if is_dir {
-        format!("{}/**/*.rs", &input_pattern)
-    } else {
-        input_pattern
-    };
-
-    let file_paths: Vec<_> = glob(&glob_pattern)
-        .expect("failed to read glob pattern")
+    let input_patterns = args.input_patterns.unwrap();
+    let file_paths: Vec<_> = input_patterns
+        .into_iter()
+        .flat_map(|input_pattern| {
+            let is_dir = fs::metadata(&input_pattern)
+                .map(|meta| meta.is_dir())
+                .unwrap_or(false);
+            let glob_pattern = if is_dir {
+                format!("{}/**/*.rs", &input_pattern)
+            } else {
+                input_pattern
+            };
+            glob(&glob_pattern)
+                .expect("failed to read glob pattern")
+                .collect::<Vec<_>>()
+        })
         .collect();
 
     let total_files = file_paths.len();
