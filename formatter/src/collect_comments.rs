@@ -21,8 +21,8 @@ pub(crate) fn extract_whitespace_and_comments(
                 for (idx, line) in text.lines().enumerate() {
                     let comment = line
                         .to_string()
-                        .split("//")
-                        .nth(1)
+                        .split_once("//")
+                        .map(|(_, txt)| txt)
                         .map(str::trim)
                         .map(ToOwned::to_owned);
 

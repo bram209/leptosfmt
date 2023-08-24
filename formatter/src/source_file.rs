@@ -157,6 +157,8 @@ mod tests {
              <div> // same line comment
              // with comment on the next line
              </div>
+             // comments with url: https://example.com
+             <h1>"hi"</h1>
              // comments with empty lines inbetween
 
              // and some more
@@ -193,6 +195,8 @@ mod tests {
                     // same line comment
                     <div>// with comment on the next line
                     </div>
+                    // comments with url: https://example.com
+                    <h1>"hi"</h1>
                 // comments with empty lines inbetween
 
                 // and some more
