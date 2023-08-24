@@ -73,6 +73,11 @@ Format all .rs files ending with `_test.rs` within the examples directory
 
 `leptosfmt ./examples/**/*_test.rs`
 
+## A note on non-doc comments
+
+Currently this formatter does not support non-doc comments in code blocks. It uses a fork of prettyplease for formatting rust code, and `prettyplease` does not support this. I would like to not diverge this fork too much (so I can easily keep in sync with upstream), therefore I didn't add non-doc comment support in my prettyplease fork for now.
+This means that you _can_ use non-doc comments throughout your view macro, as long as they don't reside within code blocks.
+
 ## Pretty-printer algorithm
 
 The pretty-printer is based on Philip Karlton’s Mesa pretty-printer, as described in the appendix to Derek C. Oppen, “Pretty Printing” (1979), Stanford Computer Science Department STAN-CS-79-770, http://i.stanford.edu/pub/cstr/reports/cs/tr/79/770/CS-TR-79-770.pdf.
