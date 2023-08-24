@@ -8,8 +8,8 @@ use std::{
 
 use anyhow::Context;
 use clap::{builder::ArgPredicate, Parser};
-use glob::glob;
-use leptosfmt_formatter::{format_file, format_file_source, FormatterSettings};
+use glob::{glob, GlobError};
+use leptosfmt_formatter::{format_file_source, FormatterSettings};
 use rayon::{iter::ParallelIterator, prelude::IntoParallelIterator};
 
 /// A formatter for Leptos RSX sytnax
@@ -56,7 +56,7 @@ fn main() {
     }
 
     if args.stdin {
-        if let Err(err) = format_stdin_result(settings) {
+        if let Err(err) = format_stdin(settings) {
             eprintln!("{}", err)
         };
 
@@ -64,7 +64,41 @@ fn main() {
     }
 
     let input_patterns = args.input_patterns.unwrap();
-    let file_paths: Vec<_> = input_patterns
+    let file_paths: Vec<_> = get_file_paths(input_patterns);
+
+    let total_files = file_paths.len();
+    let start_formatting = Instant::now();
+    file_paths.into_par_iter().for_each(|result| {
+        let print_err = |path: &Path, err| {
+            println!("❌ {}", path.display());
+            eprintln!("\t\t{}", err);
+        };
+
+        match result {
+            Ok(path) => match format_file(&path, settings) {
+                Ok(_) => {
+                    if !quiet {
+                        println!("✅ {}", path.display())
+                    }
+                }
+                Err(err) => print_err(&path, &err.to_string()),
+            },
+            Err(err) => print_err(err.path(), &err.error().to_string()),
+        };
+    });
+
+    let end_formatting = Instant::now();
+    if !quiet {
+        println!(
+            "Formatted {} files in {} ms",
+            total_files,
+            (end_formatting - start_formatting).as_millis()
+        )
+    }
+}
+
+fn get_file_paths(input_patterns: Vec<String>) -> Vec<Result<PathBuf, GlobError>> {
+    input_patterns
         .into_iter()
         .flat_map(|input_pattern| {
             let is_dir = fs::metadata(&input_pattern)
@@ -79,39 +113,10 @@ fn main() {
                 .expect("failed to read glob pattern")
                 .collect::<Vec<_>>()
         })
-        .collect();
-
-    let total_files = file_paths.len();
-    let start_formatting = Instant::now();
-    file_paths.into_par_iter().for_each(|result| {
-        let print_err = |path: &Path, err| {
-            println!("❌ {}", path.display());
-            eprintln!("\t\t{}", err);
-        };
-
-        match result {
-            Ok(path) => match format_glob_result(&path, settings) {
-                Ok(_) => {
-                    if !quiet {
-                        println!("✅ {}", path.display())
-                    }
-                }
-                Err(err) => print_err(&path, &err.to_string()),
-            },
-            Err(err) => print_err(err.path(), &err.error().to_string()),
-        };
-    });
-    let end_formatting = Instant::now();
-    if !quiet {
-        println!(
-            "Formatted {} files in {} ms",
-            total_files,
-            (end_formatting - start_formatting).as_millis()
-        )
-    }
+        .collect()
 }
 
-fn format_stdin_result(settings: FormatterSettings) -> anyhow::Result<()> {
+fn format_stdin(settings: FormatterSettings) -> anyhow::Result<()> {
     let mut stdin = String::new();
     let _ = std::io::stdin().read_to_string(&mut stdin);
 
@@ -123,10 +128,15 @@ fn format_stdin_result(settings: FormatterSettings) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn format_glob_result(file: &PathBuf, settings: FormatterSettings) -> anyhow::Result<()> {
-    let formatted = panic::catch_unwind(|| format_file(file, settings))
+fn format_file(file: &PathBuf, settings: FormatterSettings) -> anyhow::Result<()> {
+    let file_source = std::fs::read_to_string(file)?;
+    let formatted = panic::catch_unwind(|| format_file_source(&file_source, settings))
         .map_err(|e| anyhow::anyhow!(e.downcast::<String>().unwrap()))??;
-    fs::write(file, formatted)?;
+
+    if file_source != formatted {
+        fs::write(file, formatted)?;
+    }
+
     Ok(())
 }
 
