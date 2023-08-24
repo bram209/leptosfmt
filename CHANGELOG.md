@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### Bug Fixes
+
+- Formatting comments that include '//' ([#68](https://github.com/bram209/leptosfmt/issues/68))
+
 ## [0.1.12] - 2023-07-31
 
 ### Bug Fixes
