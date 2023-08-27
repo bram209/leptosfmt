@@ -9,6 +9,10 @@ All notable changes to this project will be documented in this file.
 - Formatting comments that include '//' ([#68](https://github.com/bram209/leptosfmt/issues/68))
 - Dont touch file when there are no formatting changes ([#69](https://github.com/bram209/leptosfmt/issues/69))
 
+### Documentation
+
+- Add clarification about the usage of non-doc comments ([#70](https://github.com/bram209/leptosfmt/issues/70))
+
 ## [0.1.12] - 2023-07-31
 
 ### Bug Fixes
