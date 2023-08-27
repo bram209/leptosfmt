@@ -3,14 +3,17 @@ use std::{
     io::Read,
     panic,
     path::{Path, PathBuf},
+    process::exit,
     time::Instant,
 };
 
 use anyhow::Context;
-use clap::{builder::ArgPredicate, Parser};
+use clap::Parser;
+use console::Style;
 use glob::{glob, GlobError};
 use leptosfmt_formatter::{format_file_source, FormatterSettings};
 use rayon::{iter::ParallelIterator, prelude::IntoParallelIterator};
+use similar::{ChangeTag, TextDiff};
 
 /// A formatter for Leptos RSX sytnax
 #[derive(Parser, Debug)]
@@ -20,18 +23,19 @@ struct Args {
     #[arg(required_unless_present = "stdin")]
     input_patterns: Option<Vec<String>>,
 
-    // Maximum width of each line
+    /// Maximum width of each line
     #[arg(short, long)]
     max_width: Option<usize>,
 
-    // Number of spaces per tab
+    /// Number of spaces per tab
     #[arg(short, long)]
     tab_spaces: Option<usize>,
 
-    // Config file
+    /// Configuration file
     #[arg(short, long)]
     config_file: Option<PathBuf>,
 
+    /// Format stdin and write to stdout
     #[arg(short, long, default_value = "false")]
     stdin: bool,
 
@@ -39,14 +43,45 @@ struct Args {
         short,
         long,
         default_value = "false",
-        default_value_if("stdin", ArgPredicate::IsPresent, "true")
+        default_value_if("stdin", "true", "true")
     )]
     quiet: bool,
+
+    /// Check if the file is correctly formatted. Exit with code 1 if not.
+    #[arg(long, default_value = "false")]
+    check: bool,
+}
+
+fn check_if_diff(path: Option<&PathBuf>, original: &str, formatted: &str, quiet: bool) -> bool {
+    if original != formatted {
+        if !quiet {
+            eprintln!(
+                "❌ {} is not correctly formatted. See the difference below:\n",
+                path.map(|p| p.display().to_string())
+                    .unwrap_or("<stdin>".to_string())
+            );
+
+            let diff = TextDiff::from_lines(original, formatted);
+            for change in diff.iter_all_changes() {
+                let (sign, style) = match change.tag() {
+                    ChangeTag::Delete => ("-", Style::new().red()),
+                    ChangeTag::Insert => ("+", Style::new().green()),
+                    ChangeTag::Equal => (" ", Style::new()),
+                };
+                eprint!("{}{}", style.apply_to(sign).bold(), style.apply_to(change));
+            }
+        }
+
+        true
+    } else {
+        false
+    }
 }
 
 fn main() {
     let args = Args::parse();
 
+    dbg!(&args);
     let settings = create_settings(&args).unwrap();
     let quiet = args.quiet;
 
@@ -56,48 +91,71 @@ fn main() {
     }
 
     if args.stdin {
-        if let Err(err) = format_stdin(settings) {
-            eprintln!("{}", err)
-        };
-
+        match format_stdin(settings) {
+            Ok(FormatOutput {
+                original,
+                formatted,
+            }) => {
+                if args.check && check_if_diff(None, &original, &formatted, true) {
+                    return;
+                } else {
+                    println!("{formatted}")
+                }
+            }
+            Err(err) => eprintln!("{err}"),
+        }
         return;
     }
 
+    let print_err = |path: &Path, err| {
+        println!("❌ {}", path.display());
+        eprintln!("\t\t{}", err);
+    };
+
     let input_patterns = args.input_patterns.unwrap();
-    let file_paths: Vec<_> = get_file_paths(input_patterns);
+    let file_paths: Vec<_> = get_file_paths(input_patterns).unwrap();
 
     let total_files = file_paths.len();
     let start_formatting = Instant::now();
-    file_paths.into_par_iter().for_each(|result| {
-        let print_err = |path: &Path, err| {
-            println!("❌ {}", path.display());
-            eprintln!("\t\t{}", err);
-        };
 
+    let format_results = file_paths
+        .into_par_iter()
+        .map(|path| (path.clone(), format_file(&path, settings, !args.check)))
+        .collect::<Vec<_>>();
+
+    let mut check_failed = false;
+    for (path, result) in format_results {
         match result {
-            Ok(path) => match format_file(&path, settings) {
-                Ok(_) => {
-                    if !quiet {
-                        println!("✅ {}", path.display())
-                    }
+            Ok(r) => {
+                if args.check && check_if_diff(Some(&path), &r.original, &r.formatted, quiet) {
+                    check_failed = true;
                 }
-                Err(err) => print_err(&path, &err.to_string()),
-            },
-            Err(err) => print_err(err.path(), &err.error().to_string()),
-        };
-    });
+
+                if !quiet {
+                    println!("✅ {}", path.display())
+                }
+            }
+            Err(err) => print_err(&path, err.to_string()),
+        }
+    }
 
     let end_formatting = Instant::now();
     if !quiet {
         println!(
-            "Formatted {} files in {} ms",
+            "ℹ️ {} {} files in {} ms",
+            if args.check { "Checked" } else { "Formatted" },
             total_files,
             (end_formatting - start_formatting).as_millis()
         )
     }
+
+    if check_failed {
+        eprintln!("❌ Some files are not correctly formatted, see the diff above");
+        exit(1);
+    }
 }
 
-fn get_file_paths(input_patterns: Vec<String>) -> Vec<Result<PathBuf, GlobError>> {
+fn get_file_paths(input_patterns: Vec<String>) -> Result<Vec<PathBuf>, GlobError> {
     input_patterns
         .into_iter()
         .flat_map(|input_pattern| {
@@ -116,28 +174,41 @@ fn get_file_paths(input_patterns: Vec<String>) -> Vec<Result<PathBuf, GlobError>
         .collect()
 }
 
-fn format_stdin(settings: FormatterSettings) -> anyhow::Result<()> {
+struct FormatOutput {
+    original: String,
+    formatted: String,
+}
+
+fn format_stdin(settings: FormatterSettings) -> anyhow::Result<FormatOutput> {
     let mut stdin = String::new();
     let _ = std::io::stdin().read_to_string(&mut stdin);
 
     let formatted = panic::catch_unwind(|| format_file_source(&stdin, settings))
         .map_err(|e| anyhow::anyhow!(e.downcast::<String>().unwrap()))??;
 
-    print!("{}", formatted);
-
-    Ok(())
+    Ok(FormatOutput {
+        original: stdin,
+        formatted,
+    })
 }
 
-fn format_file(file: &PathBuf, settings: FormatterSettings) -> anyhow::Result<()> {
+fn format_file(
+    file: &PathBuf,
+    settings: FormatterSettings,
+    write_result: bool,
+) -> anyhow::Result<FormatOutput> {
     let file_source = std::fs::read_to_string(file)?;
     let formatted = panic::catch_unwind(|| format_file_source(&file_source, settings))
         .map_err(|e| anyhow::anyhow!(e.downcast::<String>().unwrap()))??;
 
-    if file_source != formatted {
-        fs::write(file, formatted)?;
+    if write_result && file_source != formatted {
+        fs::write(file, &formatted)?;
     }
 
-    Ok(())
+    Ok(FormatOutput {
+        original: file_source,
+        formatted,
+    })
 }
 
 fn create_settings(args: &Args) -> anyhow::Result<FormatterSettings> {

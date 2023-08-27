@@ -138,6 +138,7 @@ dependencies = [
  "encode_unicode",
  "lazy_static",
  "libc",
+ "unicode-width",
  "windows-sys 0.45.0",
 ]
 
@@ -323,9 +324,11 @@ version = "0.1.12"
 dependencies = [
  "anyhow",
  "clap",
+ "console",
  "glob",
  "leptosfmt-formatter",
  "rayon",
+ "similar",
  "toml",
 ]
 
@@ -666,6 +669,12 @@ name = "unicode-ident"
 version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b15811caf2415fb889178633e7724bad2509101cde276048e013b9def5e51fa0"
+
+[[package]]
+name = "unicode-width"
+version = "0.1.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c0edd1e5b14653f783770bce4a4dabb4a5108a5370a5f5d8cfe8710c361f6c8b"
 
 [[package]]
 name = "utf8parse"
