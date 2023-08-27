@@ -13,6 +13,10 @@ All notable changes to this project will be documented in this file.
 
 - Add clarification about the usage of non-doc comments ([#70](https://github.com/bram209/leptosfmt/issues/70))
 
+### Features
+
+- Add check mode ([#72](https://github.com/bram209/leptosfmt/issues/72))
+
 ## [0.1.12] - 2023-07-31
 
 ### Bug Fixes
