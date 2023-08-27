@@ -3,12 +3,12 @@ use std::{
     io::Read,
     panic,
     path::{Path, PathBuf},
-    process::{exit, ExitCode},
+    process::{exit},
     time::Instant,
 };
 
 use anyhow::Context;
-use clap::{builder::ArgPredicate, Parser};
+use clap::{Parser};
 use console::Style;
 use glob::{glob, GlobError};
 use leptosfmt_formatter::{format_file_source, FormatterSettings};
