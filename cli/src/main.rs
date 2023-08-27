@@ -12,10 +12,7 @@ use clap::Parser;
 use console::Style;
 use glob::{glob, GlobError};
 use leptosfmt_formatter::{format_file_source, FormatterSettings};
-use rayon::{
-    iter::ParallelIterator,
-    prelude::{IndexedParallelIterator, IntoParallelIterator},
-};
+use rayon::{iter::ParallelIterator, prelude::IntoParallelIterator};
 use similar::{ChangeTag, TextDiff};
 
 /// A formatter for Leptos RSX sytnax
