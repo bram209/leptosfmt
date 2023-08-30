@@ -272,19 +272,13 @@ mod tests {
     #[test]
     fn html_unquoted_text() {
         let formatted = format_element_from_string!(r##"<div>Unquoted text</div>"##);
-        insta::assert_snapshot!(formatted, @r#"
-        <div>
-            Unquoted text
-        </div>"#);
+        insta::assert_snapshot!(formatted, @"<div>Unquoted text</div>");
     }
 
     #[test]
     fn html_unquoted_text_with_surrounding_spaces() {
         let formatted = format_element_from_string!(r##"<div> Unquoted text with  spaces </div>"##);
-        insta::assert_snapshot!(formatted, @r#"
-        <div>
-            Unquoted text with  spaces
-        </div>"#);
+        insta::assert_snapshot!(formatted, @"<div>Unquoted text with  spaces</div>");
     }
 
     #[test]

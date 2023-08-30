@@ -104,11 +104,7 @@ mod tests {
         // Valid Rust formatted code
         #[component]
         pub(crate) fn Error(cx: Scope, message: Option<String>) -> impl IntoView {
-            view! { cx,
-              <div>
-                Example
-              </div>
-            }
+            view! { cx, <div>Example</div> }
         }
         "###);
     }
@@ -349,9 +345,7 @@ mod tests {
         fn test2(cx: Scope) -> impl IntoView {
             let x = view! { cx,
                 <div>
-                    <span>
-                        Hello
-                    </span>
+                    <span>Hello</span>
                 </div>
             };
         }
