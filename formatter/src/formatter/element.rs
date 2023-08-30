@@ -69,7 +69,7 @@ impl Formatter<'_> {
 
         let is_textual = children
             .first()
-            .map(|n| matches!(n, Node::Text(_) | Node::Block(_)))
+            .map(|n| matches!(n, Node::Text(_) | Node::RawText(_) | Node::Block(_)))
             .unwrap_or_default();
 
         let soft_break = is_textual && attribute_count <= 1;
@@ -228,6 +228,12 @@ mod tests {
     fn child_element_single_textual() {
         let formatted = format_element! { <div>"hello"</div> };
         insta::assert_snapshot!(formatted, @r###"<div>"hello"</div>"###);
+    }
+
+    #[test]
+    fn child_element_single_textual_unquoted() {
+        let formatted = format_element_from_string!("<div>hello</div>");
+        insta::assert_snapshot!(formatted, @r###"<div>hello</div>"###);
     }
 
     #[test]
