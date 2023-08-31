@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 - Formatting comments that include '//' ([#68](https://github.com/bram209/leptosfmt/issues/68))
 - Dont touch file when there are no formatting changes ([#69](https://github.com/bram209/leptosfmt/issues/69))
+- Softbreak when elem has single raw text child node ([#73](https://github.com/bram209/leptosfmt/issues/73))
 
 ### Documentation
 
