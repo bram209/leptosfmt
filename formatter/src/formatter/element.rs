@@ -69,7 +69,7 @@ impl Formatter<'_> {
 
         let is_textual = children
             .first()
-            .map(|n| matches!(n, Node::Text(_) | Node::Block(_)))
+            .map(|n| matches!(n, Node::Text(_) | Node::RawText(_) | Node::Block(_)))
             .unwrap_or_default();
 
         let soft_break = is_textual && attribute_count <= 1;
@@ -231,6 +231,12 @@ mod tests {
     }
 
     #[test]
+    fn child_element_single_textual_unquoted() {
+        let formatted = format_element_from_string!("<div>hello</div>");
+        insta::assert_snapshot!(formatted, @r###"<div>hello</div>"###);
+    }
+
+    #[test]
     fn child_element_single_textual_single_attr() {
         let formatted = format_element! { <div key=12>"hello"</div> };
         insta::assert_snapshot!(formatted, @r###"<div key=12>"hello"</div>"###);
@@ -266,19 +272,13 @@ mod tests {
     #[test]
     fn html_unquoted_text() {
         let formatted = format_element_from_string!(r##"<div>Unquoted text</div>"##);
-        insta::assert_snapshot!(formatted, @r#"
-        <div>
-            Unquoted text
-        </div>"#);
+        insta::assert_snapshot!(formatted, @"<div>Unquoted text</div>");
     }
 
     #[test]
     fn html_unquoted_text_with_surrounding_spaces() {
         let formatted = format_element_from_string!(r##"<div> Unquoted text with  spaces </div>"##);
-        insta::assert_snapshot!(formatted, @r#"
-        <div>
-            Unquoted text with  spaces
-        </div>"#);
+        insta::assert_snapshot!(formatted, @"<div>Unquoted text with  spaces</div>");
     }
 
     #[test]
