@@ -102,7 +102,10 @@ fn main() {
                     println!("{formatted}")
                 }
             }
-            Err(err) => eprintln!("{err}"),
+            Err(err) => {
+                eprintln!("{err}");
+                exit(1)
+            }
         }
         return;
     }
