@@ -18,6 +18,10 @@ All notable changes to this project will be documented in this file.
 
 - Add check mode ([#72](https://github.com/bram209/leptosfmt/issues/72))
 
+### Miscellaneous Tasks
+
+- Remove dbg! statement and enable clippy dbg! lint
+
 ## [0.1.12] - 2023-07-31
 
 ### Bug Fixes
