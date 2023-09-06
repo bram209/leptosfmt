@@ -1,3 +1,5 @@
+#![deny(clippy::dbg_macro)]
+
 use std::path::Path;
 
 use crop::Rope;

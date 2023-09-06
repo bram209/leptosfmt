@@ -1,3 +1,5 @@
+#![deny(clippy::dbg_macro)]
+
 use std::{
     fs,
     io::Read,
@@ -80,8 +82,6 @@ fn check_if_diff(path: Option<&PathBuf>, original: &str, formatted: &str, quiet:
 
 fn main() {
     let args = Args::parse();
-
-    dbg!(&args);
     let settings = create_settings(&args).unwrap();
     let quiet = args.quiet;
 
