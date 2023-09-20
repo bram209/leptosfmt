@@ -162,6 +162,13 @@ pub fn format_macro(
                 source,
                 mac.mac.tokens.clone(),
             );
+            let dos_endings = source
+                .raw_lines()
+                .nth(0)
+                .unwrap()
+                .to_string()
+                .ends_with("\r\n");
+            printer.set_dos(dos_endings);
             Formatter::with_source(*settings, &mut printer, source, whitespace)
         }
         None => Formatter::new(*settings, &mut printer),

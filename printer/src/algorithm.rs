@@ -78,6 +78,8 @@ pub struct Printer {
     indent: usize,
     // Buffered indentation to avoid writing trailing whitespace
     pending_indentation: usize,
+    // To correctly print with dos line endings(CRLF)
+    dos_line_endings: bool,
 }
 
 #[derive(Clone)]
@@ -99,7 +101,12 @@ impl Printer {
             print_stack: Vec::new(),
             indent: 0,
             pending_indentation: 0,
+            dos_line_endings: false,
         }
+    }
+
+    pub fn set_dos(&mut self, value: bool) {
+        self.dos_line_endings = value;
     }
 
     pub fn eof(mut self) -> String {
@@ -331,6 +338,9 @@ impl Printer {
             if let Some(pre_break) = token.pre_break {
                 self.print_indent();
                 self.out.push(pre_break);
+            }
+            if self.dos_line_endings {
+                self.out.push('\r');
             }
             self.out.push('\n');
             let indent = self.indent as isize + token.offset;
