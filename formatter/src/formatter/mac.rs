@@ -165,9 +165,8 @@ pub fn format_macro(
             let crlf_line_endings = source
                 .raw_lines()
                 .nth(0)
-                .unwrap()
-                .to_string()
-                .ends_with("\r\n");
+                .map(|raw_line| raw_line.to_string().ends_with("\r\n"))
+                .unwrap_or_default();
             printer = Printer::new(PrinterSettings {
                 crlf_line_endings,
                 ..settings.into()
