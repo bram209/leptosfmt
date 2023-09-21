@@ -53,6 +53,8 @@ pub struct PrinterSettings {
     pub indent: isize,
     // Every line is allowed at least this much space, even if highly indented.
     pub min_space: isize,
+    // Print CRLF line ending instead of LF
+    pub crlf_line_endings: bool,
 }
 
 pub struct Printer {
@@ -78,8 +80,6 @@ pub struct Printer {
     indent: usize,
     // Buffered indentation to avoid writing trailing whitespace
     pending_indentation: usize,
-    // To correctly print with dos line endings(CRLF)
-    dos_line_endings: bool,
 }
 
 #[derive(Clone)]
@@ -101,12 +101,7 @@ impl Printer {
             print_stack: Vec::new(),
             indent: 0,
             pending_indentation: 0,
-            dos_line_endings: false,
         }
-    }
-
-    pub fn set_dos(&mut self, value: bool) {
-        self.dos_line_endings = value;
     }
 
     pub fn eof(mut self) -> String {
@@ -339,7 +334,7 @@ impl Printer {
                 self.print_indent();
                 self.out.push(pre_break);
             }
-            if self.dos_line_endings {
+            if self.settings.crlf_line_endings {
                 self.out.push('\r');
             }
             self.out.push('\n');

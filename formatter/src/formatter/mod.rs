@@ -54,6 +54,7 @@ impl From<&FormatterSettings> for PrinterSettings {
             margin: value.max_width as isize,
             indent: value.tab_spaces as isize,
             min_space: 60,
+            crlf_line_endings: false,
         }
     }
 }
