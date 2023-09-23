@@ -1,5 +1,5 @@
 use crop::Rope;
-use leptosfmt_pretty_printer::Printer;
+use leptosfmt_pretty_printer::{Printer, PrinterSettings};
 use proc_macro2::{token_stream, Span, TokenStream, TokenTree};
 use rstml::node::Node;
 use syn::{spanned::Spanned, Macro};
@@ -155,16 +155,30 @@ pub fn format_macro(
     settings: &FormatterSettings,
     source: Option<&Rope>,
 ) -> String {
-    let mut printer = Printer::new(settings.into());
+    let mut printer: Printer;
     let mut formatter = match source {
         Some(source) => {
             let whitespace = crate::collect_comments::extract_whitespace_and_comments(
                 source,
                 mac.mac.tokens.clone(),
             );
+
+            let crlf_line_endings = source
+                .raw_lines()
+                .next()
+                .map(|raw_line| raw_line.to_string().ends_with("\r\n"))
+                .unwrap_or_default();
+
+            printer = Printer::new(PrinterSettings {
+                crlf_line_endings,
+                ..settings.into()
+            });
             Formatter::with_source(*settings, &mut printer, source, whitespace)
         }
-        None => Formatter::new(*settings, &mut printer),
+        None => {
+            printer = Printer::new(settings.into());
+            Formatter::new(*settings, &mut printer)
+        }
     };
 
     formatter.view_macro(mac);

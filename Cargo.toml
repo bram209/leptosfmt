@@ -9,3 +9,6 @@ license = "MIT OR Apache-2.0"
 [workspace.dependencies]
 leptosfmt-formatter = { path = "./formatter", version = "0.1.14" }
 leptosfmt-pretty-printer = { version = "0.1.6" }
+
+[patch.crates-io]
+leptosfmt-pretty-printer = { path = "./printer" }
