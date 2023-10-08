@@ -157,7 +157,7 @@ mod tests {
                     Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
             </div>"#};
 
-        insta::assert_snapshot!(formatted, @r###"
+        insta::assert_snapshot!(formatted, @r#"
         <div>
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit,
                 sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
@@ -165,7 +165,7 @@ mod tests {
                 Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
             Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
         </div>
-        "###);
+        "#);
     }
 
     #[test]
@@ -174,9 +174,9 @@ mod tests {
                     "    foo"
             </div>"#};
 
-        insta::assert_snapshot!(formatted, @r###"
+        insta::assert_snapshot!(formatted, @r#"
         <div>"    foo"</div>
-        "###);
+        "#);
     }
 
     #[test]
@@ -189,7 +189,7 @@ mod tests {
                     Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
             </div>"#};
 
-        insta::assert_snapshot!(formatted, @r###"
+        insta::assert_snapshot!(formatted, @r#"
         <div>
             "        Lorem ipsum dolor sit amet, consectetur adipiscing elit,
                 sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
@@ -197,6 +197,83 @@ mod tests {
                 Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
             Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
         </div>
+        "#);
+    }
+
+    #[test]
+    fn multiline_raw_string_as_child() {
+        let formatted = format_element! {r#"<div>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+                        sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+                    Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            </div>"#};
+
+        insta::assert_snapshot!(formatted, @r###"
+        <div>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+                sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+            Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        </div>
         "###);
+    }
+
+    #[test]
+    fn test_raws() {
+        let formatted = format_element!(
+            r#"<div>
+        <div class=format!("grid grid-cols-4 gap-1 {extend_tw_classes}")>
+        <button
+            class="hover:bg-blue-300 bg-slate-400 mt-6 rounded-md border-cyan-500 border-2 drop-shadow-lg"
+            on:click=first
+        >
+              First
+        </button>
+
+        <button
+            class="hover:bg-blue-300 bg-slate-400 mt-6 rounded-md border-cyan-500 border-2 drop-shadow-lg"
+            on:click=previous
+        >
+              Previous
+        </button>
+
+        <button
+            class="hover:bg-blue-300 bg-slate-400 mt-6 rounded-md border-cyan-500 border-2 drop-shadow-lg"
+            on:click=next
+        >
+              Next
+        </button>
+        </div></div>"#
+        );
+
+        insta::assert_snapshot!(formatted, @r#"
+        <div>
+            <div class=format!(
+                "grid grid-cols-4 gap-1 {extend_tw_classes}"
+            )>
+                <button
+                    class="hover:bg-blue-300 bg-slate-400 mt-6 rounded-md border-cyan-500 border-2 drop-shadow-lg"
+                    on:click=first
+                >
+                    First
+                </button>
+                <button
+                    class="hover:bg-blue-300 bg-slate-400 mt-6 rounded-md border-cyan-500 border-2 drop-shadow-lg"
+                    on:click=previous
+                >
+                    Previous
+                </button>
+                <button
+                    class="hover:bg-blue-300 bg-slate-400 mt-6 rounded-md border-cyan-500 border-2 drop-shadow-lg"
+                    on:click=next
+                >
+                    Next
+                </button>
+            </div>
+        </div>
+        "#);
     }
 }

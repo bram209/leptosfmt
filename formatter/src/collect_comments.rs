@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
-use crop::{Rope, RopeSlice};
+use crop::{Rope};
 
-use proc_macro2::{LineColumn, Span, TokenStream, TokenTree};
+use proc_macro2::{Span, TokenStream, TokenTree};
 
-use crate::line_column_to_byte;
+use crate::{get_text_beween_spans};
 
 pub(crate) fn extract_whitespace_and_comments(
     source: &Rope,
@@ -43,13 +43,6 @@ pub(crate) fn extract_whitespace_and_comments(
     });
 
     whitespace_and_comments
-}
-
-fn get_text_beween_spans(rope: &Rope, start: LineColumn, end: LineColumn) -> RopeSlice<'_> {
-    let start_byte = line_column_to_byte(rope, start);
-    let end_byte = line_column_to_byte(rope, end);
-
-    return rope.byte_slice(start_byte..end_byte);
 }
 
 fn traverse_token_stream(tokens: TokenStream, cb: &mut impl FnMut(&TokenTree)) {

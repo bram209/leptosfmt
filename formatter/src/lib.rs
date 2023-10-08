@@ -2,7 +2,8 @@
 
 use std::path::Path;
 
-use crop::Rope;
+use crop::{Rope, RopeSlice};
+use proc_macro2::LineColumn;
 pub use source_file::{format_file_source, FormatError};
 
 mod collect;
@@ -22,6 +23,12 @@ pub fn format_file(path: &Path, settings: FormatterSettings) -> Result<String, F
     format_file_source(&file, settings)
 }
 
+fn get_text_beween_spans(rope: &Rope, start: LineColumn, end: LineColumn) -> RopeSlice<'_> {
+    let start_byte = line_column_to_byte(rope, start);
+    let end_byte = line_column_to_byte(rope, end);
+
+    return rope.byte_slice(start_byte..end_byte);
+}
 fn line_column_to_byte(source: &Rope, point: proc_macro2::LineColumn) -> usize {
     let line_byte = source.byte_of_line(point.line - 1);
     let line = source.line(point.line - 1);

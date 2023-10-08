@@ -118,7 +118,7 @@ mod tests {
         "#};
 
         let result = format_file_source(source, Default::default()).unwrap();
-        insta::assert_snapshot!(result, @r###"
+        insta::assert_snapshot!(result, @r#"
         fn main() {
             view! { cx,
                 <div>
@@ -127,7 +127,7 @@ mod tests {
             }; 
         }
 
-        "###);
+        "#);
     }
 
     #[test]
@@ -166,7 +166,7 @@ mod tests {
         "#};
 
         let result = format_file_source(source, Default::default()).unwrap();
-        insta::assert_snapshot!(result, @r###"
+        insta::assert_snapshot!(result, @r#"
         // comment outside view macro
         fn main() {
             view! { cx,
@@ -202,7 +202,7 @@ mod tests {
         }
 
         // comment after view macro
-        "###);
+        "#);
     }
 
     #[test]
@@ -294,7 +294,7 @@ mod tests {
         "#};
 
         let result = format_file_source(source, Default::default()).unwrap();
-        insta::assert_snapshot!(result, @r###"
+        insta::assert_snapshot!(result, @r#"
         fn main() {
             view! { cx,
                 <div>
@@ -307,7 +307,7 @@ mod tests {
                 </div>
             }; 
         }
-        "###);
+        "#);
     }
 
     #[test]
@@ -319,7 +319,7 @@ mod tests {
         "#};
 
         let result = format_file_source(source, Default::default()).unwrap();
-        insta::assert_snapshot!(result, @r###"
+        insta::assert_snapshot!(result, @r#"
         fn main() {
             view! { cx,
                 <div>
@@ -327,7 +327,7 @@ mod tests {
                 </div>
             }; 
         }
-        "###);
+        "#);
     }
 
     #[test]
@@ -381,7 +381,7 @@ mod tests {
         "#};
 
         let result = format_file_source(source, Default::default()).unwrap();
-        insta::assert_snapshot!(result, @r###"
+        insta::assert_snapshot!(result, @r#"
         use leptos::*;
 
         enum ExampleEnum {
@@ -405,6 +405,34 @@ mod tests {
                 }.into_view(cx),
             };
         }
-        "###);
+        "#);
+    }
+
+    #[test]
+    fn with_raw_text_and_multibyte_chars() {
+        let source = indoc! { r#"
+            #[component]
+            pub fn History() -> impl IntoView {
+                // ½½½½
+
+                view! {
+                    <button>"First"</button>
+                    <button>First</button>
+                }
+            }
+        "#};
+
+        let result = format_file_source(source, Default::default()).unwrap();
+        insta::assert_snapshot!(result, @r#"
+        #[component]
+        pub fn History() -> impl IntoView {
+            // ½½½½
+
+            view! {
+                <button>"First"</button>
+                <button>First</button>
+            }
+        }
+        "#);
     }
 }
