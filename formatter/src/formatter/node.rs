@@ -1,5 +1,3 @@
-
-
 use proc_macro2::Span;
 use quote::ToTokens;
 use rstml::node::{Node, NodeBlock, NodeComment, NodeDoctype, NodeName, NodeText, RawText};

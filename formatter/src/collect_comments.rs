@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
-use crop::{Rope};
+use crop::Rope;
 
 use proc_macro2::{Span, TokenStream, TokenTree};
 
-use crate::{get_text_beween_spans};
+use crate::get_text_beween_spans;
 
 pub(crate) fn extract_whitespace_and_comments(
     source: &Rope,
