@@ -202,54 +202,54 @@ mod tests {
     #[test]
     fn one_liner() {
         let formatted = view_macro!(view! { cx, <div>"hi"</div> });
-        insta::assert_snapshot!(formatted, @r###"view! { cx, <div>"hi"</div> }"###);
+        insta::assert_snapshot!(formatted, @r#"view! { cx, <div>"hi"</div> }"#);
     }
 
     #[test]
     fn with_nested_nodes() {
         let formatted = view_macro!(view! { cx, <div><span>"hi"</span></div> });
-        insta::assert_snapshot!(formatted, @r###"
+        insta::assert_snapshot!(formatted, @r#"
         view! { cx,
             <div>
                 <span>"hi"</span>
             </div>
         }
-        "###);
+        "#);
     }
 
     #[test]
     fn with_global_class() {
         let formatted = view_macro!(view! { cx, class = STYLE, <div><span>"hi"</span></div> });
-        insta::assert_snapshot!(formatted, @r###"
+        insta::assert_snapshot!(formatted, @r#"
         view! { cx, class=STYLE,
             <div>
                 <span>"hi"</span>
             </div>
         }
-        "###);
+        "#);
     }
 
     #[test]
     fn no_reactive_scope() {
         let formatted = view_macro!(view! { <div><span>"hi"</span></div> });
-        insta::assert_snapshot!(formatted, @r###"
+        insta::assert_snapshot!(formatted, @r#"
         view! {
             <div>
                 <span>"hi"</span>
             </div>
         }
-        "###);
+        "#);
     }
 
     #[test]
     fn no_reactive_scope_with_global_class() {
         let formatted = view_macro!(view! { class = STYLE, <div><span>"hi"</span></div> });
-        insta::assert_snapshot!(formatted, @r###"
+        insta::assert_snapshot!(formatted, @r#"
         view! { class=STYLE,
             <div>
                 <span>"hi"</span>
             </div>
         }
-        "###);
+        "#);
     }
 }

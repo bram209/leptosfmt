@@ -1,7 +1,9 @@
+use proc_macro2::Span;
+use quote::ToTokens;
 use rstml::node::{Node, NodeBlock, NodeComment, NodeDoctype, NodeName, NodeText, RawText};
 use syn::spanned::Spanned;
 
-use crate::formatter::Formatter;
+use crate::{formatter::Formatter, get_text_beween_spans};
 
 impl Formatter<'_> {
     pub fn node(&mut self, node: &Node) {
@@ -34,10 +36,28 @@ impl Formatter<'_> {
         self.literal_str(&text.value);
     }
 
+    pub fn join_spans(raw_text: &RawText) -> Option<Span> {
+        let mut span: Option<Span> = None;
+        for tt in raw_text.to_token_stream().clone().into_iter() {
+            let joined = if let Some(span) = span {
+                span.join(tt.span())?
+            } else {
+                tt.span()
+            };
+            span = Some(joined);
+        }
+        span
+    }
+
     pub fn raw_text(&mut self, raw_text: &RawText, use_source_text: bool) {
         let text = if use_source_text {
-            raw_text.to_source_text(false)
+            // Do not rely on `to_source_text` until https://github.com/dtolnay/proc-macro2/issues/410 is resolved
+            if let (Some(source), Some(span)) = (self.source, raw_text.join_spans()) {
+                get_text_beween_spans(source, span.start(), span.end()).to_string()
+            } else {
+                raw_text.to_source_text(false)
                 .expect("Cannot format unquoted text, no source text available, or unquoted text is used outside of element.")
+            }
         } else {
             raw_text.to_token_stream_string()
         };
@@ -85,13 +105,13 @@ mod tests {
     #[test]
     fn html_comment() {
         let formatted = format_comment!(<!--   "comment"   -->);
-        insta::assert_snapshot!(formatted, @r###"<!-- "comment" -->"###);
+        insta::assert_snapshot!(formatted, @r#"<!-- "comment" -->"#);
     }
 
     #[test]
     fn html_comment_long() {
         let formatted = format_comment!(<!--   "this is a very loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong comment"   -->);
-        insta::assert_snapshot!(formatted, @r###"<!-- "this is a very loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong comment" -->"###);
+        insta::assert_snapshot!(formatted, @r#"<!-- "this is a very loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong comment" -->"#);
     }
 
     #[test]

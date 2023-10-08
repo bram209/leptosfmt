@@ -91,7 +91,7 @@ mod tests {
     #[test]
     fn key_value_str_attr() {
         let formatted = format_attribute! { key="K-123" };
-        assert_snapshot!(formatted, @r###"key="K-123""###);
+        assert_snapshot!(formatted, @r#"key="K-123""#);
     }
 
     #[test]
@@ -116,7 +116,7 @@ mod tests {
 
         // literal string value
         let f = format_attr_with_brace_style! { Always => alt="test img" };
-        assert_snapshot!(f, @r###"alt={"test img"}"###);
+        assert_snapshot!(f, @r#"alt={"test img"}"#);
     }
 
     #[test]
@@ -136,7 +136,7 @@ mod tests {
 
         // literal string value
         let f = format_attr_with_brace_style! { AlwaysUnlessLit => alt="test img" };
-        assert_snapshot!(f, @r###"alt="test img""###);
+        assert_snapshot!(f, @r#"alt="test img""#);
     }
 
     #[test]
@@ -155,7 +155,7 @@ mod tests {
 
         // literal string value without braces
         let f = format_attr_with_brace_style! { Preserve => alt="test img" };
-        assert_snapshot!(f, @r###"alt="test img""###);
+        assert_snapshot!(f, @r#"alt="test img""#);
     }
 
     #[test]
@@ -174,6 +174,6 @@ mod tests {
 
         // literal string value
         let f = format_attr_with_brace_style! { WhenRequired => alt={"test img"} };
-        assert_snapshot!(f, @r###"alt="test img""###);
+        assert_snapshot!(f, @r#"alt="test img""#);
     }
 }
