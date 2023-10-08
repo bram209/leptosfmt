@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### Bug Fixes
+
+- Workaround bug with proc_macro2 regarding multibyte chars ([#85](https://github.com/bram209/leptosfmt/issues/85))
+
+### Features
+
+- Automatically detect CRLF or LF line endings ([#81](https://github.com/bram209/leptosfmt/issues/81))
+
 ## [0.1.14] - 2023-09-06
 
 ### Bug Fixes
