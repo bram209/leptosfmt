@@ -1,5 +1,5 @@
-use proc_macro2::Span;
-use quote::ToTokens;
+
+
 use rstml::node::{Node, NodeBlock, NodeComment, NodeDoctype, NodeName, NodeText, RawText};
 use syn::spanned::Spanned;
 
@@ -34,19 +34,6 @@ impl Formatter<'_> {
 
     pub fn node_text(&mut self, text: &NodeText) {
         self.literal_str(&text.value);
-    }
-
-    pub fn join_spans(raw_text: &RawText) -> Option<Span> {
-        let mut span: Option<Span> = None;
-        for tt in raw_text.to_token_stream().clone().into_iter() {
-            let joined = if let Some(span) = span {
-                span.join(tt.span())?
-            } else {
-                tt.span()
-            };
-            span = Some(joined);
-        }
-        span
     }
 
     pub fn raw_text(&mut self, raw_text: &RawText, use_source_text: bool) {

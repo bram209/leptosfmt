@@ -249,7 +249,7 @@ mod tests {
         </div></div>"#
         );
 
-        insta::assert_snapshot!(formatted, @r###"
+        insta::assert_snapshot!(formatted, @r#"
         <div>
             <div class=format!(
                 "grid grid-cols-4 gap-1 {extend_tw_classes}",
@@ -274,6 +274,6 @@ mod tests {
                 </button>
             </div>
         </div>
-        "###);
+        "#);
     }
 }
