@@ -1,4 +1,7 @@
-use std::{io, ops::Range};
+use std::{
+    io::{self},
+    ops::Range,
+};
 
 use crop::Rope;
 
@@ -409,7 +412,7 @@ mod tests {
     }
 
     #[test]
-    fn with_raw_text_and_multibyte_chars() {
+    fn with_unquoted_text_and_multibyte_chars() {
         let source = indoc! { r#"
             #[component]
             pub fn History() -> impl IntoView {
