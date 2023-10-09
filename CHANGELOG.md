@@ -2,11 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [unreleased]
+## [0.1.16] - 2023-10-09
 
 ### Bug Fixes
 
-- Extract original text from source code ([#87](https://github.com/bram209/leptosfmt/issues/87))
+- Retain unicode & raw string formatting ([#87](https://github.com/bram209/leptosfmt/issues/87))
 
 ## [0.1.15] - 2023-10-08
 
