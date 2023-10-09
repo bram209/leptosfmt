@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use syn::{spanned::Spanned, Block, Expr, ExprBlock, ExprLit, LitStr};
 
-use crate::{formatter::Formatter, view_macro::ViewMacroFormatter};
+use crate::{formatter::Formatter, get_text_beween_spans, view_macro::ViewMacroFormatter};
 
 fn trim_start_with_max(str: &str, max_chars: usize) -> &str {
     let mut chars = 0;
@@ -33,7 +33,19 @@ impl Formatter<'_> {
         }
     }
 
+    pub fn source_code<T: Spanned>(&mut self, span: &T) {
+        let span = span.span();
+        let source = self.source.unwrap();
+        let code_fragment = get_text_beween_spans(source, span.start(), span.end()).to_string();
+        self.string(&code_fragment, span.start().column)
+    }
+
     pub fn literal_str(&mut self, lit_str: &LitStr) {
+        if self.source.is_some() {
+            self.source_code(lit_str);
+            return;
+        }
+
         self.printer.word("\"");
         let string = lit_str.value();
 
@@ -134,16 +146,30 @@ mod tests {
     use rstml::node::Node;
 
     use crate::formatter::*;
-    use crate::test_helpers::{element_from_string, format_with};
+    use crate::test_helpers::{element_from_string, format_element_from_string, format_with};
 
     macro_rules! format_element {
         ($($tt:tt)*) => {{
-            let comment = element_from_string! { $($tt)* };
-            let settings = FormatterSettings { max_width: 40, ..Default::default() };
+            let settings = FormatterSettings {
+                max_width: 40,
+                ..Default::default()
+            };
 
-            format_with(settings, |formatter| {
-                formatter.node(&Node::Element(comment));
+            let element = element_from_string! { $($tt)* };
+            format_with(settings,|formatter| {
+                formatter.node(&Node::Element(element));
             })
+        }};
+    }
+
+    macro_rules! format_element_from_string {
+        ($($tt:tt)*) => {{
+            let settings = FormatterSettings {
+                max_width: 40,
+                ..Default::default()
+            };
+
+            format_element_from_string(settings, $($tt)*)
         }};
     }
 
@@ -201,7 +227,7 @@ mod tests {
     }
 
     #[test]
-    fn multiline_raw_string_as_child() {
+    fn multiline_unquoted_string_as_child() {
         let formatted = format_element! {r#"<div>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit,
                         sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
@@ -222,58 +248,19 @@ mod tests {
     }
 
     #[test]
-    fn test_raws() {
-        let formatted = format_element!(
-            r#"<div>
-        <div class=format!("grid grid-cols-4 gap-1 {extend_tw_classes}")>
-        <button
-            class="hover:bg-blue-300 bg-slate-400 mt-6 rounded-md border-cyan-500 border-2 drop-shadow-lg"
-            on:click=first
-        >
-              First
-        </button>
+    fn raw_string_as_child() {
+        let formatted = format_element_from_string!(r##"<p>r#"some" string"#</p>"##);
 
-        <button
-            class="hover:bg-blue-300 bg-slate-400 mt-6 rounded-md border-cyan-500 border-2 drop-shadow-lg"
-            on:click=previous
-        >
-              Previous
-        </button>
+        insta::assert_snapshot!(formatted, @r##"
+        <p>r#"some" string"#</p>
+        "##);
+    }
 
-        <button
-            class="hover:bg-blue-300 bg-slate-400 mt-6 rounded-md border-cyan-500 border-2 drop-shadow-lg"
-            on:click=next
-        >
-              Next
-        </button>
-        </div></div>"#
-        );
-
+    #[test]
+    fn unicode_scalar() {
+        let formatted = format_element_from_string!(r#"<p>"\u{00A9}🦀"</p>"#);
         insta::assert_snapshot!(formatted, @r#"
-        <div>
-            <div class=format!(
-                "grid grid-cols-4 gap-1 {extend_tw_classes}",
-            )>
-                <button
-                    class="hover:bg-blue-300 bg-slate-400 mt-6 rounded-md border-cyan-500 border-2 drop-shadow-lg"
-                    on:click=first
-                >
-                    First
-                </button>
-                <button
-                    class="hover:bg-blue-300 bg-slate-400 mt-6 rounded-md border-cyan-500 border-2 drop-shadow-lg"
-                    on:click=previous
-                >
-                    Previous
-                </button>
-                <button
-                    class="hover:bg-blue-300 bg-slate-400 mt-6 rounded-md border-cyan-500 border-2 drop-shadow-lg"
-                    on:click=next
-                >
-                    Next
-                </button>
-            </div>
-        </div>
+        <p>"\u{00A9}🦀"</p>
         "#);
     }
 }

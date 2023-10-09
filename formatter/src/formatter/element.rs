@@ -134,7 +134,7 @@ mod tests {
 
     use crate::{
         formatter::FormatterSettings,
-        test_helpers::{element, element_from_string, format_with, format_with_source},
+        test_helpers::{element, format_element_from_string, format_with},
     };
 
     macro_rules! format_element {
@@ -147,15 +147,12 @@ mod tests {
     }
     macro_rules! format_element_from_string {
         ($val:expr) => {{
-            let element = element_from_string! { $val };
-
-            format_with_source(
+            format_element_from_string(
                 FormatterSettings {
                     max_width: 40,
                     ..Default::default()
                 },
                 $val,
-                |formatter| formatter.element(&element),
             )
         }};
     }

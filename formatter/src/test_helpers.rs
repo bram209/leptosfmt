@@ -133,3 +133,10 @@ pub fn format_with(settings: FormatterSettings, run: impl FnOnce(&mut Formatter)
     run(&mut formatter);
     printer.eof()
 }
+
+pub fn format_element_from_string(settings: FormatterSettings, source: &str) -> String {
+    let element = element_from_string!(source);
+    format_with_source(settings, source, |formatter| {
+        formatter.element(&element);
+    })
+}
