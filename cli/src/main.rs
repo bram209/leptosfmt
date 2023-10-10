@@ -101,7 +101,7 @@ fn main() {
                 mut formatted,
             }) => {
                 if args.rustfmt {
-                    formatted = run_rustfmt(&formatted);
+                    formatted = run_rustfmt(&formatted).unwrap_or(formatted);
                 }
 
                 if args.check && check_if_diff(None, &original, &formatted, true) {
@@ -265,7 +265,7 @@ fn load_config(path: &PathBuf) -> anyhow::Result<FormatterSettings> {
     Ok(settings)
 }
 
-fn run_rustfmt(source: &str) -> String {
+fn run_rustfmt(source: &str) -> Option<String> {
     let mut child = process::Command::new("rustfmt")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -280,5 +280,10 @@ fn run_rustfmt(source: &str) -> String {
         .expect("failed to write to stdin");
 
     let output = child.wait_with_output().expect("failed to read stdout");
-    String::from_utf8(output.stdout).expect("stdout is not valid utf8")
+
+    if output.status.success() {
+        Some(String::from_utf8(output.stdout).expect("stdout is not valid utf8"))
+    } else {
+        None
+    }
 }
