@@ -37,6 +37,17 @@ Options:
   -V, --version                    Print version
 ```
 
+## Using with Rust Analyzer
+
+You can set the `rust-analyzer.rustfmt.overrideCommand` setting.
+
+
+```json
+  "rust-analyzer.rustfmt.overrideCommand": ["leptosfmt", "--stdin", "--rustfmt"]
+```
+
+> Note: For VSCode users, I recommend to use workpsace settings (CMD + shift + p -> Open workspace settings), so that you can only configure `leptosfmt` for workpsaces that are using leptos. For Neovim users, I recommend using [neoconf.nvim](https://github.com/folke/neoconf.nvim) for managing project-local LSP configuration.
+
 ## Configuration
 You can configure all settings through a `leptosfmt.toml` file.
 
@@ -48,6 +59,7 @@ attr_value_brace_style = "WhenRequired" # "Always", "AlwaysUnlessLit", "WhenRequ
 ```
 
 To see what each setting does, the see [configuration docs](./docs/configuration.md)
+
 
 
 ## Examples
