@@ -91,7 +91,7 @@ impl FormatterSettings {
     pub fn to_printer_settings(&self, source: Option<&Rope>) -> PrinterSettings {
         PrinterSettings {
             margin: self.max_width as isize,
-            spaces: self.tab_spaces as isize,
+            tab_spaces: self.tab_spaces as isize,
             min_space: 60,
             crlf_line_endings: match self.newline_style {
                 NewlineStyle::Auto => source.map(uses_crlf_line_ending).unwrap_or_default(),
