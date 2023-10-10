@@ -13,6 +13,10 @@ All notable changes to this project will be documented in this file.
 - Call rustfmt after formatting with leptosfmt (requires stdin) ([#88](https://github.com/bram209/leptosfmt/issues/88))
 - Add indentation style (tabs/spaces) & newline style (LF/CRLF) settings ([#90](https://github.com/bram209/leptosfmt/issues/90))
 
+### Miscellaneous Tasks
+
+- Rename printer setting `spaces` to `tab_spaces` for consistency
+
 ## [0.1.16] - 2023-10-09
 
 ### Bug Fixes
