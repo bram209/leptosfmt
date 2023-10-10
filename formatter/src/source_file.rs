@@ -79,6 +79,8 @@ fn format_source(
 mod tests {
     use indoc::indoc;
 
+    use crate::IndentationStyle;
+
     use super::*;
 
     #[test]
@@ -437,5 +439,109 @@ mod tests {
             }
         }
         "#);
+    }
+
+    #[test]
+    fn indent_with_tabs() {
+        let source = indoc! {"
+        fn main() {
+        \u{0020}view! { cx,
+              <div>
+                <div>Example</div>
+              </div>
+            }
+        }
+        "};
+
+        let result = format_file_source(
+            source,
+            FormatterSettings {
+                tab_spaces: 1,
+                indentation_style: IndentationStyle::Tabs,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+
+        let expected = indoc! {"
+        fn main() {
+        \u{0020}view! { cx,
+        \t\t<div>
+        \t\t\t<div>Example</div>
+        \t\t</div>
+        \t}
+        }
+        "};
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn auto_detect_tabs() {
+        let source = indoc! {"
+        fn main() {
+        \tview! { cx,
+              <div>
+                <div>Example</div>
+              </div>
+            }
+        }
+        "};
+
+        let result = format_file_source(
+            source,
+            FormatterSettings {
+                indentation_style: IndentationStyle::Auto,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+
+        let expected = indoc! {"
+        fn main() {
+        \tview! { cx,
+        \t\t<div>
+        \t\t\t<div>Example</div>
+        \t\t</div>
+        \t}
+        }
+        "};
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn auto_detect_spaces() {
+        let source = indoc! {"
+        fn main() {
+        \u{0020}view! { cx,
+              <div>
+                <div>Example</div>
+              </div>
+            }
+        }
+        "};
+
+        let result = format_file_source(
+            source,
+            FormatterSettings {
+                tab_spaces: 1,
+                indentation_style: IndentationStyle::Auto,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+
+        let expected = indoc! {"
+        fn main() {
+        \u{0020}view! { cx,
+        \u{0020}\u{0020}<div>
+        \u{0020}\u{0020}\u{0020}<div>Example</div>
+        \u{0020}\u{0020}</div>
+        \u{0020}}
+        }
+        "};
+
+        assert_eq!(result, expected);
     }
 }

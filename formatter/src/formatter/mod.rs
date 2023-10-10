@@ -12,7 +12,7 @@ mod mac;
 mod node;
 
 pub use mac::format_macro;
-pub use mac::ViewMacro;
+pub use mac::{ParentIdent, ViewMacro};
 
 use serde::Deserialize;
 use serde::Serialize;
@@ -25,6 +25,21 @@ pub enum AttributeValueBraceStyle {
     Preserve,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
+pub enum IndentationStyle {
+    Auto,
+    Spaces,
+    Tabs,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
+pub enum NewlineStyle {
+    Auto,
+    Native,
+    Unix,
+    Windows,
+}
+
 #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 #[serde(default)]
 pub struct FormatterSettings {
@@ -33,6 +48,12 @@ pub struct FormatterSettings {
 
     // Number of spaces per tab
     pub tab_spaces: usize,
+
+    // Determines indentation style (tabs or spaces)
+    pub indentation_style: IndentationStyle,
+
+    // Determines line ending (unix or windows)
+    pub newline_style: NewlineStyle,
 
     // Determines placement of braces around single expression attribute values
     pub attr_value_brace_style: AttributeValueBraceStyle,
@@ -44,17 +65,45 @@ impl Default for FormatterSettings {
             max_width: 100,
             tab_spaces: 4,
             attr_value_brace_style: AttributeValueBraceStyle::WhenRequired,
+            indentation_style: IndentationStyle::Auto,
+            newline_style: NewlineStyle::Auto,
         }
     }
 }
 
-impl From<&FormatterSettings> for PrinterSettings {
-    fn from(value: &FormatterSettings) -> Self {
-        Self {
-            margin: value.max_width as isize,
-            indent: value.tab_spaces as isize,
+fn uses_crlf_line_ending(source: &Rope) -> bool {
+    source
+        .raw_lines()
+        .next()
+        .map(|raw_line| raw_line.to_string().ends_with("\r\n"))
+        .unwrap_or_default()
+}
+
+fn uses_tabs_for_indentation(source: &Rope) -> bool {
+    source
+        .lines()
+        .find(|line| matches!(line.chars().next(), Some('\t') | Some(' ')))
+        .map(|line| matches!(line.chars().next(), Some('\t')))
+        .unwrap_or_default()
+}
+
+impl FormatterSettings {
+    pub fn to_printer_settings(&self, source: Option<&Rope>) -> PrinterSettings {
+        PrinterSettings {
+            margin: self.max_width as isize,
+            spaces: self.tab_spaces as isize,
             min_space: 60,
-            crlf_line_endings: false,
+            crlf_line_endings: match self.newline_style {
+                NewlineStyle::Auto => source.map(uses_crlf_line_ending).unwrap_or_default(),
+                NewlineStyle::Native => cfg!(windows),
+                NewlineStyle::Unix => false,
+                NewlineStyle::Windows => true,
+            },
+            hard_tabs: match self.indentation_style {
+                IndentationStyle::Auto => source.map(uses_tabs_for_indentation).unwrap_or_default(),
+                IndentationStyle::Spaces => false,
+                IndentationStyle::Tabs => true,
+            },
         }
     }
 }

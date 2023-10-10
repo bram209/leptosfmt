@@ -50,11 +50,13 @@ pub struct PrinterSettings {
     // Target line width.
     pub margin: isize,
     // Number of spaces incement at each level of block indentation.
-    pub indent: isize,
+    pub spaces: isize,
     // Every line is allowed at least this much space, even if highly indented.
     pub min_space: isize,
     // Print CRLF line ending instead of LF
     pub crlf_line_endings: bool,
+    // Whether to use tab characters instead of spaces
+    pub hard_tabs: bool,
 }
 
 pub struct Printer {
@@ -356,7 +358,16 @@ impl Printer {
     }
 
     fn print_indent(&mut self) {
-        self.out.reserve(self.pending_indentation);
+        if !self.settings.hard_tabs {
+            self.out.reserve(self.pending_indentation);
+        } else {
+            let tabs = self.pending_indentation / self.settings.spaces as usize;
+            let remaining_spaces = self.pending_indentation % self.settings.spaces as usize;
+            self.out.reserve(tabs + remaining_spaces);
+            self.out.extend(iter::repeat('\t').take(tabs));
+            self.pending_indentation = remaining_spaces
+        }
+
         self.out
             .extend(iter::repeat(' ').take(self.pending_indentation));
         self.pending_indentation = 0;
