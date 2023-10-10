@@ -2,10 +2,10 @@
 
 use std::{
     fs,
-    io::Read,
+    io::{Read, Write},
     panic,
     path::{Path, PathBuf},
-    process::exit,
+    process::{self, exit, Stdio},
     time::Instant,
 };
 
@@ -40,6 +40,10 @@ struct Args {
     /// Format stdin and write to stdout
     #[arg(short, long, default_value = "false")]
     stdin: bool,
+
+    /// Format with rustfmt after formatting with leptosfmt (requires stdin)
+    #[arg(short, long, default_value = "false", requires = "stdin")]
+    rustfmt: bool,
 
     #[arg(
         short,
@@ -94,10 +98,14 @@ fn main() {
         match format_stdin(settings) {
             Ok(FormatOutput {
                 original,
-                formatted,
+                mut formatted,
             }) => {
+                if args.rustfmt {
+                    formatted = run_rustfmt(&formatted);
+                }
+
                 if args.check && check_if_diff(None, &original, &formatted, true) {
-                    return;
+                    exit(1)
                 } else {
                     println!("{formatted}")
                 }
@@ -108,6 +116,12 @@ fn main() {
             }
         }
         return;
+    }
+
+    if args.rustfmt {
+        // TODO: didn't dive into this yet, but `requires` clap attribute doesn't seem to work
+        eprintln!("❌ --rustfmt requires --stdin");
+        exit(1);
     }
 
     let print_err = |path: &Path, err| {
@@ -249,4 +263,22 @@ fn load_config(path: &PathBuf) -> anyhow::Result<FormatterSettings> {
         toml::from_str(&config).context("could not parse config file")?;
 
     Ok(settings)
+}
+
+fn run_rustfmt(source: &str) -> String {
+    let mut child = process::Command::new("rustfmt")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .expect("failed to run rustfmt");
+
+    child
+        .stdin
+        .as_mut()
+        .expect("failed to open stdin")
+        .write_all(source.as_bytes())
+        .expect("failed to write to stdin");
+
+    let output = child.wait_with_output().expect("failed to read stdout");
+    String::from_utf8(output.stdout).expect("stdout is not valid utf8")
 }
