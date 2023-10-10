@@ -31,6 +31,7 @@ Options:
   -t, --tab-spaces <TAB_SPACES>    Number of spaces per tab
   -c, --config-file <CONFIG_FILE>  Configuration file
   -s, --stdin                      Format stdin and write to stdout
+  -r, --rustfmt                    Format with rustfmt after formatting with leptosfmt (requires stdin)
   -q, --quiet                      
       --check                      Check if the file is correctly formatted. Exit with code 1 if not
   -h, --help                       Print help
