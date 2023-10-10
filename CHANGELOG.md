@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### Features
+
+- Call rustfmt after formatting with leptosfmt (requires stdin) ([#88](https://github.com/bram209/leptosfmt/issues/88))
+
 ## [0.1.16] - 2023-10-09
 
 ### Bug Fixes
