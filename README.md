@@ -21,17 +21,20 @@ or for trying out unreleased features:
 ## Usage
 
 ```
-Usage: leptosfmt [OPTIONS] <INPUT_PATTERN>
+Usage: leptosfmt [OPTIONS] [INPUT_PATTERNS]...
 
 Arguments:
-  <INPUT_PATTERN>  A file, directory or glob
+  [INPUT_PATTERNS]...  A space separated list of file, directory or glob
 
 Options:
-  -m, --max-width <MAX_WIDTH>    
-  -t, --tab-spaces <TAB_SPACES>  
-  -c, --config_file <CONFIG_FILE>          
-  -h, --help                     Print help
-  -V, --version                  Print version
+  -m, --max-width <MAX_WIDTH>      Maximum width of each line
+  -t, --tab-spaces <TAB_SPACES>    Number of spaces per tab
+  -c, --config-file <CONFIG_FILE>  Configuration file
+  -s, --stdin                      Format stdin and write to stdout
+  -q, --quiet                      
+      --check                      Check if the file is correctly formatted. Exit with code 1 if not
+  -h, --help                       Print help
+  -V, --version                    Print version
 ```
 
 ## Configuration
