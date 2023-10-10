@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Bug Fixes
+
+- Ignore rustfmt output on error status ([#89](https://github.com/bram209/leptosfmt/issues/89))
+
 ### Features
 
 - Call rustfmt after formatting with leptosfmt (requires stdin) ([#88](https://github.com/bram209/leptosfmt/issues/88))
