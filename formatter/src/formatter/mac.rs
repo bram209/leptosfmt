@@ -1,5 +1,5 @@
 use crop::Rope;
-use leptosfmt_pretty_printer::{Printer, PrinterSettings};
+use leptosfmt_pretty_printer::Printer;
 use proc_macro2::{token_stream, Span, TokenStream, TokenTree};
 use rstml::node::Node;
 use syn::{spanned::Spanned, Macro};
@@ -7,7 +7,7 @@ use syn::{spanned::Spanned, Macro};
 use super::{Formatter, FormatterSettings};
 
 pub struct ViewMacro<'a> {
-    pub parent_ident: Option<usize>,
+    pub parent_ident: ParentIdent,
     pub cx: Option<TokenTree>,
     pub global_class: Option<TokenTree>,
     pub nodes: Vec<Node>,
@@ -16,8 +16,14 @@ pub struct ViewMacro<'a> {
     pub comma: Option<TokenTree>,
 }
 
+#[derive(Default)]
+pub struct ParentIdent {
+    pub tabs: usize,
+    pub spaces: usize,
+}
+
 impl<'a> ViewMacro<'a> {
-    pub fn try_parse(parent_ident: Option<usize>, mac: &'a Macro) -> Option<Self> {
+    pub fn try_parse(parent_ident: ParentIdent, mac: &'a Macro) -> Option<Self> {
         let mut tokens = mac.tokens.clone().into_iter();
         let (cx, comma) = (tokens.next(), tokens.next());
 
@@ -75,7 +81,8 @@ impl Formatter<'_> {
             ..
         } = view_mac;
 
-        self.printer.cbox(parent_indent.unwrap_or(0) as isize);
+        self.printer
+            .cbox((parent_indent.tabs * self.settings.tab_spaces + parent_indent.spaces) as isize);
 
         self.flush_comments(cx.span().start().line - 1);
         self.printer.word("view! {");
@@ -155,7 +162,7 @@ pub fn format_macro(
     settings: &FormatterSettings,
     source: Option<&Rope>,
 ) -> String {
-    let mut printer: Printer;
+    let mut printer = Printer::new(settings.to_printer_settings(source));
     let mut formatter = match source {
         Some(source) => {
             let whitespace = crate::collect_comments::extract_whitespace_and_comments(
@@ -163,22 +170,9 @@ pub fn format_macro(
                 mac.mac.tokens.clone(),
             );
 
-            let crlf_line_endings = source
-                .raw_lines()
-                .next()
-                .map(|raw_line| raw_line.to_string().ends_with("\r\n"))
-                .unwrap_or_default();
-
-            printer = Printer::new(PrinterSettings {
-                crlf_line_endings,
-                ..settings.into()
-            });
             Formatter::with_source(*settings, &mut printer, source, whitespace)
         }
-        None => {
-            printer = Printer::new(settings.into());
-            Formatter::new(*settings, &mut printer)
-        }
+        None => Formatter::new(*settings, &mut printer),
     };
 
     formatter.view_macro(mac);
@@ -195,7 +189,7 @@ mod tests {
     macro_rules! view_macro {
         ($($tt:tt)*) => {{
             let mac: Macro = syn::parse2(quote! { $($tt)* }).unwrap();
-            format_macro(&ViewMacro::try_parse(None, &mac).unwrap(), &Default::default(), None)
+            format_macro(&ViewMacro::try_parse(Default::default(), &mac).unwrap(), &Default::default(), None)
         }}
     }
 

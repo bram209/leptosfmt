@@ -5,7 +5,7 @@ use syn::{
     File, Macro,
 };
 
-use crate::ViewMacro;
+use crate::{ParentIdent, ViewMacro};
 
 struct ViewMacroVisitor<'ast> {
     macros: Vec<ViewMacro<'ast>>,
@@ -16,14 +16,17 @@ impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
     fn visit_macro(&mut self, node: &'ast Macro) {
         if node.path.is_ident("view") {
             let span_line = node.span().start().line;
-            let indent = self
-                .source
-                .line(span_line - 1)
-                .chars()
-                .take_while(|&c| c == ' ')
-                .count();
+            let line = self.source.line(span_line - 1);
 
-            if let Some(view_mac) = ViewMacro::try_parse(Some(indent), node) {
+            let indent_chars: Vec<_> = line
+                .chars()
+                .take_while(|&c| c == ' ' || c == '\t')
+                .collect();
+
+            let tabs = indent_chars.iter().filter(|&&c| c == '\t').count();
+            let spaces = indent_chars.iter().filter(|&&c| c == ' ').count();
+
+            if let Some(view_mac) = ViewMacro::try_parse(ParentIdent { tabs, spaces }, node) {
                 self.macros.push(view_mac);
             }
         }

@@ -59,15 +59,14 @@ edition = "2021"
 You can configure all settings through a `leptosfmt.toml` file.
 
 ```toml
-max_width = 100
-tab_spaces = 4
+max_width = 100 # Maximum width of each line
+tab_spaces = 4 # Number of spaces per tab
+indentation_style = "Auto" # "Tabs", "Spaces" or "Auto"
+newline_style = "Auto" # "Unix", "Windows" or "Auto"
 attr_value_brace_style = "WhenRequired" # "Always", "AlwaysUnlessLit", "WhenRequired" or "Preserve"
-
 ```
 
 To see what each setting does, the see [configuration docs](./docs/configuration.md)
-
-
 
 ## Examples
 

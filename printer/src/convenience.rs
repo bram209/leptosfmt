@@ -3,11 +3,11 @@ use std::borrow::Cow;
 
 impl Printer {
     pub fn ibox_indent(&mut self) {
-        self.ibox(self.settings.indent);
+        self.ibox(self.settings.spaces);
     }
 
     pub fn ibox_dedent(&mut self) {
-        self.ibox(-self.settings.indent);
+        self.ibox(-self.settings.spaces);
     }
 
     pub fn ibox(&mut self, indent: isize) {
@@ -18,11 +18,11 @@ impl Printer {
     }
 
     pub fn cbox_indent(&mut self) {
-        self.cbox(self.settings.indent);
+        self.cbox(self.settings.spaces);
     }
 
     pub fn cbox_dedent(&mut self) {
-        self.cbox(-self.settings.indent);
+        self.cbox(-self.settings.spaces);
     }
 
     pub fn cbox(&mut self, indent: isize) {
@@ -33,7 +33,7 @@ impl Printer {
     }
 
     pub fn end_dedent(&mut self) {
-        self.offset(-self.settings.indent);
+        self.offset(-self.settings.spaces);
         self.end();
     }
 
