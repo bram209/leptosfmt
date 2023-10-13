@@ -53,7 +53,51 @@ edition = "2021"
 # other config...
 ```
 
-> Note: For VSCode users, I recommend to use workpsace settings (CMD + shift + p -> Open workspace settings), so that you can only configure `leptosfmt` for workpsaces that are using leptos. For Neovim users, I recommend using [neoconf.nvim](https://github.com/folke/neoconf.nvim) for managing project-local LSP configuration.
+## Editors
+
+**VSCode**
+
+It is recommend to use workpsace settings (CMD + shift + p -> Open workspace settings), so that you can only configure `leptosfmt` for workpsaces that are using leptos.
+
+**Neovim**
+
+Any formatting plugin that allows custom commands would work. [neoconf.nvim](https://github.com/folke/neoconf.nvim) for managing project-local LSP configuration is a good option. 
+
+If you just want a quick, dirty, imperfect snippet to format your current buffer, see below.
+
+```lua
+-- Assumes an lsp client is attached to your buffer.
+local lsp_or_leptos = function()
+    -- Handle to the current buffer
+    local filetype = vim.filetype.match({ buf = 0 })
+    if filetype == "rust" then
+        -- Get all lines within the buffer
+        local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+
+        -- true if any line contains "leptos"
+        local probably_leptos_project = vim.iter(lines):any(function(content)
+            return content:match("leptos")
+        end)
+
+        if probably_leptos_project == true then
+            vim.cmd.write() -- Write the buffer,
+            -- you technically don't need to write the buffer and could instead
+            -- filter your buffer using vim.cmd([[%! leptosfmt -t 2]]).
+            -- It all comes down to preference.
+
+            -- remove 'silent' if you want to see errors and all that.
+            vim.cmd([[silent !leptosfmt % -t 2]]) -- '%' expands to [path to current buffer]
+            vim.notify("Formatted with leptosfmt!", vim.log.levels.INFO)
+            return
+        end
+    end
+    vim.lsp.buf.format()
+end
+
+-- Set a mapping to trigger the function
+vim.keymap.set("n", "<leader>o", lsp_or_leptos)
+
+```
 
 ## Configuration
 You can configure all settings through a `leptosfmt.toml` file.
