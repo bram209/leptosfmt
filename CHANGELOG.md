@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Bug Fixes
+
+- Don't print new line to stdout ([#95](https://github.com/bram209/leptosfmt/issues/95))
+
 ### Features
 
 - Add indentation style (tabs/spaces) & newline style (LF/CRLF) settings ([#90](https://github.com/bram209/leptosfmt/issues/90))
