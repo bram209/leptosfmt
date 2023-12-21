@@ -107,7 +107,7 @@ fn main() {
                 if args.check && check_if_diff(None, &original, &formatted, true) {
                     exit(1)
                 } else {
-                    println!("{formatted}")
+                    print!("{formatted}")
                 }
             }
             Err(err) => {
