@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Features
+
+- Add indentation style (tabs/spaces) & newline style (LF/CRLF) settings ([#90](https://github.com/bram209/leptosfmt/issues/90))
+
+### Miscellaneous Tasks
+
+- Rename printer setting `spaces` to `tab_spaces` for consistency
+
+## [0.1.17] - 2023-10-10
+
 ### Bug Fixes
 
 - Ignore rustfmt output on error status ([#89](https://github.com/bram209/leptosfmt/issues/89))
@@ -11,11 +21,6 @@ All notable changes to this project will be documented in this file.
 ### Features
 
 - Call rustfmt after formatting with leptosfmt (requires stdin) ([#88](https://github.com/bram209/leptosfmt/issues/88))
-- Add indentation style (tabs/spaces) & newline style (LF/CRLF) settings ([#90](https://github.com/bram209/leptosfmt/issues/90))
-
-### Miscellaneous Tasks
-
-- Rename printer setting `spaces` to `tab_spaces` for consistency
 
 ## [0.1.16] - 2023-10-09
 
@@ -130,7 +135,7 @@ All notable changes to this project will be documented in this file.
 - Make macro collecting functionality public
 - Export token types ([#24](https://github.com/bram209/leptosfmt/issues/24))
 
-## [0.1.4] - 2023-03-27
+## [leptosfmt-v0.1.4] - 2023-03-27
 
 ### Bug Fixes
 
