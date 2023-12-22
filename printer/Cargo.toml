@@ -1,6 +1,6 @@
 [package]
 name = "leptosfmt-pretty-printer"
-version = "0.1.7"
+version = "0.1.8"
 edition = "2021"
 description = "leptosfmt's pretty printer based on the prettyplease crate"
 license = { workspace = true }

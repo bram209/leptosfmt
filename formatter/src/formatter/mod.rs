@@ -184,3 +184,4 @@ impl<'a> Formatter<'a> {
         self.line_offset = Some(line_index);
     }
 }
+

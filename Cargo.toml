@@ -3,12 +3,12 @@ members = ["printer", "cli", "formatter"]
 resolver = "2"
 
 [workspace.package]
-version = "0.1.17"
+version = "0.1.18"
 license = "MIT OR Apache-2.0"
 
 [workspace.dependencies]
-leptosfmt-formatter = { path = "./formatter", version = "0.1.17" }
-leptosfmt-pretty-printer = { version = "0.1.7" }
+leptosfmt-formatter = { path = "./formatter", version = "0.1.18" }
+leptosfmt-pretty-printer = { version = "0.1.8" }
 
 [patch.crates-io]
 leptosfmt-pretty-printer = { path = "./printer" }
