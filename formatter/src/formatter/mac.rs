@@ -7,7 +7,7 @@ use syn::{spanned::Spanned, Macro};
 use super::{Formatter, FormatterSettings};
 
 pub struct ViewMacro<'a> {
-    pub parent_ident: ParentIdent,
+    pub parent_indent: ParentIndent,
     pub cx: Option<TokenTree>,
     pub global_class: Option<TokenTree>,
     pub nodes: Vec<Node>,
@@ -17,13 +17,13 @@ pub struct ViewMacro<'a> {
 }
 
 #[derive(Default)]
-pub struct ParentIdent {
+pub struct ParentIndent {
     pub tabs: usize,
     pub spaces: usize,
 }
 
 impl<'a> ViewMacro<'a> {
-    pub fn try_parse(parent_ident: ParentIdent, mac: &'a Macro) -> Option<Self> {
+    pub fn try_parse(parent_indent: ParentIndent, mac: &'a Macro) -> Option<Self> {
         let mut tokens = mac.tokens.clone().into_iter();
         let (cx, comma) = (tokens.next(), tokens.next());
 
@@ -56,7 +56,7 @@ impl<'a> ViewMacro<'a> {
         let nodes = rstml::parse2(tokens).ok()?;
 
         Some(Self {
-            parent_ident,
+            parent_indent,
             global_class,
             nodes,
             span,
@@ -74,7 +74,7 @@ impl<'a> ViewMacro<'a> {
 impl Formatter<'_> {
     pub fn view_macro(&mut self, view_mac: &ViewMacro) {
         let ViewMacro {
-            parent_ident: parent_indent,
+            parent_indent,
             cx,
             global_class,
             nodes,
