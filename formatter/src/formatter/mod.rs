@@ -12,7 +12,7 @@ mod mac;
 mod node;
 
 pub use mac::format_macro;
-pub use mac::{ParentIdent, ViewMacro};
+pub use mac::{ParentIndent, ViewMacro};
 
 use serde::Deserialize;
 use serde::Serialize;
