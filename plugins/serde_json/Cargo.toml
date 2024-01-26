@@ -1,0 +1,13 @@
+[package]
+name = "serde_json"
+edition = "2021"
+version.workspace = true
+license.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+extism-pdk = "1.0.0"
+
+[lib]
+crate_type = ["cdylib"]
