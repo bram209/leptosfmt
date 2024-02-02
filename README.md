@@ -53,7 +53,9 @@ edition = "2021"
 # (optional) other config...
 ```
 
-> Note: For VSCode users, I recommend to use workpsace settings (CMD + shift + p -> Open workspace settings), so that you can only configure `leptosfmt` for workpsaces that are using leptos. For Neovim users, I recommend using [neoconf.nvim](https://github.com/folke/neoconf.nvim) for managing project-local LSP configuration.
+> Note: For VSCode users, I recommend to use workpsace settings (CMD + shift + p -> Open workspace settings), so that you can only configure `leptosfmt` for workpsaces that are using leptos.
+> For Neovim users, I recommend using [neoconf.nvim](https://github.com/folke/neoconf.nvim) for managing project-local LSP configuration.
+> For Emacs see [configuration option](https://emacs-lsp.github.io/lsp-mode/page/lsp-rust-analyzer/#lsp-rust-analyzer-rustfmt-override-command) for LSP Mode.
 
 ## Configuration
 You can configure all settings through a `leptosfmt.toml` file.
