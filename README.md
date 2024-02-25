@@ -46,6 +46,21 @@ You can set the `rust-analyzer.rustfmt.overrideCommand` setting.
 ```json
   "rust-analyzer.rustfmt.overrideCommand": ["leptosfmt", "--stdin", "--rustfmt"]
 ```
+> Note: For VSCode users, I recommend to use workpsace settings (CMD + shift + p -> Open workspace settings), so that you can only configure `leptosfmt` for workpsaces that are using leptos. For Neovim users,
+
+Alternatively, if you are using [nvim-lspconfg](https://github.com/neovim/nvim-lspconfig), you may append the following to your `.setup{}` table:
+```lua
+lspconfig["rust_analyzer"].setup {
+  settings = {
+    ["rust-analyzer"] = {
+      rustfmt = {
+        overrideCommand = { "leptosfmt", "--stdin", "--rustfmt" },
+      },
+    },
+  },
+}
+```
+> Note: It is recommended to use [neoconf.nvim](https://github.com/folke/neoconf.nvim) for managing project-local LSP configuration.
 
 And **you must** configure `rustfmt` to use the correct edition, place a `rustfmt.toml` file in the root of your project:
 ```toml
@@ -53,7 +68,6 @@ edition = "2021"
 # (optional) other config...
 ```
 
-> Note: For VSCode users, I recommend to use workpsace settings (CMD + shift + p -> Open workspace settings), so that you can only configure `leptosfmt` for workpsaces that are using leptos. For Neovim users, I recommend using [neoconf.nvim](https://github.com/folke/neoconf.nvim) for managing project-local LSP configuration.
 
 ## Configuration
 You can configure all settings through a `leptosfmt.toml` file.
