@@ -10,11 +10,12 @@ use crate::{ParentIndent, ViewMacro};
 struct ViewMacroVisitor<'ast> {
     macros: Vec<ViewMacro<'ast>>,
     source: Rope,
+    html_macro: String,
 }
 
 impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
     fn visit_macro(&mut self, node: &'ast Macro) {
-        if node.path.is_ident("view") {
+        if node.path.is_ident(&self.html_macro) {
             let span_line = node.span().start().line;
             let line = self.source.line(span_line - 1);
 
@@ -35,10 +36,15 @@ impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
     }
 }
 
-pub fn collect_macros_in_file(file: &File, source: Rope) -> (Rope, Vec<ViewMacro<'_>>) {
+pub fn collect_macros_in_file(
+    file: &File,
+    source: Rope,
+    html_macro: String,
+) -> (Rope, Vec<ViewMacro<'_>>) {
     let mut visitor = ViewMacroVisitor {
         source,
         macros: Vec::new(),
+        html_macro,
     };
 
     visitor.visit_file(file);

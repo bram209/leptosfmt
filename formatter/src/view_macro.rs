@@ -6,19 +6,19 @@ use leptosfmt_prettyplease::MacroFormatter;
 use crate::{Formatter, FormatterSettings, ViewMacro};
 
 pub struct ViewMacroFormatter<'a> {
-    settings: FormatterSettings,
+    settings: &'a FormatterSettings,
     source: Option<&'a Rope>,
     line_offset: Option<usize>,
     comments: HashMap<usize, Option<String>>,
 }
 
 impl ViewMacroFormatter<'_> {
-    pub fn new(
-        settings: FormatterSettings,
-        source: Option<&Rope>,
+    pub fn new<'a>(
+        settings: &'a FormatterSettings,
+        source: Option<&'a Rope>,
         line_offset: Option<usize>,
         comments: HashMap<usize, Option<String>>,
-    ) -> ViewMacroFormatter<'_> {
+    ) -> ViewMacroFormatter<'a> {
         ViewMacroFormatter {
             settings,
             source,
@@ -30,7 +30,7 @@ impl ViewMacroFormatter<'_> {
 
 impl MacroFormatter for ViewMacroFormatter<'_> {
     fn format(&self, printer: &mut leptosfmt_pretty_printer::Printer, mac: &syn::Macro) -> bool {
-        if !mac.path.is_ident("view") {
+        if !mac.path.is_ident(&self.settings.html_macro) {
             return false;
         }
 
@@ -39,7 +39,7 @@ impl MacroFormatter for ViewMacroFormatter<'_> {
         };
         let mut formatter = Formatter {
             printer,
-            settings: self.settings,
+            settings: &self.settings,
             source: self.source,
             line_offset: self.line_offset,
             whitespace_and_comments: self.comments.clone(),

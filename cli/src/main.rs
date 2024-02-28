@@ -45,6 +45,10 @@ struct Args {
     #[arg(short, long, default_value = "false", requires = "stdin")]
     rustfmt: bool,
 
+    /// Macro to be formatted.
+    #[arg(long)]
+    html_macro: Option<String>,
+
     #[arg(
         short,
         long,
@@ -137,7 +141,7 @@ fn main() {
 
     let format_results = file_paths
         .into_par_iter()
-        .map(|path| (path.clone(), format_file(&path, settings, !args.check)))
+        .map(|path| (path.clone(), format_file(&path, &settings, !args.check)))
         .collect::<Vec<_>>();
 
     let mut check_failed = false;
@@ -200,7 +204,7 @@ fn format_stdin(settings: FormatterSettings) -> anyhow::Result<FormatOutput> {
     let mut stdin = String::new();
     let _ = std::io::stdin().read_to_string(&mut stdin);
 
-    let formatted = panic::catch_unwind(|| format_file_source(&stdin, settings))
+    let formatted = panic::catch_unwind(|| format_file_source(&stdin, &settings))
         .map_err(|e| anyhow::anyhow!(e.downcast::<String>().unwrap()))??;
 
     Ok(FormatOutput {
@@ -211,7 +215,7 @@ fn format_stdin(settings: FormatterSettings) -> anyhow::Result<FormatOutput> {
 
 fn format_file(
     file: &PathBuf,
-    settings: FormatterSettings,
+    settings: &FormatterSettings,
     write_result: bool,
 ) -> anyhow::Result<FormatOutput> {
     let file_source = std::fs::read_to_string(file)?;
@@ -253,6 +257,10 @@ fn create_settings(args: &Args) -> anyhow::Result<FormatterSettings> {
 
     if let Some(tab_spaces) = args.tab_spaces {
         settings.tab_spaces = tab_spaces;
+    }
+
+    if let Some(html_macro) = args.html_macro.to_owned() {
+        settings.html_macro = html_macro;
     }
     Ok(settings)
 }
