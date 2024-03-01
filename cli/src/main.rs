@@ -45,9 +45,9 @@ struct Args {
     #[arg(short, long, default_value = "false", requires = "stdin")]
     rustfmt: bool,
 
-    /// Macro to be formatted.
-    #[arg(long)]
-    html_macro: Option<String>,
+    /// Macros to be formatted.
+    #[arg(long, num_args=1.., value_delimiter= ' ')]
+    format_macros: Option<Vec<String>>,
 
     #[arg(
         short,
@@ -110,8 +110,6 @@ fn main() {
 
                 if args.check && check_if_diff(None, &original, &formatted, true) {
                     exit(1)
-                } else {
-                    print!("{formatted}")
                 }
             }
             Err(err) => {
@@ -259,8 +257,8 @@ fn create_settings(args: &Args) -> anyhow::Result<FormatterSettings> {
         settings.tab_spaces = tab_spaces;
     }
 
-    if let Some(html_macro) = args.html_macro.to_owned() {
-        settings.html_macro = html_macro;
+    if let Some(format_macros) = args.format_macros.to_owned() {
+        settings.format_macros = format_macros;
     }
     Ok(settings)
 }

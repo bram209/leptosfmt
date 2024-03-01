@@ -30,22 +30,26 @@ impl ViewMacroFormatter<'_> {
 
 impl MacroFormatter for ViewMacroFormatter<'_> {
     fn format(&self, printer: &mut leptosfmt_pretty_printer::Printer, mac: &syn::Macro) -> bool {
-        if !mac.path.is_ident(&self.settings.html_macro) {
-            return false;
+        for format_macro in &self.settings.format_macros {
+            if !mac.path.is_ident(&format_macro) {
+                continue;
+            }
+
+            let Some(m) = ViewMacro::try_parse(Default::default(), mac, format_macro.to_owned())
+            else {
+                continue;
+            };
+            let mut formatter = Formatter {
+                printer,
+                settings: self.settings,
+                source: self.source,
+                line_offset: self.line_offset,
+                whitespace_and_comments: self.comments.clone(),
+            };
+
+            formatter.view_macro(&m);
         }
 
-        let Some(m) = ViewMacro::try_parse(Default::default(), mac) else {
-            return false;
-        };
-        let mut formatter = Formatter {
-            printer,
-            settings: &self.settings,
-            source: self.source,
-            line_offset: self.line_offset,
-            whitespace_and_comments: self.comments.clone(),
-        };
-
-        formatter.view_macro(&m);
         true
     }
 }

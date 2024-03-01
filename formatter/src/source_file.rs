@@ -33,8 +33,8 @@ pub fn format_file_source(
     settings: &FormatterSettings,
 ) -> Result<String, FormatError> {
     let ast = syn::parse_file(source)?;
-    let rope = Rope::try_from(source).unwrap();
-    let (mut rope, macros) = collect_macros_in_file(&ast, rope, settings.html_macro.to_owned());
+    let rope = Rope::from(source);
+    let (mut rope, macros) = collect_macros_in_file(&ast, rope, settings.format_macros.to_owned());
     format_source(&mut rope, macros, settings)
 }
 
@@ -51,7 +51,7 @@ fn format_source(
         let end = mac.delimiter.span().close().end();
         let start_byte = line_column_to_byte(source, start);
         let end_byte = line_column_to_byte(source, end);
-        let new_text = format_macro(&view_mac, &settings, Some(source));
+        let new_text = format_macro(&view_mac, settings, Some(source));
 
         edits.push(TextEdit {
             range: start_byte..end_byte,
@@ -136,7 +136,7 @@ mod tests {
     }
 
     #[test]
-    fn override_html_macro() {
+    fn override_format_macros() {
         let source = indoc! {r#"
             fn main() {
                 html! {   cx ,  <div>  <span>{
@@ -154,7 +154,7 @@ mod tests {
         let result = format_file_source(
             source,
             &FormatterSettings {
-                html_macro: "html".to_string(),
+                format_macros: vec!["html".to_string()],
                 ..Default::default()
             },
         )

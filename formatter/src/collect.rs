@@ -10,25 +10,31 @@ use crate::{ParentIndent, ViewMacro};
 struct ViewMacroVisitor<'ast> {
     macros: Vec<ViewMacro<'ast>>,
     source: Rope,
-    html_macro: String,
+    format_macros: Vec<String>,
 }
 
 impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
     fn visit_macro(&mut self, node: &'ast Macro) {
-        if node.path.is_ident(&self.html_macro) {
-            let span_line = node.span().start().line;
-            let line = self.source.line(span_line - 1);
+        for format_macro in &self.format_macros {
+            if node.path.is_ident(&format_macro) {
+                let span_line = node.span().start().line;
+                let line = self.source.line(span_line - 1);
 
-            let indent_chars: Vec<_> = line
-                .chars()
-                .take_while(|&c| c == ' ' || c == '\t')
-                .collect();
+                let indent_chars: Vec<_> = line
+                    .chars()
+                    .take_while(|&c| c == ' ' || c == '\t')
+                    .collect();
 
-            let tabs = indent_chars.iter().filter(|&&c| c == '\t').count();
-            let spaces = indent_chars.iter().filter(|&&c| c == ' ').count();
+                let tabs = indent_chars.iter().filter(|&&c| c == '\t').count();
+                let spaces = indent_chars.iter().filter(|&&c| c == ' ').count();
 
-            if let Some(view_mac) = ViewMacro::try_parse(ParentIndent { tabs, spaces }, node) {
-                self.macros.push(view_mac);
+                if let Some(view_mac) = ViewMacro::try_parse(
+                    ParentIndent { tabs, spaces },
+                    node,
+                    format_macro.to_owned(),
+                ) {
+                    self.macros.push(view_mac);
+                }
             }
         }
 
@@ -39,12 +45,12 @@ impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
 pub fn collect_macros_in_file(
     file: &File,
     source: Rope,
-    html_macro: String,
+    format_macros: Vec<String>,
 ) -> (Rope, Vec<ViewMacro<'_>>) {
     let mut visitor = ViewMacroVisitor {
         source,
         macros: Vec::new(),
-        html_macro,
+        format_macros,
     };
 
     visitor.visit_file(file);

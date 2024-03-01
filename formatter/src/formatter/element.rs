@@ -62,7 +62,7 @@ impl Formatter<'_> {
         }
     }
 
-    pub fn children(&mut self, children: &Vec<Node>, attribute_count: usize) {
+    pub fn children(&mut self, children: &[Node], attribute_count: usize) {
         if children.is_empty() {
             return;
         }
