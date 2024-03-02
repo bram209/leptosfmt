@@ -45,9 +45,9 @@ struct Args {
     #[arg(short, long, default_value = "false", requires = "stdin")]
     rustfmt: bool,
 
-    /// Macros to be formatted.
+    /// Override formatted macro names
     #[arg(long, num_args=1.., value_delimiter= ' ')]
-    format_macros: Option<Vec<String>>,
+    override_macro_names: Option<Vec<String>>,
 
     #[arg(
         short,
@@ -110,6 +110,8 @@ fn main() {
 
                 if args.check && check_if_diff(None, &original, &formatted, true) {
                     exit(1)
+                } else {
+                    print!("{formatted}")
                 }
             }
             Err(err) => {
@@ -257,8 +259,8 @@ fn create_settings(args: &Args) -> anyhow::Result<FormatterSettings> {
         settings.tab_spaces = tab_spaces;
     }
 
-    if let Some(format_macros) = args.format_macros.to_owned() {
-        settings.format_macros = format_macros;
+    if let Some(macro_names) = args.override_macro_names.to_owned() {
+        settings.macro_names = macro_names;
     }
     Ok(settings)
 }

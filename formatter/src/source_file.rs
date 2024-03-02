@@ -34,7 +34,7 @@ pub fn format_file_source(
 ) -> Result<String, FormatError> {
     let ast = syn::parse_file(source)?;
     let rope = Rope::from(source);
-    let (mut rope, macros) = collect_macros_in_file(&ast, rope, settings.format_macros.to_owned());
+    let (mut rope, macros) = collect_macros_in_file(&ast, rope, settings.macro_names.to_owned());
     format_source(&mut rope, macros, settings)
 }
 
@@ -136,7 +136,119 @@ mod tests {
     }
 
     #[test]
-    fn override_format_macros() {
+    fn fully_qualified_macro_path() {
+        let source = indoc! {r#"
+            fn main() {
+                leptos::view! {   cx ,  <div>  <span>"hello"</span></div>  }; 
+            }
+        "#};
+
+        let result = format_file_source(source, &Default::default()).unwrap();
+        insta::assert_snapshot!(result, @r#"
+        fn main() {
+            leptos::view! { cx,
+                <div>
+                    <span>"hello"</span>
+                </div>
+            }; 
+        }
+
+        "#);
+    }
+
+    #[test]
+    fn ignore_other_macros() {
+        let source = indoc! {r#"
+            fn main() {
+                leptos::view! {   cx ,  <div class=format!("classy")>  <span>"hello"</span></div>  }; 
+            }
+        "#};
+
+        let result = format_file_source(source, &Default::default()).unwrap();
+        insta::assert_snapshot!(result, @r#"
+        fn main() {
+            leptos::view! { cx,
+                <div class=format!("classy")>
+                    <span>"hello"</span>
+                </div>
+            }; 
+        }
+
+        "#);
+    }
+
+    #[test]
+    fn fully_qualified_macro_path_overridden() {
+        let source = indoc! {r#"
+            fn main() {
+                foo::bar::some_view! {   cx ,  <div>  <span>"hello"</span></div>  }; 
+            }
+        "#};
+
+        let result = format_file_source(
+            source,
+            &FormatterSettings {
+                macro_names: vec!["foo::bar::some_view".to_string()],
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        insta::assert_snapshot!(result, @r#"
+        fn main() {
+            foo::bar::some_view! { cx,
+                <div>
+                    <span>"hello"</span>
+                </div>
+            }; 
+        }
+
+        "#);
+    }
+
+    #[test]
+    fn fully_qualified_macro_path_with_indent() {
+        let source = indoc! {r#"
+            fn main() {
+                foo::bar::some_view! {   cx ,  <div>  <span>{
+                        let a = 12;
+
+
+                        foo::bar::some_view! { cx,             
+                            
+                                         <span>{a}</span>
+                        }
+                }</span></div>  };
+            }
+        "#};
+
+        let result = format_file_source(
+            source,
+            &FormatterSettings {
+                macro_names: vec!["foo::bar::some_view".to_string()],
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        insta::assert_snapshot!(result, @r#"
+        fn main() {
+            foo::bar::some_view! { cx,
+                <div>
+                    <span>
+                        {
+                            let a = 12;
+
+                            foo::bar::some_view! { cx, <span>{a}</span> }
+                        }
+                    </span>
+                </div>
+            };
+        }
+
+        "#);
+    }
+
+    #[test]
+    fn override_macro_names() {
         let source = indoc! {r#"
             fn main() {
                 html! {   cx ,  <div>  <span>{
@@ -154,7 +266,7 @@ mod tests {
         let result = format_file_source(
             source,
             &FormatterSettings {
-                format_macros: vec!["html".to_string()],
+                macro_names: vec!["html".to_string()],
                 ..Default::default()
             },
         )

@@ -58,8 +58,8 @@ pub struct FormatterSettings {
     // Determines placement of braces around single expression attribute values
     pub attr_value_brace_style: AttributeValueBraceStyle,
 
-    // Determines macros to be formatted
-    pub format_macros: Vec<String>,
+    // Determines macros to be formatted. Default: leptos::view, view
+    pub macro_names: Vec<String>,
 }
 
 impl Default for FormatterSettings {
@@ -70,7 +70,7 @@ impl Default for FormatterSettings {
             attr_value_brace_style: AttributeValueBraceStyle::WhenRequired,
             indentation_style: IndentationStyle::Auto,
             newline_style: NewlineStyle::Auto,
-            format_macros: vec!["leptos::view".to_string(), "view".to_string()],
+            macro_names: vec!["leptos::view".to_string(), "view".to_string()],
         }
     }
 }

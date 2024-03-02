@@ -5,36 +5,35 @@ use syn::{
     File, Macro,
 };
 
-use crate::{ParentIndent, ViewMacro};
+use crate::{view_macro::get_macro_full_path, ParentIndent, ViewMacro};
 
 struct ViewMacroVisitor<'ast> {
     macros: Vec<ViewMacro<'ast>>,
     source: Rope,
-    format_macros: Vec<String>,
+    macro_names: Vec<String>,
 }
 
 impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
     fn visit_macro(&mut self, node: &'ast Macro) {
-        for format_macro in &self.format_macros {
-            if node.path.is_ident(&format_macro) {
-                let span_line = node.span().start().line;
-                let line = self.source.line(span_line - 1);
+        let should_format = self
+            .macro_names
+            .iter()
+            .any(|macro_name| &get_macro_full_path(node) == macro_name);
 
-                let indent_chars: Vec<_> = line
-                    .chars()
-                    .take_while(|&c| c == ' ' || c == '\t')
-                    .collect();
+        if should_format {
+            let span_line = node.span().start().line;
+            let line = self.source.line(span_line - 1);
 
-                let tabs = indent_chars.iter().filter(|&&c| c == '\t').count();
-                let spaces = indent_chars.iter().filter(|&&c| c == ' ').count();
+            let indent_chars: Vec<_> = line
+                .chars()
+                .take_while(|&c| c == ' ' || c == '\t')
+                .collect();
 
-                if let Some(view_mac) = ViewMacro::try_parse(
-                    ParentIndent { tabs, spaces },
-                    node,
-                    format_macro.to_owned(),
-                ) {
-                    self.macros.push(view_mac);
-                }
+            let tabs = indent_chars.iter().filter(|&&c| c == '\t').count();
+            let spaces = indent_chars.iter().filter(|&&c| c == ' ').count();
+
+            if let Some(view_mac) = ViewMacro::try_parse(ParentIndent { tabs, spaces }, node) {
+                self.macros.push(view_mac);
             }
         }
 
@@ -45,12 +44,12 @@ impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
 pub fn collect_macros_in_file(
     file: &File,
     source: Rope,
-    format_macros: Vec<String>,
+    macro_names: Vec<String>,
 ) -> (Rope, Vec<ViewMacro<'_>>) {
     let mut visitor = ViewMacroVisitor {
         source,
         macros: Vec::new(),
-        format_macros,
+        macro_names,
     };
 
     visitor.visit_file(file);

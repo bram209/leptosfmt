@@ -4,6 +4,8 @@ use proc_macro2::{token_stream, Span, TokenStream, TokenTree};
 use rstml::node::Node;
 use syn::{spanned::Spanned, Macro};
 
+use crate::view_macro::get_macro_full_path;
+
 use super::{Formatter, FormatterSettings};
 
 pub struct ViewMacro<'a> {
@@ -14,7 +16,6 @@ pub struct ViewMacro<'a> {
     pub span: Span,
     pub mac: &'a Macro,
     pub comma: Option<TokenTree>,
-    pub format_macro: String,
 }
 
 #[derive(Default)]
@@ -24,11 +25,7 @@ pub struct ParentIndent {
 }
 
 impl<'a> ViewMacro<'a> {
-    pub fn try_parse(
-        parent_indent: ParentIndent,
-        mac: &'a Macro,
-        format_macro: String,
-    ) -> Option<Self> {
+    pub fn try_parse(parent_indent: ParentIndent, mac: &'a Macro) -> Option<Self> {
         let mut tokens = mac.tokens.clone().into_iter();
         let (cx, comma) = (tokens.next(), tokens.next());
 
@@ -68,7 +65,6 @@ impl<'a> ViewMacro<'a> {
             mac,
             cx,
             comma,
-            format_macro,
         })
     }
 
@@ -91,7 +87,8 @@ impl Formatter<'_> {
             .cbox((parent_indent.tabs * self.settings.tab_spaces + parent_indent.spaces) as isize);
 
         self.flush_comments(cx.span().start().line - 1);
-        let macro_word = format!("{}! {{", view_mac.format_macro);
+
+        let macro_word = format!("{}! {{", get_macro_full_path(view_mac.mac));
         self.printer.word(macro_word);
 
         if let Some(cx) = cx {
@@ -196,7 +193,7 @@ mod tests {
     macro_rules! view_macro {
         ($($tt:tt)*) => {{
             let mac: Macro = syn::parse2(quote! { $($tt)* }).unwrap();
-            format_macro(&ViewMacro::try_parse(Default::default(), &mac, "view".to_string()).unwrap(), &Default::default(), None)
+            format_macro(&ViewMacro::try_parse(Default::default(), &mac).unwrap(), &Default::default(), None)
         }}
     }
 

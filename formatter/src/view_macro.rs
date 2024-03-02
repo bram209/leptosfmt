@@ -28,15 +28,25 @@ impl ViewMacroFormatter<'_> {
     }
 }
 
+pub fn get_macro_full_path(mac: &syn::Macro) -> String {
+    mac.path
+        .segments
+        .iter()
+        .map(|path| path.ident.to_string())
+        .collect::<Vec<String>>()
+        .join("::")
+}
+
 impl MacroFormatter for ViewMacroFormatter<'_> {
     fn format(&self, printer: &mut leptosfmt_pretty_printer::Printer, mac: &syn::Macro) -> bool {
-        for format_macro in &self.settings.format_macros {
-            if !mac.path.is_ident(&format_macro) {
+        let mut formatted = false;
+
+        for macro_name in &self.settings.macro_names {
+            if &get_macro_full_path(mac) != macro_name {
                 continue;
             }
 
-            let Some(m) = ViewMacro::try_parse(Default::default(), mac, format_macro.to_owned())
-            else {
+            let Some(m) = ViewMacro::try_parse(Default::default(), mac) else {
                 continue;
             };
             let mut formatter = Formatter {
@@ -48,8 +58,9 @@ impl MacroFormatter for ViewMacroFormatter<'_> {
             };
 
             formatter.view_macro(&m);
+            formatted = true;
         }
 
-        true
+        formatted
     }
 }
