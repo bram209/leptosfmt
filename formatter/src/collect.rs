@@ -7,10 +7,10 @@ use syn::{
 
 use crate::{view_macro::get_macro_full_path, ParentIndent, ViewMacro};
 
-struct ViewMacroVisitor<'ast> {
-    macros: Vec<ViewMacro<'ast>>,
+struct ViewMacroVisitor<'a> {
+    macros: Vec<ViewMacro<'a>>,
     source: Rope,
-    macro_names: Vec<String>,
+    macro_names: &'a Vec<String>,
 }
 
 impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
@@ -41,11 +41,11 @@ impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
     }
 }
 
-pub fn collect_macros_in_file(
-    file: &File,
+pub fn collect_macros_in_file<'a>(
+    file: &'a File,
     source: Rope,
-    macro_names: Vec<String>,
-) -> (Rope, Vec<ViewMacro<'_>>) {
+    macro_names: &'a Vec<String>,
+) -> (Rope, Vec<ViewMacro<'a>>) {
     let mut visitor = ViewMacroVisitor {
         source,
         macros: Vec::new(),

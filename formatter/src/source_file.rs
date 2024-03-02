@@ -34,7 +34,7 @@ pub fn format_file_source(
 ) -> Result<String, FormatError> {
     let ast = syn::parse_file(source)?;
     let rope = Rope::from(source);
-    let (mut rope, macros) = collect_macros_in_file(&ast, rope, settings.macro_names.to_owned());
+    let (mut rope, macros) = collect_macros_in_file(&ast, rope, &settings.macro_names);
     format_source(&mut rope, macros, settings)
 }
 
