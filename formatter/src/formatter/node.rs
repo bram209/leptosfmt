@@ -1,4 +1,3 @@
-
 use rstml::node::{Node, NodeBlock, NodeComment, NodeDoctype, NodeName, NodeText, RawText};
 use syn::spanned::Spanned;
 
