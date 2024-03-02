@@ -50,9 +50,7 @@ impl<'a> ViewMacro<'a> {
             (cx, comma)
         };
 
-        let Some((tokens, global_class)) = extract_global_class(tokens) else {
-            return None;
-        };
+        let (tokens, global_class) = extract_global_class(tokens)?;
 
         let span = mac.span();
         let nodes = rstml::parse2(tokens).ok()?;
