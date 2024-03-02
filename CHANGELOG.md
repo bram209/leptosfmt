@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### Features
+
+- Add option to override macro name ([#109](https://github.com/bram209/leptosfmt/issues/109))
+
 ## [0.1.18] - 2023-12-22
 
 ### Bug Fixes
