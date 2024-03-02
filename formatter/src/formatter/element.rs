@@ -1,5 +1,5 @@
 use crate::formatter::Formatter;
-use quote::ToTokens;
+
 use rstml::node::{Node, NodeAttribute, NodeElement};
 use syn::spanned::Spanned;
 
