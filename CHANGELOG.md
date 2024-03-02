@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Bug Fixes
+
+- Inline unquoted text + expr block combinations ([#110](https://github.com/bram209/leptosfmt/issues/110))
+
 ### Features
 
 - Add option to override macro name ([#109](https://github.com/bram209/leptosfmt/issues/109))
