@@ -6,19 +6,19 @@ use leptosfmt_prettyplease::MacroFormatter;
 use crate::{Formatter, FormatterSettings, ViewMacro};
 
 pub struct ViewMacroFormatter<'a> {
-    settings: FormatterSettings,
+    settings: &'a FormatterSettings,
     source: Option<&'a Rope>,
     line_offset: Option<usize>,
     comments: HashMap<usize, Option<String>>,
 }
 
 impl ViewMacroFormatter<'_> {
-    pub fn new(
-        settings: FormatterSettings,
-        source: Option<&Rope>,
+    pub fn new<'a>(
+        settings: &'a FormatterSettings,
+        source: Option<&'a Rope>,
         line_offset: Option<usize>,
         comments: HashMap<usize, Option<String>>,
-    ) -> ViewMacroFormatter<'_> {
+    ) -> ViewMacroFormatter<'a> {
         ViewMacroFormatter {
             settings,
             source,
@@ -28,24 +28,39 @@ impl ViewMacroFormatter<'_> {
     }
 }
 
+pub fn get_macro_full_path(mac: &syn::Macro) -> String {
+    mac.path
+        .segments
+        .iter()
+        .map(|path| path.ident.to_string())
+        .collect::<Vec<String>>()
+        .join("::")
+}
+
 impl MacroFormatter for ViewMacroFormatter<'_> {
     fn format(&self, printer: &mut leptosfmt_pretty_printer::Printer, mac: &syn::Macro) -> bool {
-        if !mac.path.is_ident("view") {
-            return false;
+        let mut formatted = false;
+
+        for macro_name in &self.settings.macro_names {
+            if &get_macro_full_path(mac) != macro_name {
+                continue;
+            }
+
+            let Some(m) = ViewMacro::try_parse(Default::default(), mac) else {
+                continue;
+            };
+            let mut formatter = Formatter {
+                printer,
+                settings: self.settings,
+                source: self.source,
+                line_offset: self.line_offset,
+                whitespace_and_comments: self.comments.clone(),
+            };
+
+            formatter.view_macro(&m);
+            formatted = true;
         }
 
-        let Some(m) = ViewMacro::try_parse(Default::default(), mac) else {
-            return false;
-        };
-        let mut formatter = Formatter {
-            printer,
-            settings: self.settings,
-            source: self.source,
-            line_offset: self.line_offset,
-            whitespace_and_comments: self.comments.clone(),
-        };
-
-        formatter.view_macro(&m);
-        true
+        formatted
     }
 }

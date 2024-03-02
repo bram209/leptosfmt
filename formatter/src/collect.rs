@@ -5,16 +5,22 @@ use syn::{
     File, Macro,
 };
 
-use crate::{ParentIndent, ViewMacro};
+use crate::{view_macro::get_macro_full_path, ParentIndent, ViewMacro};
 
-struct ViewMacroVisitor<'ast> {
-    macros: Vec<ViewMacro<'ast>>,
+struct ViewMacroVisitor<'a> {
+    macros: Vec<ViewMacro<'a>>,
     source: Rope,
+    macro_names: &'a Vec<String>,
 }
 
 impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
     fn visit_macro(&mut self, node: &'ast Macro) {
-        if node.path.is_ident("view") {
+        let should_format = self
+            .macro_names
+            .iter()
+            .any(|macro_name| &get_macro_full_path(node) == macro_name);
+
+        if should_format {
             let span_line = node.span().start().line;
             let line = self.source.line(span_line - 1);
 
@@ -35,10 +41,15 @@ impl<'ast> Visit<'ast> for ViewMacroVisitor<'ast> {
     }
 }
 
-pub fn collect_macros_in_file(file: &File, source: Rope) -> (Rope, Vec<ViewMacro<'_>>) {
+pub fn collect_macros_in_file<'a>(
+    file: &'a File,
+    source: Rope,
+    macro_names: &'a Vec<String>,
+) -> (Rope, Vec<ViewMacro<'a>>) {
     let mut visitor = ViewMacroVisitor {
         source,
         macros: Vec::new(),
+        macro_names,
     };
 
     visitor.visit_file(file);

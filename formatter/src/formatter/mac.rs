@@ -4,6 +4,8 @@ use proc_macro2::{token_stream, Span, TokenStream, TokenTree};
 use rstml::node::Node;
 use syn::{spanned::Spanned, Macro};
 
+use crate::view_macro::get_macro_full_path;
+
 use super::{Formatter, FormatterSettings};
 
 pub struct ViewMacro<'a> {
@@ -85,7 +87,9 @@ impl Formatter<'_> {
             .cbox((parent_indent.tabs * self.settings.tab_spaces + parent_indent.spaces) as isize);
 
         self.flush_comments(cx.span().start().line - 1);
-        self.printer.word("view! {");
+
+        let macro_word = format!("{}! {{", get_macro_full_path(view_mac.mac));
+        self.printer.word(macro_word);
 
         if let Some(cx) = cx {
             self.printer.word(" ");
@@ -170,9 +174,9 @@ pub fn format_macro(
                 mac.mac.tokens.clone(),
             );
 
-            Formatter::with_source(*settings, &mut printer, source, whitespace)
+            Formatter::with_source(settings, &mut printer, source, whitespace)
         }
-        None => Formatter::new(*settings, &mut printer),
+        None => Formatter::new(settings, &mut printer),
     };
 
     formatter.view_macro(mac);

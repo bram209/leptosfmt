@@ -20,7 +20,7 @@ pub use formatter::*;
 
 pub fn format_file(path: &Path, settings: FormatterSettings) -> Result<String, FormatError> {
     let file = std::fs::read_to_string(path)?;
-    format_file_source(&file, settings)
+    format_file_source(&file, &settings)
 }
 
 fn get_text_beween_spans(rope: &Rope, start: LineColumn, end: LineColumn) -> RopeSlice<'_> {

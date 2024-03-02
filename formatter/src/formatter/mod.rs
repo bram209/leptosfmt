@@ -40,7 +40,7 @@ pub enum NewlineStyle {
     Windows,
 }
 
-#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
 pub struct FormatterSettings {
     // Maximum width of each line
@@ -57,6 +57,9 @@ pub struct FormatterSettings {
 
     // Determines placement of braces around single expression attribute values
     pub attr_value_brace_style: AttributeValueBraceStyle,
+
+    // Determines macros to be formatted. Default: leptos::view, view
+    pub macro_names: Vec<String>,
 }
 
 impl Default for FormatterSettings {
@@ -67,6 +70,7 @@ impl Default for FormatterSettings {
             attr_value_brace_style: AttributeValueBraceStyle::WhenRequired,
             indentation_style: IndentationStyle::Auto,
             newline_style: NewlineStyle::Auto,
+            macro_names: vec!["leptos::view".to_string(), "view".to_string()],
         }
     }
 }
@@ -110,14 +114,14 @@ impl FormatterSettings {
 
 pub struct Formatter<'a> {
     pub printer: &'a mut leptosfmt_pretty_printer::Printer,
-    pub settings: FormatterSettings,
+    pub settings: &'a FormatterSettings,
     pub(crate) source: Option<&'a Rope>,
     pub(crate) whitespace_and_comments: HashMap<usize, Option<String>>,
     pub(crate) line_offset: Option<usize>,
 }
 
 impl<'a> Formatter<'a> {
-    pub fn new(settings: FormatterSettings, printer: &'a mut Printer) -> Self {
+    pub fn new(settings: &'a FormatterSettings, printer: &'a mut Printer) -> Self {
         Self {
             printer,
             settings,
@@ -127,7 +131,7 @@ impl<'a> Formatter<'a> {
         }
     }
     pub fn with_source(
-        settings: FormatterSettings,
+        settings: &'a FormatterSettings,
         printer: &'a mut Printer,
         source: &'a Rope,
         comments: HashMap<usize, Option<String>>,
@@ -184,4 +188,3 @@ impl<'a> Formatter<'a> {
         self.line_offset = Some(line_index);
     }
 }
-

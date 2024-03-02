@@ -30,18 +30,18 @@ struct TextEdit {
 
 pub fn format_file_source(
     source: &str,
-    settings: FormatterSettings,
+    settings: &FormatterSettings,
 ) -> Result<String, FormatError> {
     let ast = syn::parse_file(source)?;
-    let rope = Rope::try_from(source).unwrap();
-    let (mut rope, macros) = collect_macros_in_file(&ast, rope);
+    let rope = Rope::from(source);
+    let (mut rope, macros) = collect_macros_in_file(&ast, rope, &settings.macro_names);
     format_source(&mut rope, macros, settings)
 }
 
 fn format_source(
     source: &mut Rope,
     macros: Vec<ViewMacro<'_>>,
-    settings: FormatterSettings,
+    settings: &FormatterSettings,
 ) -> Result<String, FormatError> {
     let mut edits = Vec::new();
 
@@ -51,7 +51,7 @@ fn format_source(
         let end = mac.delimiter.span().close().end();
         let start_byte = line_column_to_byte(source, start);
         let end_byte = line_column_to_byte(source, end);
-        let new_text = format_macro(&view_mac, &settings, Some(source));
+        let new_text = format_macro(&view_mac, settings, Some(source));
 
         edits.push(TextEdit {
             range: start_byte..end_byte,
@@ -99,7 +99,7 @@ mod tests {
 
         let result = format_file_source(
             source,
-            FormatterSettings {
+            &FormatterSettings {
                 tab_spaces: 2,
                 ..Default::default()
             },
@@ -122,7 +122,7 @@ mod tests {
             }
         "#};
 
-        let result = format_file_source(source, Default::default()).unwrap();
+        let result = format_file_source(source, &Default::default()).unwrap();
         insta::assert_snapshot!(result, @r#"
         fn main() {
             view! { cx,
@@ -130,6 +130,160 @@ mod tests {
                     <span>"hello"</span>
                 </div>
             }; 
+        }
+
+        "#);
+    }
+
+    #[test]
+    fn fully_qualified_macro_path() {
+        let source = indoc! {r#"
+            fn main() {
+                leptos::view! {   cx ,  <div>  <span>"hello"</span></div>  }; 
+            }
+        "#};
+
+        let result = format_file_source(source, &Default::default()).unwrap();
+        insta::assert_snapshot!(result, @r#"
+        fn main() {
+            leptos::view! { cx,
+                <div>
+                    <span>"hello"</span>
+                </div>
+            }; 
+        }
+
+        "#);
+    }
+
+    #[test]
+    fn ignore_other_macros() {
+        let source = indoc! {r#"
+            fn main() {
+                leptos::view! {   cx ,  <div class=format!("classy")>  <span>"hello"</span></div>  }; 
+            }
+        "#};
+
+        let result = format_file_source(source, &Default::default()).unwrap();
+        insta::assert_snapshot!(result, @r#"
+        fn main() {
+            leptos::view! { cx,
+                <div class=format!("classy")>
+                    <span>"hello"</span>
+                </div>
+            }; 
+        }
+
+        "#);
+    }
+
+    #[test]
+    fn fully_qualified_macro_path_overridden() {
+        let source = indoc! {r#"
+            fn main() {
+                foo::bar::some_view! {   cx ,  <div>  <span>"hello"</span></div>  }; 
+            }
+        "#};
+
+        let result = format_file_source(
+            source,
+            &FormatterSettings {
+                macro_names: vec!["foo::bar::some_view".to_string()],
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        insta::assert_snapshot!(result, @r#"
+        fn main() {
+            foo::bar::some_view! { cx,
+                <div>
+                    <span>"hello"</span>
+                </div>
+            }; 
+        }
+
+        "#);
+    }
+
+    #[test]
+    fn fully_qualified_macro_path_with_indent() {
+        let source = indoc! {r#"
+            fn main() {
+                foo::bar::some_view! {   cx ,  <div>  <span>{
+                        let a = 12;
+
+
+                        foo::bar::some_view! { cx,             
+                            
+                                         <span>{a}</span>
+                        }
+                }</span></div>  };
+            }
+        "#};
+
+        let result = format_file_source(
+            source,
+            &FormatterSettings {
+                macro_names: vec!["foo::bar::some_view".to_string()],
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        insta::assert_snapshot!(result, @r#"
+        fn main() {
+            foo::bar::some_view! { cx,
+                <div>
+                    <span>
+                        {
+                            let a = 12;
+
+                            foo::bar::some_view! { cx, <span>{a}</span> }
+                        }
+                    </span>
+                </div>
+            };
+        }
+
+        "#);
+    }
+
+    #[test]
+    fn override_macro_names() {
+        let source = indoc! {r#"
+            fn main() {
+                html! {   cx ,  <div>  <span>{
+                        let a = 12;
+
+
+                        html! { cx,             
+                            
+                                         <span>{a}</span>
+                        }
+                }</span></div>  };
+            }
+        "#};
+
+        let result = format_file_source(
+            source,
+            &FormatterSettings {
+                macro_names: vec!["html".to_string()],
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        insta::assert_snapshot!(result, @r#"
+        fn main() {
+            html! { cx,
+                <div>
+                    <span>
+                        {
+                            let a = 12;
+
+                            html! { cx, <span>{a}</span> }
+                        }
+                    </span>
+                </div>
+            };
         }
 
         "#);
@@ -170,7 +324,7 @@ mod tests {
             // comment after view macro
         "#};
 
-        let result = format_file_source(source, Default::default()).unwrap();
+        let result = format_file_source(source, &Default::default()).unwrap();
         insta::assert_snapshot!(result, @r#"
         // comment outside view macro
         fn main() {
@@ -226,7 +380,7 @@ mod tests {
             }
         "#};
 
-        let result = format_file_source(source, Default::default()).unwrap();
+        let result = format_file_source(source, &Default::default()).unwrap();
         insta::assert_snapshot!(result, @r###"
         fn main() {
             view! { cx,
@@ -264,7 +418,7 @@ mod tests {
             }
         "#};
 
-        let result = format_file_source(source, Default::default()).unwrap();
+        let result = format_file_source(source, &Default::default()).unwrap();
         insta::assert_snapshot!(result, @r###"
         fn main() {
             view! { cx,
@@ -298,7 +452,7 @@ mod tests {
             }
         "#};
 
-        let result = format_file_source(source, Default::default()).unwrap();
+        let result = format_file_source(source, &Default::default()).unwrap();
         insta::assert_snapshot!(result, @r#"
         fn main() {
             view! { cx,
@@ -323,7 +477,7 @@ mod tests {
             }
         "#};
 
-        let result = format_file_source(source, Default::default()).unwrap();
+        let result = format_file_source(source, &Default::default()).unwrap();
         insta::assert_snapshot!(result, @r#"
         fn main() {
             view! { cx,
@@ -344,7 +498,7 @@ mod tests {
         }
         "#};
 
-        let result = format_file_source(source, Default::default()).unwrap();
+        let result = format_file_source(source, &Default::default()).unwrap();
         insta::assert_snapshot!(result, @r###"
         #[component]
         fn test2(cx: Scope) -> impl IntoView {
@@ -385,7 +539,7 @@ mod tests {
             }
         "#};
 
-        let result = format_file_source(source, Default::default()).unwrap();
+        let result = format_file_source(source, &Default::default()).unwrap();
         insta::assert_snapshot!(result, @r#"
         use leptos::*;
 
@@ -427,7 +581,7 @@ mod tests {
             }
         "#};
 
-        let result = format_file_source(source, Default::default()).unwrap();
+        let result = format_file_source(source, &Default::default()).unwrap();
         insta::assert_snapshot!(result, @r#"
         #[component]
         pub fn History() -> impl IntoView {
@@ -455,7 +609,7 @@ mod tests {
 
         let result = format_file_source(
             source,
-            FormatterSettings {
+            &FormatterSettings {
                 tab_spaces: 1,
                 indentation_style: IndentationStyle::Tabs,
                 ..Default::default()
@@ -490,7 +644,7 @@ mod tests {
 
         let result = format_file_source(
             source,
-            FormatterSettings {
+            &FormatterSettings {
                 indentation_style: IndentationStyle::Auto,
                 ..Default::default()
             },
@@ -524,7 +678,7 @@ mod tests {
 
         let result = format_file_source(
             source,
-            FormatterSettings {
+            &FormatterSettings {
                 tab_spaces: 1,
                 indentation_style: IndentationStyle::Auto,
                 ..Default::default()
