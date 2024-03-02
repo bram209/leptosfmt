@@ -1,4 +1,5 @@
 use crate::formatter::Formatter;
+
 use rstml::node::{Node, NodeAttribute, NodeElement};
 use syn::spanned::Spanned;
 
@@ -88,8 +89,17 @@ impl Formatter<'_> {
         while let Some(child) = iter.next() {
             self.node(child);
 
-            if iter.peek().is_some() {
-                self.printer.space()
+            if let Some(next_child) = iter.peek() {
+                let curr_end = child.span().end();
+                let next_start = next_child.span().start();
+                let consecutive =
+                    curr_end.line == next_start.line && next_start.column == curr_end.column;
+
+                if !matches!(next_child, Node::RawText(_)) && !consecutive {
+                    self.printer.space()
+                } else {
+                    self.printer.zerobreak()
+                }
             }
         }
 
@@ -251,8 +261,8 @@ mod tests {
 
     #[test]
     fn child_element_two_textual() {
-        let formatted = format_element! { <div>"The count is" {count}</div> };
-        insta::assert_snapshot!(formatted, @r#"<div>"The count is" {count}</div>"#);
+        let formatted = format_element! { <div>"The count is " {count}</div> };
+        insta::assert_snapshot!(formatted, @r#"<div>"The count is " {count}</div>"#);
     }
 
     #[test]
@@ -265,6 +275,30 @@ mod tests {
         </div>
         "#);
     }
+
+    #[test]
+    fn child_element_two_textual_unquoted() {
+        let formatted = format_element_from_string! { "<div>The count is {count}.</div>" };
+        insta::assert_snapshot!(formatted, @r#"<div>The count is {count}.</div>"#);
+    }
+
+    #[test]
+    fn child_element_two_textual_unquoted_no_trailingspace() {
+        let formatted = format_element_from_string! { "<div>The count is{count}</div>" };
+        insta::assert_snapshot!(formatted, @r#"<div>The count is{count}</div>"#);
+    }
+
+    #[test]
+    fn child_element_many_textual_unquoted() {
+        let formatted = format_element_from_string! { "<div>The current count is: {count}. Increment by one is this: {count + 1}</div>" };
+        insta::assert_snapshot!(formatted, @r###"
+        <div>
+            The current count is: {count}. Increment by one is this:
+            {count + 1}
+        </div>
+        "###);
+    }
+    // view! { <p>Something: {something} .</p> }
 
     #[test]
     fn html_unquoted_text() {
