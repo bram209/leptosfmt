@@ -66,7 +66,7 @@ tab_spaces = 4 # Number of spaces per tab
 indentation_style = "Auto" # "Tabs", "Spaces" or "Auto"
 newline_style = "Auto" # "Unix", "Windows" or "Auto"
 attr_value_brace_style = "WhenRequired" # "Always", "AlwaysUnlessLit", "WhenRequired" or "Preserve"
-macro_names = [ "leptos::view, view" ] # Macro names which will be formatted
+macro_names = [ "leptos::view", "view" ] # Macro names which will be formatted
 ```
 
 To see what each setting does, the see [configuration docs](./docs/configuration.md)
