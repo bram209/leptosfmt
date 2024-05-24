@@ -4,6 +4,8 @@ use syn::{spanned::Spanned, Block, Expr, ExprBlock, ExprLit, LitStr};
 
 use crate::{formatter::Formatter, get_text_beween_spans, view_macro::ViewMacroFormatter};
 
+use super::ExpressionFormatter;
+
 fn trim_start_with_max(str: &str, max_chars: usize) -> &str {
     let mut chars = 0;
     str.trim_start_matches(|c: char| {
@@ -65,20 +67,23 @@ impl Formatter<'_> {
             if unwrap_single_expr_blocks
                 || (unwrap_single_lit_blocks && matches!(single_expr, syn::Expr::Lit(_)))
             {
-                self.expr(single_expr);
+                self.expr(single_expr, None);
             } else {
                 self.printer.word("{");
-                self.expr(single_expr);
+                self.expr(single_expr, None);
                 self.printer.word("}");
             }
             return;
         }
 
-        self.expr(&Expr::Block(ExprBlock {
-            attrs: vec![],
-            label: None,
-            block: block.clone(),
-        }))
+        self.expr(
+            &Expr::Block(ExprBlock {
+                attrs: vec![],
+                label: None,
+                block: block.clone(),
+            }),
+            None,
+        )
     }
 
     pub fn node_value_expr(
@@ -86,6 +91,7 @@ impl Formatter<'_> {
         value: &syn::Expr,
         unwrap_single_expr_blocks: bool,
         unwrap_single_lit_blocks: bool,
+        formatter: Option<ExpressionFormatter>,
     ) {
         // if single line expression, format as '{expr}' instead of '{ expr }' (prettyplease inserts a space)
         if let syn::Expr::Block(expr_block) = value {
@@ -98,10 +104,10 @@ impl Formatter<'_> {
             }
         }
 
-        self.expr(value)
+        self.expr(value, formatter)
     }
 
-    fn expr(&mut self, expr: &syn::Expr) {
+    fn expr(&mut self, expr: &syn::Expr, formatter: Option<ExpressionFormatter>) {
         let span = expr.span();
         self.flush_comments(span.start().line - 1);
         if let syn::Expr::Lit(ExprLit {
@@ -109,7 +115,11 @@ impl Formatter<'_> {
             ..
         }) = expr
         {
-            self.literal_str(lit_str);
+            if let Some(formatter) = formatter {
+                formatter.format(self, lit_str.value())
+            } else {
+                self.literal_str(lit_str);
+            }
             return;
         }
 

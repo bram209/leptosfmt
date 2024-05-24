@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt::Debug;
 
 use crop::Rope;
 
@@ -10,6 +11,7 @@ mod expr;
 mod fragment;
 mod mac;
 mod node;
+mod tailwind;
 
 pub use mac::format_macro;
 pub use mac::{ParentIndent, ViewMacro};
@@ -40,26 +42,42 @@ pub enum NewlineStyle {
     Windows,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
+pub enum ExpressionFormatter {
+    Tailwind,
+}
+
+impl ExpressionFormatter {
+    pub fn format(&self, formatter: &mut Formatter, value: String) {
+        match self {
+            Self::Tailwind => formatter.tailwind_expr(value),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(default)]
 pub struct FormatterSettings {
-    // Maximum width of each line
+    /// Maximum width of each line
     pub max_width: usize,
 
-    // Number of spaces per tab
+    /// Number of spaces per tab
     pub tab_spaces: usize,
 
-    // Determines indentation style (tabs or spaces)
+    /// Determines indentation style (tabs or spaces)
     pub indentation_style: IndentationStyle,
 
-    // Determines line ending (unix or windows)
+    /// Determines line ending (unix or windows)
     pub newline_style: NewlineStyle,
 
-    // Determines placement of braces around single expression attribute values
+    /// Determines placement of braces around single expression attribute values
     pub attr_value_brace_style: AttributeValueBraceStyle,
 
-    // Determines macros to be formatted. Default: leptos::view, view
+    /// Determines macros to be formatted. Default: leptos::view, view
     pub macro_names: Vec<String>,
+
+    /// Determines whether to format attribute values with a specific formatter (e.g. tailwind)
+    pub attr_values: HashMap<String, ExpressionFormatter>,
 }
 
 impl Default for FormatterSettings {
@@ -71,6 +89,7 @@ impl Default for FormatterSettings {
             indentation_style: IndentationStyle::Auto,
             newline_style: NewlineStyle::Auto,
             macro_names: vec!["leptos::view".to_string(), "view".to_string()],
+            attr_values: HashMap::new(),
         }
     }
 }
