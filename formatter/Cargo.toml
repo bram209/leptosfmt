@@ -9,9 +9,9 @@ description = "view macro formatter for the Leptos web framework"
 
 [dependencies]
 leptosfmt-pretty-printer.workspace = true
+leptosfmt-prettyplease.workspace = true
 rstml = "0.11.2"
 syn = { version = "2.0.18", features = ["visit", "full", "extra-traits"] }
-leptosfmt-prettyplease = { features = ["verbatim"], version = "0.2.16" }
 proc-macro2 = { version = "1.0.68", features = ["span-locations"] }
 thiserror = "1.0.40"
 crop = "0.3.0"
