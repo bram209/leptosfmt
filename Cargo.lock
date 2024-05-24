@@ -355,7 +355,7 @@ version = "0.1.8"
 
 [[package]]
 name = "leptosfmt-prettyplease"
-version = "0.2.20"
+version = "0.2.21"
 dependencies = [
  "indoc",
  "leptosfmt-pretty-printer",
