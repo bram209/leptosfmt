@@ -1,0 +1,3 @@
+[submodule "prettyplease"]
+	path = prettyplease
+	url = https://github.com/bram209/prettyplease.git
