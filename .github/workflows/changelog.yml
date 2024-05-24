@@ -13,7 +13,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          token: ${{ secrets.PAT }}
           fetch-depth: 0
 
       - name: Generate a changelog

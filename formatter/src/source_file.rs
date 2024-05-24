@@ -178,6 +178,61 @@ mod tests {
     }
 
     #[test]
+    fn preserve_formatting_unknown_macros() {
+        let source = indoc! {r#"
+        #[component]
+        pub fn HeaderField() -> impl IntoView {
+            view! {
+                <div class="HeaderField start">
+                    <h1>Hello Kanna</h1>
+                </div>
+        
+                {
+                    style! {
+                        h1 {
+                            background-color: red;
+                            color: white;
+                        }
+        
+                        @media (orientation: portrait) {
+                            h1 {
+                              background-color: green;
+                            }
+                        }
+                    }
+                }
+            }
+        }"#};
+
+        let result = format_file_source(source, &Default::default()).unwrap();
+        insta::assert_snapshot!(result, @r###"
+        #[component]
+        pub fn HeaderField() -> impl IntoView {
+            view! {
+                <div class="HeaderField start">
+                    <h1>Hello Kanna</h1>
+                </div>
+
+                {
+                    style! {
+                        h1 {
+                            background-color: red;
+                            color: white;
+                        }
+        
+                        @media (orientation: portrait) {
+                            h1 {
+                              background-color: green;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        "###);
+    }
+
+    #[test]
     fn fully_qualified_macro_path_overridden() {
         let source = indoc! {r#"
             fn main() {

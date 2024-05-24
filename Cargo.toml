@@ -7,11 +7,14 @@ version = "0.1.18"
 license = "MIT OR Apache-2.0"
 
 [workspace.dependencies]
-leptosfmt-prettyplease = { path = "./prettyplease", version = "0.2.20", features = [
+leptosfmt-prettyplease = { path = "./prettyplease", version = "0.1.18", features = [
     "verbatim",
 ] }
 leptosfmt-formatter = { path = "./formatter", version = "0.1.18" }
-leptosfmt-pretty-printer = { version = "0.1.8" }
+leptosfmt-pretty-printer = { version = "0.1.18" }
+
+syn = { version = "2.0.59", features = ["visit", "full", "extra-traits"] }
+proc-macro2 = { version = "1.0.80", features = ["span-locations"] }
 
 [patch.crates-io]
 leptosfmt-pretty-printer = { path = "./printer" }
