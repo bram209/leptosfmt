@@ -49,6 +49,14 @@ struct Args {
     #[arg(long, num_args=1.., value_delimiter= ' ')]
     override_macro_names: Option<Vec<String>>,
 
+    /// Format attributes with tailwind (by default it tries to format any attribute with the key 'class', this is configurable with --tailwind-attr-names)
+    #[arg(short, long, default_value = "false")]
+    experimental_tailwind: bool,
+
+    /// Override attributes to be formatted with tailwind
+    #[arg(long, num_args=1.., value_delimiter= ' ', requires = "experimental_tailwind", default_value = "class")]
+    tailwind_attr_names: Vec<String>,
+
     #[arg(
         short,
         long,
@@ -261,6 +269,19 @@ fn create_settings(args: &Args) -> anyhow::Result<FormatterSettings> {
 
     if let Some(macro_names) = args.override_macro_names.to_owned() {
         settings.macro_names = macro_names;
+    }
+
+    if args.experimental_tailwind {
+        settings.attr_values = args
+            .tailwind_attr_names
+            .iter()
+            .map(|attr_name| {
+                (
+                    attr_name.to_owned(),
+                    leptosfmt_formatter::ExpressionFormatter::Tailwind,
+                )
+            })
+            .collect();
     }
     Ok(settings)
 }
