@@ -40,9 +40,7 @@ Options:
           Override formatted macro names
   -e, --experimental-tailwind
           Format attributes with tailwind
-      --a
-
-tailwind-attr-names <TAILWIND_ATTR_NAMES>...
+      --tailwind-attr-names <TAILWIND_ATTR_NAMES>...
           Override attributes to be formatted with tailwind [default: class]
   -q, --quiet
 
