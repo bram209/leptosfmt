@@ -49,7 +49,7 @@ struct Args {
     #[arg(long, num_args=1.., value_delimiter= ' ')]
     override_macro_names: Option<Vec<String>>,
 
-    /// Format attributes with tailwind (by default it tries to format any attribute with the key 'class', this is configurable with --tailwind-attr-names)
+    /// Format attributes with tailwind
     #[arg(short, long, default_value = "false")]
     experimental_tailwind: bool,
 
