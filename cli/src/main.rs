@@ -54,7 +54,7 @@ struct Args {
     experimental_tailwind: bool,
 
     /// Override attributes to be formatted with tailwind
-    #[arg(long, num_args=1.., value_delimiter= ' ', requires = "experimental_tailwind", default_value = "class")]
+    #[arg(long, num_args=1.., value_delimiter= ' ', default_value = "class")]
     tailwind_attr_names: Vec<String>,
 
     #[arg(
