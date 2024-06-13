@@ -3,6 +3,8 @@ use syn::{spanned::Spanned, Expr};
 
 use crate::{formatter::Formatter, AttributeValueBraceStyle as Braces};
 
+use super::ExpressionFormatter;
+
 impl Formatter<'_> {
     pub fn attribute(&mut self, attribute: &NodeAttribute) {
         self.flush_comments(attribute.span().start().line - 1);
@@ -16,24 +18,32 @@ impl Formatter<'_> {
         self.node_name(&attribute.key);
 
         if let Some(value) = attribute.value() {
+            let formatter = self
+                .settings
+                .attr_values
+                .get(&attribute.key.to_string())
+                .copied();
+
             self.printer.word("=");
-            self.attribute_value(value);
+            self.attribute_value(value, formatter);
         }
     }
 
-    fn attribute_value(&mut self, value: &Expr) {
+    fn attribute_value(&mut self, value: &Expr, formatter: Option<ExpressionFormatter>) {
         match (self.settings.attr_value_brace_style, value) {
-            (Braces::Always, syn::Expr::Block(_)) => self.node_value_expr(value, false, false),
+            (Braces::Always, syn::Expr::Block(_)) => {
+                self.node_value_expr(value, false, false, formatter)
+            }
             (Braces::AlwaysUnlessLit, syn::Expr::Block(_) | syn::Expr::Lit(_)) => {
-                self.node_value_expr(value, false, true)
+                self.node_value_expr(value, false, true, formatter)
             }
             (Braces::Always | Braces::AlwaysUnlessLit, _) => {
                 self.printer.word("{");
-                self.node_value_expr(value, false, false);
+                self.node_value_expr(value, false, false, formatter);
                 self.printer.word("}");
             }
-            (Braces::WhenRequired, _) => self.node_value_expr(value, true, true),
-            (Braces::Preserve, _) => self.node_value_expr(value, false, false),
+            (Braces::WhenRequired, _) => self.node_value_expr(value, true, true, formatter),
+            (Braces::Preserve, _) => self.node_value_expr(value, false, false, formatter),
         }
     }
 }

@@ -79,7 +79,7 @@ fn format_source(
 mod tests {
     use indoc::indoc;
 
-    use crate::IndentationStyle;
+    use crate::{ExpressionFormatter, IndentationStyle};
 
     use super::*;
 
@@ -752,5 +752,35 @@ mod tests {
         "};
 
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn tailwind() {
+        let source = indoc! {r#"
+            view! { 
+                <button class="text-white px-4 sm:px-8 py-2 sm:py-3 bg-sky-700 hover:bg-sky-800">Test</button>
+                <button class="some non tailwind classes">Test</button>
+                <button class="some mixed classes non tailwind classes text-white px-4 sm:px-8 py-2 sm:py-3">Test</button>
+            }"#};
+
+        let result = format_file_source(
+            source,
+            &FormatterSettings {
+                attr_values: [("class".to_string(), ExpressionFormatter::Tailwind)]
+                    .into_iter()
+                    .collect(),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        insta::assert_snapshot!(result, @r###"
+        view! {
+            <button class="py-2 px-4 text-white sm:py-3 sm:px-8 bg-sky-700 hover:bg-sky-800">Test</button>
+            <button class="some non tailwind classes">Test</button>
+            <button class="py-2 px-4 text-white sm:py-3 sm:px-8 some mixed classes non tailwind classes">
+                Test
+            </button>
+        }
+        "###);
     }
 }

@@ -1,10 +1,9 @@
 # leptosfmt
+
 [![crates.io](https://img.shields.io/crates/v/leptosfmt.svg)](https://crates.io/crates/leptosfmt)
 [![build](https://img.shields.io/github/actions/workflow/status/bram209/leptosfmt/ci.yml)](https://github.com/bram209/leptosfmt/actions/workflows/ci.yml?query=branch%3Amain)
 [![security](https://img.shields.io/github/actions/workflow/status/bram209/leptosfmt/security-audit.yml?label=%F0%9F%9B%A1%EF%B8%8F%20security%20audit)](https://github.com/bram209/leptosfmt/actions/workflows/security-audit.yml?query=branch%3Amain)
 [![discord](https://img.shields.io/discord/1031524867910148188?color=%237289DA&label=discord%20%23leptosfmt)](https://discord.gg/YdRAhS7eQB)
-
-
 
 A formatter for the leptos view! macro
 
@@ -27,29 +26,42 @@ Arguments:
   [INPUT_PATTERNS]...  A space separated list of file, directory or glob
 
 Options:
-  -m, --max-width <MAX_WIDTH>      Maximum width of each line
-  -t, --tab-spaces <TAB_SPACES>    Number of spaces per tab
-  -c, --config-file <CONFIG_FILE>  Configuration file
-  -s, --stdin                      Format stdin and write to stdout
-  -r, --rustfmt                    Format with rustfmt after formatting with leptosfmt (requires stdin)
-      --override-macro-names 
-        <OVERRIDE_MACRO_NAMES>...  Override formatted macro names
-  -q, --quiet                      
-      --check                      Check if the file is correctly formatted. Exit with code 1 if not
-  -h, --help                       Print help
-  -V, --version                    Print version
+  -m, --max-width <MAX_WIDTH>
+          Maximum width of each line
+  -t, --tab-spaces <TAB_SPACES>
+          Number of spaces per tab
+  -c, --config-file <CONFIG_FILE>
+          Configuration file
+  -s, --stdin
+          Format stdin and write to stdout
+  -r, --rustfmt
+          Format with rustfmt after formatting with leptosfmt (requires stdin)
+      --override-macro-names <OVERRIDE_MACRO_NAMES>...
+          Override formatted macro names
+  -e, --experimental-tailwind
+          Format attributes with tailwind
+      --tailwind-attr-names <TAILWIND_ATTR_NAMES>...
+          Override attributes to be formatted with tailwind [default: class]
+  -q, --quiet
+
+      --check
+          Check if the file is correctly formatted. Exit with code 1 if not
+  -h, --help
+          Print help
+  -V, --version
+          Print version
 ```
 
 ## Using with Rust Analyzer
 
 You can set the `rust-analyzer.rustfmt.overrideCommand` setting.
 
-
 ```json
   "rust-analyzer.rustfmt.overrideCommand": ["leptosfmt", "--stdin", "--rustfmt"]
 ```
 
 And **you must** configure `rustfmt` to use the correct edition, place a `rustfmt.toml` file in the root of your project:
+
 ```toml
 edition = "2021"
 # (optional) other config...
@@ -58,6 +70,7 @@ edition = "2021"
 > Note: For VSCode users, I recommend to use workpsace settings (CMD + shift + p -> Open workspace settings), so that you can only configure `leptosfmt` for workpsaces that are using leptos. For Neovim users, I recommend using [neoconf.nvim](https://github.com/folke/neoconf.nvim) for managing project-local LSP configuration.
 
 ## Configuration
+
 You can configure all settings through a `leptosfmt.toml` file.
 
 ```toml
@@ -67,6 +80,11 @@ indentation_style = "Auto" # "Tabs", "Spaces" or "Auto"
 newline_style = "Auto" # "Unix", "Windows" or "Auto"
 attr_value_brace_style = "WhenRequired" # "Always", "AlwaysUnlessLit", "WhenRequired" or "Preserve"
 macro_names = [ "leptos::view", "view" ] # Macro names which will be formatted
+
+# Attribute values can be formatted by custom formatters
+# Every attribute name may only select one formatter (this might change later on)
+[attr_values]
+class = "Tailwind" # "Tailwind" is the only attribute value formatter available for now
 ```
 
 To see what each setting does, the see [configuration docs](./docs/configuration.md)
