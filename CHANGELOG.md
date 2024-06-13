@@ -8,9 +8,19 @@ All notable changes to this project will be documented in this file.
 
 - Inline unquoted text + expr block combinations ([#110](https://github.com/bram209/leptosfmt/issues/110))
 
+### Continuous Integration
+
+- Manually trigger changelog workflow
+
 ### Features
 
 - Add option to override macro name ([#109](https://github.com/bram209/leptosfmt/issues/109))
+- Preserve formatting of unknown macros ([#121](https://github.com/bram209/leptosfmt/issues/121))
+- Add tailwind support for attr values ([#122](https://github.com/bram209/leptosfmt/issues/122))
+
+### Miscellaneous Tasks
+
+- Update prettyplease and add as git submodule ([#119](https://github.com/bram209/leptosfmt/issues/119))
 
 ## [0.1.18] - 2023-12-22
 
