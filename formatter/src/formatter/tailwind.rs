@@ -11,6 +11,8 @@ impl Formatter<'_> {
         };
 
         let sorted = sorter::sort_classes(&attr_value, &OPTIONS);
+        self.printer.word("\"");
         self.printer.word(sorted);
+        self.printer.word("\"");
     }
 }

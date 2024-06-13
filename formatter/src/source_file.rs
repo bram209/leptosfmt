@@ -77,8 +77,6 @@ fn format_source(
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-
     use indoc::indoc;
 
     use crate::{ExpressionFormatter, IndentationStyle};
@@ -777,9 +775,9 @@ mod tests {
         .unwrap();
         insta::assert_snapshot!(result, @r###"
         view! {
-            <button class=py-2 px-4 text-white sm:py-3 sm:px-8 bg-sky-700 hover:bg-sky-800>Test</button>
-            <button class=some non tailwind classes>Test</button>
-            <button class=py-2 px-4 text-white sm:py-3 sm:px-8 some mixed classes non tailwind classes>
+            <button class="py-2 px-4 text-white sm:py-3 sm:px-8 bg-sky-700 hover:bg-sky-800">Test</button>
+            <button class="some non tailwind classes">Test</button>
+            <button class="py-2 px-4 text-white sm:py-3 sm:px-8 some mixed classes non tailwind classes">
                 Test
             </button>
         }
