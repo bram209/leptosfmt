@@ -9,7 +9,7 @@ impl Formatter<'_> {
         let is_void = is_void_element(&name, !element.children.is_empty());
         self.opening_tag(element, is_void);
 
-        if !is_void {
+        if !(is_void || self.settings.allow_non_void_self_closing_tags) {
             self.children(&element.children, element.attributes().len());
             self.flush_comments(element.close_tag.span().end().line - 1);
             self.closing_tag(element)
@@ -22,7 +22,7 @@ impl Formatter<'_> {
 
         self.attributes(element.attributes());
 
-        if is_void {
+        if is_void || self.settings.allow_non_void_self_closing_tags {
             self.printer.word("/>");
         } else {
             self.printer.word(">")
@@ -155,6 +155,14 @@ mod tests {
             })
         }};
     }
+    macro_rules! format_element_with_self_closing_tag {
+        ($($tt:tt)*) => {{
+            let element = element! { $($tt)* };
+            format_with(FormatterSettings { max_width: 40, allow_non_void_self_closing_tags: true, ..Default::default() }, |formatter| {
+                formatter.element(&element)
+            })
+        }};
+    }
     macro_rules! format_element_from_string {
         ($val:expr) => {{
             format_element_from_string(
@@ -219,6 +227,12 @@ mod tests {
             width=100
         ></div>
         "###);
+    }
+
+    #[test]
+    fn no_children_allow_self_closing() {
+        let formatted = format_element_with_self_closing_tag! { < div /> };
+        insta::assert_snapshot!(formatted, @"<div/>");
     }
 
     #[test]

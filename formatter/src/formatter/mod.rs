@@ -73,6 +73,9 @@ pub struct FormatterSettings {
     /// Determines placement of braces around single expression attribute values
     pub attr_value_brace_style: AttributeValueBraceStyle,
 
+    /// Allows non void HTML tags like div to be self closing. If set to true, <div /> will no longer format to <div></div>
+    pub allow_non_void_self_closing_tags: bool,
+
     /// Determines macros to be formatted. Default: leptos::view, view
     pub macro_names: Vec<String>,
 
@@ -88,6 +91,7 @@ impl Default for FormatterSettings {
             attr_value_brace_style: AttributeValueBraceStyle::WhenRequired,
             indentation_style: IndentationStyle::Auto,
             newline_style: NewlineStyle::Auto,
+            allow_non_void_self_closing_tags: false,
             macro_names: vec!["leptos::view".to_string(), "view".to_string()],
             attr_values: HashMap::new(),
         }
