@@ -9,7 +9,9 @@ impl Formatter<'_> {
         let is_void = is_void_element(&name, !element.children.is_empty());
         self.opening_tag(element, is_void);
 
-        if !(is_void || self.settings.allow_non_void_self_closing_tags) {
+        if !(is_void
+            || (self.settings.allow_non_void_self_closing_tags && element.children.is_empty()))
+        {
             self.children(&element.children, element.attributes().len());
             self.flush_comments(element.close_tag.span().end().line - 1);
             self.closing_tag(element)
@@ -22,7 +24,9 @@ impl Formatter<'_> {
 
         self.attributes(element.attributes());
 
-        if is_void || self.settings.allow_non_void_self_closing_tags {
+        if is_void
+            || (self.settings.allow_non_void_self_closing_tags && element.children.is_empty())
+        {
             self.printer.word("/>");
         } else {
             self.printer.word(">")
@@ -174,6 +178,18 @@ mod tests {
             )
         }};
     }
+    macro_rules! format_element_from_string_with_self_closing_tag {
+        ($val:expr) => {{
+            format_element_from_string(
+                FormatterSettings {
+                    max_width: 40,
+                    allow_non_void_self_closing_tags: true,
+                    ..Default::default()
+                },
+                $val,
+            )
+        }};
+    }
 
     #[test]
     fn no_children() {
@@ -227,12 +243,6 @@ mod tests {
             width=100
         ></div>
         "###);
-    }
-
-    #[test]
-    fn no_children_allow_self_closing() {
-        let formatted = format_element_with_self_closing_tag! { < div /> };
-        insta::assert_snapshot!(formatted, @"<div/>");
     }
 
     #[test]
@@ -418,6 +428,257 @@ mod tests {
         <div>
             <div class="foo">
                 <i class="bi-google"></i>
+                "Sign in with google"
+            </div>
+        </div>
+        "#);
+    }
+
+    // Self Closing Tag
+
+    #[test]
+    fn self_closing_no_children() {
+        let formatted = format_element_with_self_closing_tag! { < div /> };
+        insta::assert_snapshot!(formatted, @"<div/>");
+    }
+
+    #[test]
+    fn self_closing_no_children_single_attr() {
+        let formatted = format_element_with_self_closing_tag! { < div width=12 > < / div > };
+        insta::assert_snapshot!(formatted, @"<div width=12/>");
+    }
+
+    #[test]
+    fn self_closing_no_children_multi_attr() {
+        let formatted = format_element_with_self_closing_tag! { <div key=23 width=100></div> };
+        insta::assert_snapshot!(formatted, @"<div key=23 width=100/>");
+    }
+
+    #[test]
+    fn self_closing_no_children_single_long_attr() {
+        let formatted = format_element_with_self_closing_tag! { <div key=a::very::deeply::nested::module::generate_key()></div> };
+
+        insta::assert_snapshot!(formatted, @"<div key=a::very::deeply::nested::module::generate_key()/>");
+    }
+
+    #[test]
+    fn self_closing_no_children_multi_long_attr() {
+        let formatted = format_element_with_self_closing_tag! { <div key=a::very::deeply::nested::module::generate_key() width=100></div> };
+        insta::assert_snapshot!(formatted, @r###"
+        <div
+            key=a::very::deeply::nested::module::generate_key()
+            width=100
+        />
+        "###);
+    }
+
+    #[test]
+    fn self_closing_no_children_multi_attr_with_comment() {
+        println!("test");
+        let formatted = format_element_from_string_with_self_closing_tag!(indoc! {"
+        <div key=a
+            // width
+            width=100></div> 
+        "});
+
+        insta::assert_snapshot!(formatted, @r###"
+        <div
+            key=a
+            // width
+            width=100
+        />
+        "###);
+    }
+
+    #[test]
+    fn self_closing_child_element() {
+        let formatted = format_element_with_self_closing_tag! { <div><span>"hello"</span></div> };
+        insta::assert_snapshot!(formatted, @r#"
+        <div>
+            <span>"hello"</span>
+        </div>
+        "#);
+    }
+
+    #[test]
+    fn self_closing_child_element_single_textual() {
+        let formatted = format_element_with_self_closing_tag! { <div>"hello"</div> };
+        insta::assert_snapshot!(formatted, @r#"<div>"hello"</div>"#);
+    }
+
+    #[test]
+    fn self_closing_child_element_single_textual_unquoted() {
+        let formatted = format_element_from_string_with_self_closing_tag!("<div>hello</div>");
+        insta::assert_snapshot!(formatted, @r###"<div>hello</div>"###);
+    }
+
+    #[test]
+    fn self_closing_child_element_single_textual_single_attr() {
+        let formatted = format_element_with_self_closing_tag! { <div key=12>"hello"</div> };
+        insta::assert_snapshot!(formatted, @r#"<div key=12>"hello"</div>"#);
+    }
+
+    #[test]
+    fn self_closing_child_element_single_textual_multi_attr() {
+        let formatted =
+            format_element_with_self_closing_tag! { <div key=12 width=100>"hello"</div> };
+        insta::assert_snapshot!(formatted, @r#"
+        <div key=12 width=100>
+            "hello"
+        </div>
+        "#);
+    }
+
+    #[test]
+    fn self_closing_child_element_two_textual() {
+        let formatted =
+            format_element_with_self_closing_tag! { <div>"The count is " {count}</div> };
+        insta::assert_snapshot!(formatted, @r#"<div>"The count is " {count}</div>"#);
+    }
+
+    #[test]
+    fn self_closing_child_element_many_textual() {
+        let formatted = format_element_with_self_closing_tag! { <div>"The current count is: " {count} ". Increment by one is this: " {count + 1}</div> };
+        insta::assert_snapshot!(formatted, @r#"
+        <div>
+            "The current count is: " {count}
+            ". Increment by one is this: " {count + 1}
+        </div>
+        "#);
+    }
+
+    #[test]
+    fn self_closing_child_element_two_textual_unquoted() {
+        let formatted = format_element_from_string_with_self_closing_tag! { "<div>The count is {count}.</div>" };
+        insta::assert_snapshot!(formatted, @r#"<div>The count is {count}.</div>"#);
+    }
+
+    #[test]
+    fn self_closing_child_element_two_textual_unquoted_no_trailingspace() {
+        let formatted =
+            format_element_from_string_with_self_closing_tag! { "<div>The count is{count}</div>" };
+        insta::assert_snapshot!(formatted, @r#"<div>The count is{count}</div>"#);
+    }
+
+    #[test]
+    fn self_closing_child_element_many_textual_unquoted() {
+        let formatted = format_element_from_string_with_self_closing_tag! { "<div>The current count is: {count}. Increment by one is this: {count + 1}</div>" };
+        insta::assert_snapshot!(formatted, @r###"
+        <div>
+            The current count is: {count}. Increment by one is this:
+            {count + 1}
+        </div>
+        "###);
+    }
+    // view! { <p>Something: {something} .</p> }
+
+    #[test]
+    fn self_closing_html_unquoted_text() {
+        let formatted =
+            format_element_from_string_with_self_closing_tag!(r##"<div>Unquoted text</div>"##);
+        insta::assert_snapshot!(formatted, @"<div>Unquoted text</div>");
+    }
+
+    #[test]
+    fn self_closing_html_unquoted_text_with_surrounding_spaces() {
+        let formatted = format_element_from_string_with_self_closing_tag!(
+            r##"<div> Unquoted text with  spaces </div>"##
+        );
+        insta::assert_snapshot!(formatted, @"<div>Unquoted text with  spaces</div>");
+    }
+
+    #[test]
+    fn self_closing_html_unquoted_text_multiline() {
+        let formatted = format_element_from_string_with_self_closing_tag!(indoc! {"
+            <div>
+            Unquoted text
+                    with  spaces 
+            </div>
+        "});
+
+        insta::assert_snapshot!(formatted, @r###"
+        <div>
+            Unquoted text
+                    with  spaces
+        </div>"###);
+    }
+
+    #[test]
+    fn self_closing_single_empty_line() {
+        let formatted = format_element_from_string_with_self_closing_tag!(indoc! {r#"
+            <div>
+                <Nav/>
+
+                <Main/>
+            </div>
+        "#});
+
+        insta::assert_snapshot!(formatted, @r###"
+        <div>
+            <Nav/>
+
+            <Main/>
+        </div>
+        "###);
+    }
+
+    #[test]
+    fn self_closing_multiple_empty_lines() {
+        let formatted = format_element_from_string_with_self_closing_tag!(indoc! {r#"
+            <div>
+                <Nav/>
+
+
+
+                <Main/>
+            </div>
+        "#});
+
+        insta::assert_snapshot!(formatted, @r###"
+        <div>
+            <Nav/>
+
+            <Main/>
+        </div>
+        "###);
+    }
+
+    #[test]
+    fn self_closing_surrounded_by_empty_lines() {
+        let formatted = format_element_from_string_with_self_closing_tag!(indoc! {r#"
+
+            <div>
+                <Nav/>
+                <Main/>
+            </div>
+
+        "#});
+
+        insta::assert_snapshot!(formatted, @r###"
+        <div>
+            <Nav/>
+            <Main/>
+        </div>
+        "###);
+    }
+
+    #[test]
+    fn self_closing_other_test() {
+        let formatted = format_element_from_string_with_self_closing_tag!(indoc! {r#"
+            <div>
+                <div
+                    class="foo"
+                >
+                    <i class="bi-google"/>
+                    "Sign in with google"
+                </div>
+            </div>
+        "#});
+
+        insta::assert_snapshot!(formatted, @r#"
+        <div>
+            <div class="foo">
+                <i class="bi-google"/>
                 "Sign in with google"
             </div>
         </div>
