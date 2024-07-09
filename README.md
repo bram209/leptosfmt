@@ -80,7 +80,7 @@ indentation_style = "Auto" # "Tabs", "Spaces" or "Auto"
 newline_style = "Auto" # "Unix", "Windows" or "Auto"
 attr_value_brace_style = "WhenRequired" # "Always", "AlwaysUnlessLit", "WhenRequired" or "Preserve"
 macro_names = [ "leptos::view", "view" ] # Macro names which will be formatted
-allow_non_void_self_closing_tags = true # false by default
+closing_tag_style = "Preserve" # "Preserve", "SelfClosing" or "NonSelfClosing"
 
 # Attribute values can be formatted by custom formatters
 # Every attribute name may only select one formatter (this might change later on)

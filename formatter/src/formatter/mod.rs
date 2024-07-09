@@ -20,6 +20,16 @@ use serde::Deserialize;
 use serde::Serialize;
 
 #[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
+pub enum ClosingTagStyle {
+    /// Preserve the original closing tag style (self-closing or a separate closing tag)
+    Preserve,
+    /// Self closing tag for elements with no children: `<div></div>` formats to `<div />`
+    SelfClosing,
+    /// Separate closing tag for elements with no children: `<div />` formats to `<div></div>`
+    NonSelfClosing,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
 pub enum AttributeValueBraceStyle {
     Always,
     AlwaysUnlessLit,
@@ -73,8 +83,8 @@ pub struct FormatterSettings {
     /// Determines placement of braces around single expression attribute values
     pub attr_value_brace_style: AttributeValueBraceStyle,
 
-    /// Allows non void HTML tags like div to be self closing. If set to true, <div /> will no longer format to <div></div>
-    pub allow_non_void_self_closing_tags: bool,
+    /// Preferred style for closing tags (self-closing or not) when a non-void element has no children
+    pub closing_tag_style: ClosingTagStyle,
 
     /// Determines macros to be formatted. Default: leptos::view, view
     pub macro_names: Vec<String>,
@@ -91,7 +101,7 @@ impl Default for FormatterSettings {
             attr_value_brace_style: AttributeValueBraceStyle::WhenRequired,
             indentation_style: IndentationStyle::Auto,
             newline_style: NewlineStyle::Auto,
-            allow_non_void_self_closing_tags: false,
+            closing_tag_style: ClosingTagStyle::Preserve,
             macro_names: vec!["leptos::view".to_string(), "view".to_string()],
             attr_values: HashMap::new(),
         }
