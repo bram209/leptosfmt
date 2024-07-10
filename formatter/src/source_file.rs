@@ -380,7 +380,7 @@ mod tests {
         "#};
 
         let result = format_file_source(source, &Default::default()).unwrap();
-        insta::assert_snapshot!(result, @r#"
+        insta::assert_snapshot!(result, @r###"
         // comment outside view macro
         fn main() {
             view! { cx,
@@ -416,7 +416,7 @@ mod tests {
         }
 
         // comment after view macro
-        "#);
+        "###);
     }
 
     #[test]

@@ -109,7 +109,7 @@ impl Formatter<'_> {
 
     fn expr(&mut self, expr: &syn::Expr, formatter: Option<ExpressionFormatter>) {
         let span = expr.span();
-        self.flush_comments(span.start().line - 1);
+        self.flush_comments(span.start().line - 1, false);
         if let syn::Expr::Lit(ExprLit {
             lit: syn::Lit::Str(lit_str),
             ..
@@ -156,7 +156,9 @@ mod tests {
     use rstml::node::Node;
 
     use crate::formatter::*;
-    use crate::test_helpers::{element_from_string, format_element_from_string, format_with};
+    use crate::test_helpers::{
+        element, element_from_string, format_element_from_string, format_with,
+    };
 
     macro_rules! format_element {
         ($($tt:tt)*) => {{
@@ -165,7 +167,7 @@ mod tests {
                 ..Default::default()
             };
 
-            let element = element_from_string! { $($tt)* };
+            let element = element! { $($tt)* };
             format_with(settings,|formatter| {
                 formatter.node(&Node::Element(element));
             })
@@ -185,7 +187,7 @@ mod tests {
 
     #[test]
     fn multiline_string_as_child() {
-        let formatted = format_element! {r#"<div>
+        let formatted = format_element_from_string! {r#"<div>
                     "Lorem ipsum dolor sit amet, consectetur adipiscing elit,
                         sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
                                 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
@@ -206,7 +208,7 @@ mod tests {
 
     #[test]
     fn string_whitespace_prefix() {
-        let formatted = format_element! {r#"<div>
+        let formatted = format_element_from_string! {r#"<div>
                     "    foo"
             </div>"#};
 
@@ -217,7 +219,7 @@ mod tests {
 
     #[test]
     fn multiline_string_whitespace_prefix() {
-        let formatted = format_element! {r#"<div>
+        let formatted = format_element_from_string! {r#"<div>
                     "        Lorem ipsum dolor sit amet, consectetur adipiscing elit,
                         sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
                                 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
@@ -238,7 +240,7 @@ mod tests {
 
     #[test]
     fn multiline_unquoted_string_as_child() {
-        let formatted = format_element! {r#"<div>
+        let formatted = format_element_from_string! {r#"<div>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit,
                         sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
                                 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
@@ -272,5 +274,43 @@ mod tests {
         insta::assert_snapshot!(formatted, @r#"
         <p>"\u{00A9}🦀"</p>
         "#);
+    }
+
+    #[test]
+    fn codeblock_with_empty_lines() {
+        let formatted = format_element_from_string! { r#"
+                    <h2>
+                        {
+
+                        }
+                    </h2>
+            "#
+        };
+
+        insta::assert_snapshot!(formatted, @r###"
+        <h2>{}</h2>
+        "###);
+    }
+
+    #[test]
+    fn codeblock_body() {
+        let formatted = format_element_from_string! { r#"<h2>
+                        {match error_code {
+                            StatusCode::SERVICE_UNAVAILABLE => "custom error msg".to_string(),
+                            error_code => error_code.to_string(),
+                        }}
+                    </h2>"#
+        };
+
+        insta::assert_snapshot!(formatted, @r###"
+        <h2>
+            {match error_code {
+                StatusCode::SERVICE_UNAVAILABLE => {
+                    "custom error msg".to_string()
+                }
+                error_code => error_code.to_string(),
+            }}
+        </h2>
+        "###);
     }
 }

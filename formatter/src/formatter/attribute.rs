@@ -7,7 +7,7 @@ use super::ExpressionFormatter;
 
 impl Formatter<'_> {
     pub fn attribute(&mut self, attribute: &NodeAttribute) {
-        self.flush_comments(attribute.span().start().line - 1);
+        self.flush_comments(attribute.span().start().line - 1, false);
         match attribute {
             NodeAttribute::Attribute(k) => self.keyed_attribute(k),
             NodeAttribute::Block(b) => self.node_block(b),

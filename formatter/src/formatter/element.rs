@@ -11,7 +11,7 @@ impl Formatter<'_> {
 
         if !is_void {
             self.children(&element.children, element.attributes().len());
-            self.flush_comments(element.close_tag.span().end().line - 1);
+            self.flush_comments(element.close_tag.span().end().line - 1, true);
             self.closing_tag(element)
         }
     }
