@@ -2,8 +2,7 @@ use std::collections::HashMap;
 
 use crop::Rope;
 
-use proc_macro2::{Span, TokenStream, TokenTree};
-use syn::{token::Bracket, Token};
+use proc_macro2::{Span, TokenStream};
 
 use crate::get_text_beween_spans;
 
