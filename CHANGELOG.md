@@ -21,6 +21,7 @@ All notable changes to this project will be documented in this file.
 - Add option to override macro name ([#109](https://github.com/bram209/leptosfmt/issues/109))
 - Preserve formatting of unknown macros ([#121](https://github.com/bram209/leptosfmt/issues/121))
 - Add tailwind support for attr values ([#122](https://github.com/bram209/leptosfmt/issues/122))
+- Support elements with generics ([#128](https://github.com/bram209/leptosfmt/issues/128))
 
 ### Miscellaneous Tasks
 
