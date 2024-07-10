@@ -19,6 +19,7 @@ impl Formatter<'_> {
     fn opening_tag(&mut self, element: &NodeElement, is_void: bool) {
         self.printer.word("<");
         self.node_name(&element.open_tag.name);
+        leptosfmt_prettyplease::unparse_generics(&element.open_tag.generics, self.printer);
 
         self.attributes(element.attributes());
 
@@ -408,5 +409,11 @@ mod tests {
             </div>
         </div>
         "#);
+    }
+
+    #[test]
+    fn with_generics() {
+        let formatted = format_element! { <SizeOf<String>/> };
+        insta::assert_snapshot!(formatted, @"<SizeOf<String>/>");
     }
 }
