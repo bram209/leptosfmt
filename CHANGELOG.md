@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Bug Fixes
 
 - Inline unquoted text + expr block combinations ([#110](https://github.com/bram209/leptosfmt/issues/110))
+- Trailing whitespace issue when using codeblocks ([#130](https://github.com/bram209/leptosfmt/issues/130))
 
 ### Continuous Integration
 
