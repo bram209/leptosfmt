@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 ### Documentation
 
 - Directory-based rust-analyzer configuration ([#127](https://github.com/bram209/leptosfmt/issues/127))
+- Fix default attr_value_brace_style
 
 ### Features
 
