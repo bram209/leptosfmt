@@ -9,7 +9,7 @@ Whether or not to add braces around single expression attribute values.
 
 ### Examples
 
-`"AlwaysUnlessLit"` (default):
+`"AlwaysUnlessLit"`:
 
 ```rust
 <div on:click=move |_| set_value(0) disabled=is_disabled />
@@ -33,7 +33,7 @@ Whether or not to add braces around single expression attribute values.
 <img width={100} height={200} class={"banner"} alt={"test"} />
 ```
 
-`"WhenRequired"`:
+`"WhenRequired"` (default):
 
 ```rust
 <div on:click={move |_| set_value(0)} disabled={is_disabled} />
