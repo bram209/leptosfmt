@@ -84,7 +84,7 @@ impl Formatter<'_> {
         self.printer
             .cbox((parent_indent.tabs * self.settings.tab_spaces + parent_indent.spaces) as isize);
 
-        self.flush_comments(cx.span().start().line - 1);
+        self.flush_comments(cx.span().start().line - 1, false);
 
         let macro_word = format!("{}! {{", get_macro_full_path(view_mac.mac));
         self.printer.word(macro_word);

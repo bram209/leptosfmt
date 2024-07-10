@@ -5,7 +5,7 @@ use crate::{formatter::Formatter, get_text_beween_spans};
 
 impl Formatter<'_> {
     pub fn node(&mut self, node: &Node) {
-        self.flush_comments(node.span().start().line - 1);
+        self.flush_comments(node.span().start().line - 1, false);
 
         match node {
             Node::Element(ele) => self.element(ele),
