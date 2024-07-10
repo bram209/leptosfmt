@@ -72,7 +72,7 @@ edition = "2021"
 ### Setting up with unstable directory based rust-analyzer configuration
 An alternative way to configure `rust-analyzer` to use `leptosfmt` is to use directory based `rust-analyzer` configuration.
 
-To do this named `rust-analyzer.toml` to the root of your project with the content: 
+To do this, create a file named `rust-analyzer.toml` in the root of your project with the following content: 
 ```toml
 [rustfmt] 
 overrideCommand = ["leptosfmt", "--stdin", "--rustfmt"]
@@ -81,7 +81,7 @@ overrideCommand = ["leptosfmt", "--stdin", "--rustfmt"]
 
 This method of setting up rust-analyzer is editor agnostic to any editor that uses `rust-analyzer` for formatting rust code
 
-> Note: This feature of `rust-analyzer` is currently unstable and no guarantees are made that this will continue to work across versions.
+> Note: This feature of `rust-analyzer` is currently unstable and no guarantees are made that this will continue to work across versions. You have to use a recent version of `rust-analyzer` ([2024-06-10](https://github.com/rust-lang/rust-analyzer/releases/tag/2024-06-10) or newer).
 
 ## Configuration
 
