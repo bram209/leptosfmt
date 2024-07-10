@@ -69,6 +69,20 @@ edition = "2021"
 
 > Note: For VSCode users, I recommend to use workpsace settings (CMD + shift + p -> Open workspace settings), so that you can only configure `leptosfmt` for workpsaces that are using leptos. For Neovim users, I recommend using [neoconf.nvim](https://github.com/folke/neoconf.nvim) for managing project-local LSP configuration.
 
+### Setting up with unstable directory based rust-analyzer configuration
+An alternative way to configure `rust-analyzer` to use `leptosfmt` is to use directory based `rust-analyzer` configuration.
+
+To do this, create a file named `rust-analyzer.toml` in the root of your project with the following content: 
+```toml
+[rustfmt] 
+overrideCommand = ["leptosfmt", "--stdin", "--rustfmt"]
+# (optional) other config...
+```
+
+This method of setting up rust-analyzer is editor agnostic to any editor that uses `rust-analyzer` for formatting rust code
+
+> Note: This feature of `rust-analyzer` is currently unstable and no guarantees are made that this will continue to work across versions. You have to use a recent version of `rust-analyzer` ([2024-06-10](https://github.com/rust-lang/rust-analyzer/releases/tag/2024-06-10) or newer).
+
 ## Configuration
 
 You can configure all settings through a `leptosfmt.toml` file.
