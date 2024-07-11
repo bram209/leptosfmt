@@ -446,7 +446,7 @@ mod tests {
     #[test]
     fn with_generics() {
         let formatted = format_element! { <SizeOf<String>/> };
-        insta::assert_snapshot!(formatted, @"<SizeOf<String>/>");
+        insta::assert_snapshot!(formatted, @"<SizeOf<String> />");
     }
 
     // Closing Tags Behaviour
