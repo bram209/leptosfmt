@@ -193,16 +193,29 @@ impl<'a> Formatter<'a> {
         }
     }
 
-    pub fn flush_comments(&mut self, line_index: usize) {
+    pub fn flush_comments(&mut self, line_index: usize, skip_trailing_whitespace: bool) {
         let last = self.line_offset.unwrap_or(0);
 
         let comments_or_empty_lines: Vec<_> = (last..=line_index)
             .filter_map(|l| self.whitespace_and_comments.remove(&l))
             .collect();
 
+        // If we need to skip trailing whitespace, calculate how many elements we need to take,
+        // until no comments are left in the vector
+        let take_n = if skip_trailing_whitespace {
+            comments_or_empty_lines
+                .iter()
+                .rev()
+                .position(Option::is_some)
+                .map(|i| comments_or_empty_lines.len() - i)
+        } else {
+            None
+        }
+        .unwrap_or(comments_or_empty_lines.len());
+
         let mut prev_is_empty_line = false;
 
-        for comment_or_empty in comments_or_empty_lines {
+        for comment_or_empty in comments_or_empty_lines.into_iter().take(take_n) {
             if let Some(comment) = comment_or_empty {
                 self.printer.word("// ");
                 self.printer.word(comment);

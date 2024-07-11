@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crop::Rope;
 
-use proc_macro2::{Span, TokenStream, TokenTree};
+use proc_macro2::{Span, TokenStream};
 
 use crate::get_text_beween_spans;
 
@@ -13,8 +13,7 @@ pub(crate) fn extract_whitespace_and_comments(
     let mut whitespace_and_comments = HashMap::new();
     let mut last_span: Option<Span> = None;
 
-    traverse_token_stream(tokens, &mut |token: &TokenTree| {
-        let span = token.span();
+    traverse_token_stream(tokens, &mut |span: Span| {
         if let Some(last_span) = last_span {
             if last_span.end().line != span.start().line {
                 let text = get_text_beween_spans(source, last_span.end(), span.start());
@@ -45,11 +44,15 @@ pub(crate) fn extract_whitespace_and_comments(
     whitespace_and_comments
 }
 
-fn traverse_token_stream(tokens: TokenStream, cb: &mut impl FnMut(&TokenTree)) {
+fn traverse_token_stream(tokens: TokenStream, cb: &mut impl FnMut(Span)) {
     for token in tokens {
         match token {
-            proc_macro2::TokenTree::Group(group) => traverse_token_stream(group.stream(), cb),
-            _ => cb(&token),
+            proc_macro2::TokenTree::Group(group) => {
+                cb(group.span_open());
+                traverse_token_stream(group.stream(), cb);
+                cb(group.span_close());
+            }
+            _ => cb(token.span()),
         }
     }
 }

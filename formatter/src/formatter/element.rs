@@ -12,7 +12,7 @@ impl Formatter<'_> {
 
         if !is_self_closing {
             self.children(&element.children, element.attributes().len());
-            self.flush_comments(element.close_tag.span().end().line - 1);
+            self.flush_comments(element.close_tag.span().end().line - 1, true);
             self.closing_tag(element)
         }
     }
@@ -20,6 +20,7 @@ impl Formatter<'_> {
     fn opening_tag(&mut self, element: &NodeElement, is_self_closing: bool) {
         self.printer.word("<");
         self.node_name(&element.open_tag.name);
+        leptosfmt_prettyplease::unparse_generics(&element.open_tag.generics, self.printer);
 
         self.attributes(element.attributes());
 
