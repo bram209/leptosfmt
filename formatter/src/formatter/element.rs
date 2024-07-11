@@ -6,26 +6,25 @@ use syn::spanned::Spanned;
 impl Formatter<'_> {
     pub fn element(&mut self, element: &NodeElement) {
         let name = element.name().to_string();
-        let is_void = is_void_element(&name, !element.children.is_empty());
-        let is_self_closing = is_self_closing(is_void, self.settings.closing_tag_style);
-        let is_empty = element.children.is_empty();
+        let is_self_closing = is_self_closing(element, &name, self.settings.closing_tag_style);
 
-        self.opening_tag(element, is_self_closing, is_empty);
+        self.opening_tag(element, is_self_closing);
 
-        if !(is_self_closing && is_empty) {
+        if !is_self_closing {
             self.children(&element.children, element.attributes().len());
             self.flush_comments(element.close_tag.span().end().line - 1);
             self.closing_tag(element)
         }
     }
 
-    fn opening_tag(&mut self, element: &NodeElement, is_self_closing: bool, is_empty: bool) {
+    fn opening_tag(&mut self, element: &NodeElement, is_self_closing: bool) {
         self.printer.word("<");
         self.node_name(&element.open_tag.name);
 
         self.attributes(element.attributes());
 
-        if is_self_closing && is_empty {
+        if is_self_closing {
+            self.printer.nbsp();
             self.printer.word("/>");
         } else {
             self.printer.word(">")
@@ -117,33 +116,41 @@ impl Formatter<'_> {
     }
 }
 
-fn is_void_element(name: &str, has_children: bool) -> bool {
-    if name.chars().next().unwrap().is_uppercase() {
-        !has_children
-    } else {
-        matches!(
-            name,
-            "area"
-                | "base"
-                | "br"
-                | "col"
-                | "embed"
-                | "hr"
-                | "img"
-                | "input"
-                | "link"
-                | "meta"
-                | "param"
-                | "source"
-                | "track"
-                | "wbr"
-        )
-    }
+fn is_void_element(name: &str) -> bool {
+    matches!(
+        name,
+        "area"
+            | "base"
+            | "br"
+            | "col"
+            | "embed"
+            | "hr"
+            | "img"
+            | "input"
+            | "link"
+            | "meta"
+            | "param"
+            | "source"
+            | "track"
+            | "wbr"
+    )
 }
 
-fn is_self_closing(is_void: bool, closing_tag_style: ClosingTagStyle) -> bool {
-    closing_tag_style == ClosingTagStyle::SelfClosing
-        || closing_tag_style == ClosingTagStyle::Preserve && is_void
+fn is_self_closing(element: &NodeElement, name: &str, closing_tag_style: ClosingTagStyle) -> bool {
+    if !element.children.is_empty() {
+        return false;
+    }
+
+    if is_void_element(name) {
+        return true;
+    };
+
+    // At this point, it must be a non-void element that has no children
+    match closing_tag_style {
+        ClosingTagStyle::Preserve => element.close_tag.is_none(),
+        ClosingTagStyle::SelfClosing => true,
+        ClosingTagStyle::NonSelfClosing => false,
+    }
 }
 
 #[cfg(test)]
@@ -158,20 +165,28 @@ mod tests {
 
     macro_rules! format_element {
         ($($tt:tt)*) => {{
+            format_element_with!(Default::default(), $($tt)*)
+        }};
+    }
+
+    macro_rules! format_element_with_closing_style {
+        ($style:expr, $($tt:tt)*) => {{
+            format_element_with!(FormatterSettings {
+                closing_tag_style: $style,
+                ..Default::default()
+            }, $($tt)*)
+        }};
+    }
+
+    macro_rules! format_element_with {
+        ($settings:expr, $($tt:tt)*) => {{
             let element = element! { $($tt)* };
-            format_with(FormatterSettings { max_width: 40, ..Default::default() }, |formatter| {
+            format_with(FormatterSettings { max_width: 40, ..$settings }, |formatter| {
                 formatter.element(&element)
             })
         }};
     }
-    macro_rules! format_element_with_self_closing_tag {
-        ($($tt:tt)*) => {{
-            let element = element! { $($tt)* };
-            format_with(FormatterSettings { max_width: 40, closing_tag_style: ClosingTagStyle::SelfClosing, ..Default::default() }, |formatter| {
-                formatter.element(&element)
-            })
-        }};
-    }
+
     macro_rules! format_element_from_string {
         ($val:expr) => {{
             format_element_from_string(
@@ -349,17 +364,17 @@ mod tests {
     fn single_empty_line() {
         let formatted = format_element_from_string!(indoc! {r#"
             <div>
-                <Nav/>
+                <Nav />
 
-                <Main/>
+                <Main />
             </div>
         "#});
 
         insta::assert_snapshot!(formatted, @r###"
         <div>
-            <Nav/>
+            <Nav />
 
-            <Main/>
+            <Main />
         </div>
         "###);
     }
@@ -368,19 +383,19 @@ mod tests {
     fn multiple_empty_lines() {
         let formatted = format_element_from_string!(indoc! {r#"
             <div>
-                <Nav/>
+                <Nav />
 
 
 
-                <Main/>
+                <Main />
             </div>
         "#});
 
         insta::assert_snapshot!(formatted, @r###"
         <div>
-            <Nav/>
+            <Nav />
 
-            <Main/>
+            <Main />
         </div>
         "###);
     }
@@ -390,16 +405,16 @@ mod tests {
         let formatted = format_element_from_string!(indoc! {r#"
 
             <div>
-                <Nav/>
-                <Main/>
+                <Nav />
+                <Main />
             </div>
 
         "#});
 
         insta::assert_snapshot!(formatted, @r###"
         <div>
-            <Nav/>
-            <Main/>
+            <Nav />
+            <Main />
         </div>
         "###);
     }
@@ -427,68 +442,95 @@ mod tests {
         "#);
     }
 
-    // Self Closing Tag
+    // Closing Tags Behaviour
 
     #[test]
-    fn self_closing_void_element_no_children_separate_closing_tag() {
-        let formatted = format_element_with_self_closing_tag! { < input >< / input > };
-        insta::assert_snapshot!(formatted, @"<input/>");
+    fn void_element_no_children_separate_closing_tag() {
+        let preserve_formatted =
+            format_element_with_closing_style! { ClosingTagStyle::Preserve, < input >< / input > };
+        let self_closing_formatted = format_element_with_closing_style! { ClosingTagStyle::SelfClosing, < input >< / input > };
+        let non_self_closing_formatted = format_element_with_closing_style! { ClosingTagStyle::NonSelfClosing, < input >< / input > };
+
+        insta::assert_snapshot!(preserve_formatted, @"<input />");
+        insta::assert_snapshot!(self_closing_formatted, @"<input />");
+        insta::assert_snapshot!(non_self_closing_formatted, @"<input />");
     }
 
     #[test]
-    fn self_closing_void_element_no_children_self_closing_tag() {
-        let formatted = format_element_with_self_closing_tag! { < input / > };
-        insta::assert_snapshot!(formatted, @"<input/>");
+    fn void_element_no_children_self_closing_tag_one_line() {
+        let preserve_formatted =
+            format_element_with_closing_style! { ClosingTagStyle::Preserve,  < input / > };
+        let self_closing_formatted =
+            format_element_with_closing_style! { ClosingTagStyle::SelfClosing,  < input / > };
+        let non_self_closing_formatted =
+            format_element_with_closing_style! { ClosingTagStyle::NonSelfClosing,  < input / > };
+
+        insta::assert_snapshot!(preserve_formatted, @"<input />");
+        insta::assert_snapshot!(self_closing_formatted, @"<input />");
+        insta::assert_snapshot!(non_self_closing_formatted, @"<input />");
     }
 
     #[test]
-    fn self_closing_non_void_element_with_child() {
-        let formatted = format_element_with_self_closing_tag! { < div > "Child" < / div > };
-        insta::assert_snapshot!(formatted, @r#"<div>"Child"</div>"#);
+    fn void_element_no_children_self_closing_tag_multi_line() {
+        let preserve_formatted = format_element_with_closing_style! { ClosingTagStyle::Preserve,  < input key=1 class="veryveryvery longlonglong attributesattributesattributes listlistlist" / > };
+        let self_closing_formatted = format_element_with_closing_style! { ClosingTagStyle::SelfClosing,  < input key=1 class="veryveryvery longlonglong attributesattributesattributes listlistlist" / > };
+        let non_self_closing_formatted = format_element_with_closing_style! { ClosingTagStyle::NonSelfClosing,  < input key=1 class="veryveryvery longlonglong attributesattributesattributes listlistlist" / > };
+
+        insta::assert_snapshot!(preserve_formatted, @r#"
+        <input
+            key=1
+            class="veryveryvery longlonglong attributesattributesattributes listlistlist"
+        />
+        "#);
+        insta::assert_snapshot!(self_closing_formatted, @r#"
+        <input
+            key=1
+            class="veryveryvery longlonglong attributesattributesattributes listlistlist"
+        />
+        "#);
+        insta::assert_snapshot!(non_self_closing_formatted, @r#"
+        <input
+            key=1
+            class="veryveryvery longlonglong attributesattributesattributes listlistlist"
+        />
+        "#);
     }
 
     #[test]
-    fn self_closing_non_void_element_no_children_separate_closing_tag() {
-        let formatted = format_element_with_self_closing_tag! { < div >< / div > };
-        insta::assert_snapshot!(formatted, @"<div/>");
+    fn non_void_element_with_child() {
+        let preserve_formatted = format_element_with_closing_style! { ClosingTagStyle::Preserve,  < div > "Child" < / div > };
+        let self_closing_formatted = format_element_with_closing_style! { ClosingTagStyle::SelfClosing,  < div > "Child" < / div > };
+        let non_self_closing_formatted = format_element_with_closing_style! { ClosingTagStyle::NonSelfClosing,  < div > "Child" < / div > };
+
+        insta::assert_snapshot!(preserve_formatted, @r#"<div>"Child"</div>"#);
+        insta::assert_snapshot!(self_closing_formatted, @r#"<div>"Child"</div>"#);
+        insta::assert_snapshot!(non_self_closing_formatted, @r#"<div>"Child"</div>"#);
     }
 
     #[test]
-    fn self_closing_non_void_element_no_children_self_closing_tag() {
-        let formatted = format_element_with_self_closing_tag! { < div / > };
-        insta::assert_snapshot!(formatted, @"<div/>");
+    fn non_void_element_no_children_separate_closing_tag() {
+        let preserve_formatted =
+            format_element_with_closing_style! { ClosingTagStyle::Preserve,  < div >< / div > };
+        let self_closing_formatted =
+            format_element_with_closing_style! { ClosingTagStyle::SelfClosing,  < div >< / div > };
+        let non_self_closing_formatted = format_element_with_closing_style! { ClosingTagStyle::NonSelfClosing,  < div >< / div > };
+
+        insta::assert_snapshot!(preserve_formatted, @"<div></div>");
+        insta::assert_snapshot!(self_closing_formatted, @"<div />");
+        insta::assert_snapshot!(non_self_closing_formatted, @"<div></div>");
     }
 
-    // Non Self Closing Tag
-    // TODO uncomment when macro is properly working
+    #[test]
+    fn non_void_element_no_children_self_closing_tag() {
+        let preserve_formatted =
+            format_element_with_closing_style! { ClosingTagStyle::Preserve,  < div / > };
+        let self_closing_formatted =
+            format_element_with_closing_style! { ClosingTagStyle::SelfClosing,  < div / > };
+        let non_self_closing_formatted =
+            format_element_with_closing_style! { ClosingTagStyle::NonSelfClosing,  < div / > };
 
-    // #[test]
-    // fn non_self_closing_void_element_no_children_separate_closing_tag() {
-    //     let formatted = format_element_with_self_closing_tag! { < input >< / input > };
-    //     insta::assert_snapshot!(formatted, @"<input></input>");
-    // }
-
-    // #[test]
-    // fn non_self_closing_void_element_no_children_self_closing_tag() {
-    //     let formatted = format_element_with_self_closing_tag! { < input / > };
-    //     insta::assert_snapshot!(formatted, @"<input></input>");
-    // }
-
-    // #[test]
-    // fn non_self_closing_non_void_element_with_child() {
-    //     let formatted = format_element_with_self_closing_tag! { < div > "Child" < / div > };
-    //     insta::assert_snapshot!(formatted, @r#"<div>"Hello"</div>"#);
-    // }
-
-    // #[test]
-    // fn non_self_closing_non_void_element_no_children_separate_closing_tag() {
-    //     let formatted = format_element_with_self_closing_tag! { < div >< / div > };
-    //     insta::assert_snapshot!(formatted, @"<div></div>");
-    // }
-
-    // #[test]
-    // fn non_self_closing_non_void_element_no_children_self_closing_tag() {
-    //     let formatted = format_element_with_self_closing_tag! { < div / > };
-    //     insta::assert_snapshot!(formatted, @"<div></div>");
-    // }
+        insta::assert_snapshot!(preserve_formatted, @"<div />");
+        insta::assert_snapshot!(self_closing_formatted, @"<div />");
+        insta::assert_snapshot!(non_self_closing_formatted, @"<div></div>");
+    }
 }
