@@ -22,10 +22,9 @@ impl Formatter<'_> {
         self.node_name(&element.open_tag.name);
         leptosfmt_prettyplease::unparse_generics(&element.open_tag.generics, self.printer);
 
-        self.attributes(element.attributes());
+        self.attributes(element.attributes(), is_self_closing);
 
         if is_self_closing {
-            self.printer.nbsp();
             self.printer.word("/>");
         } else {
             self.printer.word(">")
@@ -38,31 +37,43 @@ impl Formatter<'_> {
         self.printer.word(">");
     }
 
-    fn attributes(&mut self, attributes: &[NodeAttribute]) {
-        if attributes.is_empty() {
-            return;
-        }
-
-        if let [attribute] = attributes {
-            self.printer.cbox(0);
-            self.printer.nbsp();
-            self.attribute(attribute);
-            self.printer.end();
-        } else {
-            self.printer.cbox_indent();
-            self.printer.space();
-
-            let mut iter = attributes.iter().peekable();
-            while let Some(attr) = iter.next() {
-                self.attribute(attr);
-
-                if iter.peek().is_some() {
-                    self.printer.space()
+    fn attributes(&mut self, attributes: &[NodeAttribute], trailing_space: bool) {
+        match attributes {
+            [] => {
+                if trailing_space {
+                    self.printer.nbsp();
                 }
             }
+            [attribute] => {
+                self.printer.cbox(0);
+                self.printer.nbsp();
+                self.attribute(attribute);
 
-            self.printer.zerobreak();
-            self.printer.end_dedent();
+                if trailing_space {
+                    self.printer.nbsp();
+                }
+                self.printer.end();
+            }
+            _ => {
+                self.printer.cbox_indent();
+                self.printer.space();
+
+                let mut iter = attributes.iter().peekable();
+                while let Some(attr) = iter.next() {
+                    self.attribute(attr);
+
+                    if iter.peek().is_some() {
+                        self.printer.space()
+                    }
+                }
+
+                if trailing_space {
+                    self.printer.space(); // Only results in a space if the consistent box didn't break
+                } else {
+                    self.printer.zerobreak();
+                }
+                self.printer.end_dedent();
+            }
         }
     }
 
@@ -475,6 +486,19 @@ mod tests {
         insta::assert_snapshot!(preserve_formatted, @"<input />");
         insta::assert_snapshot!(self_closing_formatted, @"<input />");
         insta::assert_snapshot!(non_self_closing_formatted, @"<input />");
+    }
+
+    #[test]
+    fn void_element_no_children_self_closing_tag_single_attr() {
+        let preserve_formatted =
+            format_element_with_closing_style! { ClosingTagStyle::Preserve,  < input key=1 / > };
+        let self_closing_formatted =
+            format_element_with_closing_style! { ClosingTagStyle::SelfClosing,  < input key=1 / > };
+        let non_self_closing_formatted = format_element_with_closing_style! { ClosingTagStyle::NonSelfClosing,  < input key=1 / > };
+
+        insta::assert_snapshot!(preserve_formatted, @"<input key=1 />");
+        insta::assert_snapshot!(self_closing_formatted, @"<input key=1 />");
+        insta::assert_snapshot!(non_self_closing_formatted, @"<input key=1 />");
     }
 
     #[test]
