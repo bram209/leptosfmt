@@ -24,6 +24,7 @@ All notable changes to this project will be documented in this file.
 - Preserve formatting of unknown macros ([#121](https://github.com/bram209/leptosfmt/issues/121))
 - Add tailwind support for attr values ([#122](https://github.com/bram209/leptosfmt/issues/122))
 - Support elements with generics ([#128](https://github.com/bram209/leptosfmt/issues/128))
+- Customisable self-closing tag behaviour on non-void elements ([#123](https://github.com/bram209/leptosfmt/issues/123))
 
 ### Miscellaneous Tasks
 
