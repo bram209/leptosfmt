@@ -30,6 +30,8 @@ Options:
           Maximum width of each line
   -t, --tab-spaces <TAB_SPACES>
           Number of spaces per tab
+  -x, --excludes <EXCLUDE_PATTERNS>
+          A space separated list of file or directory
   -c, --config-file <CONFIG_FILE>
           Configuration file
   -s, --stdin
