@@ -12,7 +12,7 @@ use std::{
 use anyhow::Context;
 use clap::Parser;
 use console::Style;
-use glob::{glob, GlobError};
+use glob::{glob, GlobError, Pattern};
 use leptosfmt_formatter::{format_file_source, FormatterSettings};
 use rayon::{iter::ParallelIterator, prelude::IntoParallelIterator};
 use similar::{ChangeTag, TextDiff};
@@ -32,6 +32,10 @@ struct Args {
     /// Number of spaces per tab
     #[arg(short, long)]
     tab_spaces: Option<usize>,
+
+    /// A space separated list of file or directory
+    #[arg(short = 'x', long = "excludes")]
+    exclude_patterns: Option<Vec<String>>,
 
     /// Configuration file
     #[arg(short, long)]
@@ -142,7 +146,8 @@ fn main() {
     };
 
     let input_patterns = args.input_patterns.unwrap();
-    let file_paths: Vec<_> = get_file_paths(input_patterns).unwrap();
+    let exclude_patterns = args.exclude_patterns.unwrap_or_default();
+    let file_paths: Vec<_> = get_file_paths(input_patterns, exclude_patterns).unwrap();
 
     let total_files = file_paths.len();
     let start_formatting = Instant::now();
@@ -184,7 +189,22 @@ fn main() {
     }
 }
 
-fn get_file_paths(input_patterns: Vec<String>) -> Result<Vec<PathBuf>, GlobError> {
+fn get_file_paths(input_patterns: Vec<String>, exclude_patterns: Vec<String>) -> Result<Vec<PathBuf>, GlobError> {
+    let exclude_patterns = exclude_patterns
+        .into_iter()
+        .filter_map(|exclude_pattern| {
+            let is_dir = fs::metadata(&exclude_pattern)
+                .map(|meta| meta.is_dir())
+                .unwrap_or(false);
+            let global_pattern = if is_dir {
+                format!("{}/**/*", &exclude_pattern.trim_end_matches('/'))
+            } else {
+                exclude_pattern
+            };
+            Pattern::new(&global_pattern).ok()
+        })
+        .collect::<Vec<_>>();
+
     input_patterns
         .into_iter()
         .flat_map(|input_pattern| {
@@ -198,6 +218,9 @@ fn get_file_paths(input_patterns: Vec<String>) -> Result<Vec<PathBuf>, GlobError
             };
             glob(&glob_pattern)
                 .expect("failed to read glob pattern")
+                .filter(|is_file| {
+                    is_file.as_ref().is_ok_and(|file| !exclude_patterns.iter().any(|pattern| pattern.matches_path(file)))
+                })
                 .collect::<Vec<_>>()
         })
         .collect()
