@@ -189,39 +189,33 @@ fn main() {
     }
 }
 
+fn as_glob_pattern(pattern: String) -> String {
+    let is_dir = fs::metadata(&pattern)
+        .map(|meta| meta.is_dir())
+        .unwrap_or(false);
+    if is_dir {
+        return format!("{}/**/*.rs", &pattern.trim_end_matches('/'));
+    }
+    pattern
+}
+
 fn get_file_paths(input_patterns: Vec<String>, exclude_patterns: Vec<String>) -> Result<Vec<PathBuf>, GlobError> {
     let exclude_patterns = exclude_patterns
         .into_iter()
-        .filter_map(|exclude_pattern| {
-            let is_dir = fs::metadata(&exclude_pattern)
-                .map(|meta| meta.is_dir())
-                .unwrap_or(false);
-            let global_pattern = if is_dir {
-                format!("{}/**/*", &exclude_pattern.trim_end_matches('/'))
-            } else {
-                exclude_pattern
-            };
-            Pattern::new(&global_pattern).ok()
-        })
-        .collect::<Vec<_>>();
+        .map(as_glob_pattern)
+        .map(|p| Pattern::new(&p))
+        .collect::<Result<Vec<_>, _>>()
+        .expect("failed to parse exclude glob pattern");
 
     input_patterns
         .into_iter()
-        .flat_map(|input_pattern| {
-            let is_dir = fs::metadata(&input_pattern)
-                .map(|meta| meta.is_dir())
-                .unwrap_or(false);
-            let glob_pattern = if is_dir {
-                format!("{}/**/*.rs", &input_pattern)
-            } else {
-                input_pattern
-            };
+        .map(as_glob_pattern)
+        .flat_map(|glob_pattern| {
             glob(&glob_pattern)
                 .expect("failed to read glob pattern")
                 .filter(|is_file| {
                     is_file.as_ref().is_ok_and(|file| !exclude_patterns.iter().any(|pattern| pattern.matches_path(file)))
                 })
-                .collect::<Vec<_>>()
         })
         .collect()
 }
