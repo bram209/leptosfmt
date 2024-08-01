@@ -199,7 +199,10 @@ fn as_glob_pattern(pattern: String) -> String {
     pattern
 }
 
-fn get_file_paths(input_patterns: Vec<String>, exclude_patterns: Vec<String>) -> Result<Vec<PathBuf>, GlobError> {
+fn get_file_paths(
+    input_patterns: Vec<String>,
+    exclude_patterns: Vec<String>,
+) -> Result<Vec<PathBuf>, GlobError> {
     let exclude_patterns = exclude_patterns
         .into_iter()
         .map(as_glob_pattern)
@@ -214,7 +217,11 @@ fn get_file_paths(input_patterns: Vec<String>, exclude_patterns: Vec<String>) ->
             glob(&glob_pattern)
                 .expect("failed to read glob pattern")
                 .filter(|is_file| {
-                    is_file.as_ref().is_ok_and(|file| !exclude_patterns.iter().any(|pattern| pattern.matches_path(file)))
+                    is_file.as_ref().is_ok_and(|file| {
+                        !exclude_patterns
+                            .iter()
+                            .any(|pattern| pattern.matches_path(file))
+                    })
                 })
         })
         .collect()
