@@ -31,7 +31,7 @@ Options:
   -t, --tab-spaces <TAB_SPACES>
           Number of spaces per tab
   -x, --excludes <EXCLUDE_PATTERNS>
-          A space separated list of file or directory
+          A space separated list of file, directory or glob
   -c, --config-file <CONFIG_FILE>
           Configuration file
   -s, --stdin
