@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### Features
+
+- Add exclude patterns support ([#133](https://github.com/bram209/leptosfmt/issues/133))
+
 ## [0.1.30] - 2024-07-23
 
 ### Bug Fixes
