@@ -12,7 +12,7 @@ use std::{
 use anyhow::Context;
 use clap::Parser;
 use console::Style;
-use glob::{glob, GlobError};
+use glob::{glob, GlobError, Pattern};
 use leptosfmt_formatter::{format_file_source, FormatterSettings};
 use rayon::{iter::ParallelIterator, prelude::IntoParallelIterator};
 use similar::{ChangeTag, TextDiff};
@@ -32,6 +32,10 @@ struct Args {
     /// Number of spaces per tab
     #[arg(short, long)]
     tab_spaces: Option<usize>,
+
+    /// A space separated list of file or directory
+    #[arg(short = 'x', long = "excludes")]
+    exclude_patterns: Option<Vec<String>>,
 
     /// Configuration file
     #[arg(short, long)]
@@ -142,7 +146,8 @@ fn main() {
     };
 
     let input_patterns = args.input_patterns.unwrap();
-    let file_paths: Vec<_> = get_file_paths(input_patterns).unwrap();
+    let exclude_patterns = args.exclude_patterns.unwrap_or_default();
+    let file_paths: Vec<_> = get_file_paths(input_patterns, exclude_patterns).unwrap();
 
     let total_files = file_paths.len();
     let start_formatting = Instant::now();
@@ -184,21 +189,33 @@ fn main() {
     }
 }
 
-fn get_file_paths(input_patterns: Vec<String>) -> Result<Vec<PathBuf>, GlobError> {
+fn as_glob_pattern(pattern: String) -> String {
+    let is_dir = fs::metadata(&pattern)
+        .map(|meta| meta.is_dir())
+        .unwrap_or(false);
+    if is_dir {
+        return format!("{}/**/*.rs", &pattern.trim_end_matches('/'));
+    }
+    pattern
+}
+
+fn get_file_paths(input_patterns: Vec<String>, exclude_patterns: Vec<String>) -> Result<Vec<PathBuf>, GlobError> {
+    let exclude_patterns = exclude_patterns
+        .into_iter()
+        .map(as_glob_pattern)
+        .map(|p| Pattern::new(&p))
+        .collect::<Result<Vec<_>, _>>()
+        .expect("failed to parse exclude glob pattern");
+
     input_patterns
         .into_iter()
-        .flat_map(|input_pattern| {
-            let is_dir = fs::metadata(&input_pattern)
-                .map(|meta| meta.is_dir())
-                .unwrap_or(false);
-            let glob_pattern = if is_dir {
-                format!("{}/**/*.rs", &input_pattern)
-            } else {
-                input_pattern
-            };
+        .map(as_glob_pattern)
+        .flat_map(|glob_pattern| {
             glob(&glob_pattern)
                 .expect("failed to read glob pattern")
-                .collect::<Vec<_>>()
+                .filter(|is_file| {
+                    is_file.as_ref().is_ok_and(|file| !exclude_patterns.iter().any(|pattern| pattern.matches_path(file)))
+                })
         })
         .collect()
 }
