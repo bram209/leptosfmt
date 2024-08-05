@@ -1,7 +1,7 @@
 #![deny(clippy::dbg_macro)]
 
 use std::{
-    fs,
+    env, fs,
     io::{Read, Write},
     panic,
     path::{Path, PathBuf},
@@ -273,14 +273,26 @@ fn create_settings(args: &Args) -> anyhow::Result<FormatterSettings> {
                 .with_context(|| format!("failed to load config file: {}", path.display()))
         })
         .unwrap_or_else(|| {
-            let default_config: PathBuf = "leptosfmt.toml".into();
-            if default_config.exists() {
-                load_config(&default_config).with_context(|| {
-                    format!("failed to load config file: {}", default_config.display())
-                })
-            } else {
-                Ok(FormatterSettings::default())
+            let mut current_path = fs::canonicalize(env::current_dir()?)?;
+
+            loop {
+                let current_path_config = current_path.as_path().join("leptosfmt.toml");
+
+                if current_path_config.exists() {
+                    return load_config(&current_path_config).with_context(|| {
+                        format!(
+                            "failed to load config file: {}",
+                            current_path_config.display()
+                        )
+                    });
+                }
+
+                if !current_path.pop() {
+                    break;
+                }
             }
+
+            Ok(FormatterSettings::default())
         })?;
 
     if let Some(max_width) = args.max_width {
