@@ -264,36 +264,25 @@ fn format_file(
     })
 }
 
+fn find_config_file() -> anyhow::Result<Option<PathBuf>> {
+    Ok(fs::canonicalize(env::current_dir()?)?
+        .ancestors()
+        .map(|p| p.join("leptosfmt.toml"))
+        .find(|p| p.exists()))
+}
+
 fn create_settings(args: &Args) -> anyhow::Result<FormatterSettings> {
     let mut settings = args
         .config_file
         .as_ref()
-        .map(|path| {
-            load_config(path)
-                .with_context(|| format!("failed to load config file: {}", path.display()))
+        .map(load_config)
+        .or_else(|| {
+            find_config_file()
+                .and_then(|v| v.as_ref().map(load_config).transpose())
+                .transpose()
         })
-        .unwrap_or_else(|| {
-            let mut current_path = fs::canonicalize(env::current_dir()?)?;
-
-            loop {
-                let current_path_config = current_path.as_path().join("leptosfmt.toml");
-
-                if current_path_config.exists() {
-                    return load_config(&current_path_config).with_context(|| {
-                        format!(
-                            "failed to load config file: {}",
-                            current_path_config.display()
-                        )
-                    });
-                }
-
-                if !current_path.pop() {
-                    break;
-                }
-            }
-
-            Ok(FormatterSettings::default())
-        })?;
+        .transpose()?
+        .unwrap_or_default();
 
     if let Some(max_width) = args.max_width {
         settings.max_width = max_width;
@@ -323,11 +312,10 @@ fn create_settings(args: &Args) -> anyhow::Result<FormatterSettings> {
 }
 
 fn load_config(path: &PathBuf) -> anyhow::Result<FormatterSettings> {
-    let config = fs::read_to_string(path).context("could not read config file")?;
-    let settings: FormatterSettings =
-        toml::from_str(&config).context("could not parse config file")?;
-
-    Ok(settings)
+    fs::read_to_string(path)
+        .context("could not read config file")
+        .and_then(|contents| toml::from_str(&contents).context("could not parse config file"))
+        .with_context(|| format!("failed to load config file: {}", path.display()))
 }
 
 fn run_rustfmt(source: &str) -> Option<String> {
