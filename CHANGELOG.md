@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Features
 
 - Add exclude patterns support ([#133](https://github.com/bram209/leptosfmt/issues/133))
+- Recursively search parent directories for leptosfmt.toml ([#135](https://github.com/bram209/leptosfmt/issues/135))
 
 ## [0.1.30] - 2024-07-23
 
