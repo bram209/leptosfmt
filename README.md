@@ -56,34 +56,66 @@ Options:
 
 ## Using with Rust Analyzer
 
-You can set the `rust-analyzer.rustfmt.overrideCommand` setting.
+You have to do two things:
+- configure edition in `rustfmt.toml`
+- configure RA by setting the `rust-analyzer.rustfmt.overrideCommand` setting
 
-```json
-  "rust-analyzer.rustfmt.overrideCommand": ["leptosfmt", "--stdin", "--rustfmt"]
-```
-
-And **you must** configure `rustfmt` to use the correct edition, place a `rustfmt.toml` file in the root of your project:
+### Configure `rustfmt` edition
+**You must** configure `rustfmt` to use the correct edition, place a `rustfmt.toml` file in the root of your project:
 
 ```toml
 edition = "2021"
 # (optional) other config...
 ```
 
-> Note: For VSCode users, I recommend to use workpsace settings (CMD + shift + p -> Open workspace settings), so that you can only configure `leptosfmt` for workpsaces that are using leptos. For Neovim users, I recommend using [neoconf.nvim](https://github.com/folke/neoconf.nvim) for managing project-local LSP configuration.
+### Configure RA
+<details>
+  <summary>Option 1: Using `rust-analyzer.toml` (Recommended)</summary> <br />
+  A new way to configure `rust-analyzer` to use `leptosfmt` is to use directory based `rust-analyzer` configuration.
+  
+  To do this, create a file named `rust-analyzer.toml` in the root of your project with the following content: 
+  ```toml
+  [rustfmt] 
+  overrideCommand = ["leptosfmt", "--stdin", "--rustfmt"]
+  # (optional) other config...
+  ```
+  
+  This method of setting up rust-analyzer is editor agnostic to any editor that uses `rust-analyzer` for formatting rust code.
+  
+  > Note: This feature of `rust-analyzer` is currently unstable and no guarantees are made that this will continue to work across versions. You have to use a recent version of `rust-analyzer` ([2024-06-10](https://github.com/rust-lang/rust-analyzer/releases/tag/2024-06-10) or newer).
+</details>
 
-### Setting up with unstable directory based rust-analyzer configuration
-An alternative way to configure `rust-analyzer` to use `leptosfmt` is to use directory based `rust-analyzer` configuration.
-
-To do this, create a file named `rust-analyzer.toml` in the root of your project with the following content: 
-```toml
-[rustfmt] 
-overrideCommand = ["leptosfmt", "--stdin", "--rustfmt"]
-# (optional) other config...
-```
-
-This method of setting up rust-analyzer is editor agnostic to any editor that uses `rust-analyzer` for formatting rust code
-
-> Note: This feature of `rust-analyzer` is currently unstable and no guarantees are made that this will continue to work across versions. You have to use a recent version of `rust-analyzer` ([2024-06-10](https://github.com/rust-lang/rust-analyzer/releases/tag/2024-06-10) or newer).
+<details>
+  <summary>Option 2: Editor specific config</summary> <br />
+  
+  **VSCode**:
+  
+  For VSCode users, I recommend to use workpsace settings (CMD + shift + p -> Open workspace settings), so that you can only configure `leptosfmt` for workspaces that are using leptos.
+  
+  Open your workspace settings and add the following configuration:
+  ```json
+  {
+    "rust-analyzer.rustfmt.overrideCommand": ["leptosfmt", "--stdin", "--rustfmt"]
+  }
+  ```
+  
+  **Neovim**:
+  
+  For Neovim users, I recommend using [neoconf.nvim](https://github.com/folke/neoconf.nvim) for managing project-local LSP configuration, so that you can only configure `leptosfmt` for workspaces that are using leptos.
+  
+  Alternatively, you may directly configure [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig) by appending the following to your `.setup{}` table:
+  ```lua
+  lspconfig["rust_analyzer"].setup {
+    settings = {
+      ["rust-analyzer"] = {
+        rustfmt = {
+          overrideCommand = { "leptosfmt", "--stdin", "--rustfmt" },
+        },
+      },
+    },
+  }
+  ```
+</details>
 
 ## Configuration
 
