@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Documentation
+
+- Improve using with RA section
+
 ### Features
 
 - Add exclude patterns support ([#133](https://github.com/bram209/leptosfmt/issues/133))
