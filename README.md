@@ -115,6 +115,10 @@ edition = "2021"
     },
   }
   ```
+
+  **Emacs**:
+
+  For Emacs users, see the relevant [configuration option](https://emacs-lsp.github.io/lsp-mode/page/lsp-rust-analyzer/#lsp-rust-analyzer-rustfmt-override-command) for LSP Mode.
 </details>
 
 ## Configuration
