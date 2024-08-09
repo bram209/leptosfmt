@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Documentation
 
 - Improve using with RA section
+- Add link to emacs LSP mode config option
 
 ### Features
 
