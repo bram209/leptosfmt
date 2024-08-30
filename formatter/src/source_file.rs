@@ -118,7 +118,7 @@ mod tests {
     fn it_works() {
         let source = indoc! {r#"
             fn main() {
-                view! {   cx ,  <div>  <span>"hello"</span></div>  }; 
+                view! {   cx ,  <div>  <span>"hello"</span></div>  };
             }
         "#};
 
@@ -129,7 +129,7 @@ mod tests {
                 <div>
                     <span>"hello"</span>
                 </div>
-            }; 
+            };
         }
 
         "#);
@@ -139,7 +139,7 @@ mod tests {
     fn fully_qualified_macro_path() {
         let source = indoc! {r#"
             fn main() {
-                leptos::view! {   cx ,  <div>  <span>"hello"</span></div>  }; 
+                leptos::view! {   cx ,  <div>  <span>"hello"</span></div>  };
             }
         "#};
 
@@ -150,7 +150,7 @@ mod tests {
                 <div>
                     <span>"hello"</span>
                 </div>
-            }; 
+            };
         }
 
         "#);
@@ -160,7 +160,7 @@ mod tests {
     fn ignore_other_macros() {
         let source = indoc! {r#"
             fn main() {
-                leptos::view! {   cx ,  <div class=format!("classy")>  <span>"hello"</span></div>  }; 
+                leptos::view! {   cx ,  <div class=format!("classy")>  <span>"hello"</span></div>  };
             }
         "#};
 
@@ -171,7 +171,7 @@ mod tests {
                 <div class=format!("classy")>
                     <span>"hello"</span>
                 </div>
-            }; 
+            };
         }
 
         "#);
@@ -186,14 +186,14 @@ mod tests {
                 <div class="HeaderField start">
                     <h1>Hello Kanna</h1>
                 </div>
-        
+
                 {
                     style! {
                         h1 {
                             background-color: red;
                             color: white;
                         }
-        
+
                         @media (orientation: portrait) {
                             h1 {
                               background-color: green;
@@ -219,7 +219,7 @@ mod tests {
                             background-color: red;
                             color: white;
                         }
-        
+
                         @media (orientation: portrait) {
                             h1 {
                               background-color: green;
@@ -236,7 +236,7 @@ mod tests {
     fn fully_qualified_macro_path_overridden() {
         let source = indoc! {r#"
             fn main() {
-                foo::bar::some_view! {   cx ,  <div>  <span>"hello"</span></div>  }; 
+                foo::bar::some_view! {   cx ,  <div>  <span>"hello"</span></div>  };
             }
         "#};
 
@@ -254,7 +254,7 @@ mod tests {
                 <div>
                     <span>"hello"</span>
                 </div>
-            }; 
+            };
         }
 
         "#);
@@ -268,8 +268,8 @@ mod tests {
                         let a = 12;
 
 
-                        foo::bar::some_view! { cx,             
-                            
+                        foo::bar::some_view! { cx,
+
                                          <span>{a}</span>
                         }
                 }</span></div>  };
@@ -310,8 +310,8 @@ mod tests {
                         let a = 12;
 
 
-                        html! { cx,             
-                            
+                        html! { cx,
+
                                          <span>{a}</span>
                         }
                 }</span></div>  };
@@ -427,8 +427,8 @@ mod tests {
                         let a = 12;
 
 
-                        view! { cx,             
-                            
+                        view! { cx,
+
                                          <span>{a}</span>
                         }
                 }</span></div>  };
@@ -457,15 +457,15 @@ mod tests {
     fn nested_with_comments() {
         let source = indoc! {r#"
             fn main() {
-                view! {   cx ,  
+                view! {   cx ,
                     // parent div
-                    <div> 
+                    <div>
 
                     // parent span
                     <span>{ //ok
                         let a = 12;
 
-                        view! { cx,             
+                        view! { cx,
                             // wow, a span
                             <span>{a}</span>
                         }
@@ -502,8 +502,8 @@ mod tests {
     fn multiple() {
         let source = indoc! {r#"
             fn main() {
-                view! {   cx ,  <div>  <span>"hello"</span></div>  }; 
-                view! {   cx ,  <div>  <span>"hello"</span></div>  }; 
+                view! {   cx ,  <div>  <span>"hello"</span></div>  };
+                view! {   cx ,  <div>  <span>"hello"</span></div>  };
             }
         "#};
 
@@ -514,12 +514,12 @@ mod tests {
                 <div>
                     <span>"hello"</span>
                 </div>
-            }; 
+            };
             view! { cx,
                 <div>
                     <span>"hello"</span>
                 </div>
-            }; 
+            };
         }
         "#);
     }
@@ -528,7 +528,7 @@ mod tests {
     fn with_special_characters() {
         let source = indoc! {r#"
             fn main() {
-                view! {   cx ,  <div>  <span>"hello²💣"</span></div>  }; 
+                view! {   cx ,  <div>  <span>"hello²💣"</span></div>  };
             }
         "#};
 
@@ -539,7 +539,7 @@ mod tests {
                 <div>
                     <span>"hello²💣"</span>
                 </div>
-            }; 
+            };
         }
         "#);
     }
@@ -579,7 +579,7 @@ mod tests {
             #[component]
             fn Component(cx: Scope, val: ExampleEnum) -> impl IntoView {
                 match val {
-                    ExampleEnum::ValueOneWithAReallyLongName => 
+                    ExampleEnum::ValueOneWithAReallyLongName =>
                         view! { cx,
                                                                     <div>
                                                                         <div>"Value One"</div>
@@ -606,7 +606,7 @@ mod tests {
         #[component]
         fn Component(cx: Scope, val: ExampleEnum) -> impl IntoView {
             match val {
-                ExampleEnum::ValueOneWithAReallyLongName => 
+                ExampleEnum::ValueOneWithAReallyLongName =>
                     view! { cx,
                         <div>
                             <div>"Value One"</div>
@@ -654,7 +654,7 @@ mod tests {
     fn indent_with_tabs() {
         let source = indoc! {"
         fn main() {
-        \u{0020}view! { cx,
+        \tview! { cx,
               <div>
                 <div>Example</div>
               </div>
@@ -665,7 +665,7 @@ mod tests {
         let result = format_file_source(
             source,
             &FormatterSettings {
-                tab_spaces: 1,
+                tab_spaces: 4,
                 indentation_style: IndentationStyle::Tabs,
                 ..Default::default()
             },
@@ -674,7 +674,7 @@ mod tests {
 
         let expected = indoc! {"
         fn main() {
-        \u{0020}view! { cx,
+        \tview! { cx,
         \t\t<div>
         \t\t\t<div>Example</div>
         \t\t</div>
@@ -682,6 +682,48 @@ mod tests {
         }
         "};
 
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn indent_with_tabs_including_code_blocks() {
+        let source = indoc! {"
+        fn main() {
+        \tview! { cx,
+              <div>
+                <button onclick={|_| {
+                 let x = 1;
+                 do_something(x);
+                }}>Example</button>
+              </div>
+            }
+        }
+        "};
+
+        let result = format_file_source(
+            source,
+            &FormatterSettings {
+                tab_spaces: 4,
+                indentation_style: IndentationStyle::Tabs,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+
+        let expected = indoc! {"
+        fn main() {
+        \tview! { cx,
+        \t\t<div>
+        \t\t\t<button onclick=|_| {
+        \t\t\t\tlet x = 1;
+        \t\t\t\tdo_something(x);
+        \t\t\t}>Example</button>
+        \t\t</div>
+        \t}
+        }
+        "};
+
+        print!("{result}");
         assert_eq!(result, expected);
     }
 
@@ -757,7 +799,7 @@ mod tests {
     #[test]
     fn tailwind() {
         let source = indoc! {r#"
-            view! { 
+            view! {
                 <button class="text-white px-4 sm:px-8 py-2 sm:py-3 bg-sky-700 hover:bg-sky-800">Test</button>
                 <button class="some non tailwind classes">Test</button>
                 <button class="some mixed classes non tailwind classes text-white px-4 sm:px-8 py-2 sm:py-3">Test</button>
@@ -780,6 +822,71 @@ mod tests {
             <button class="py-2 px-4 text-white sm:py-3 sm:px-8 some mixed classes non tailwind classes">
                 Test
             </button>
+        }
+        "###);
+    }
+
+    #[test]
+    fn indent_issue_140() {
+        let source = indoc! {r#"
+            #[component]
+            pub fn QrScanner() -> impl IntoView {
+                view! {
+                    <script src="js/qr-scanner.umd.min.js"></script>
+                    <script src="js/qr_scanner_wrapper.js"></script>
+                    <div id="qr-video-container">
+                    <video id="qr-video"></video>
+                    </div>
+                    <button on:click=move |_| {
+                        wasm_bindgen_futures::spawn_local(async {
+                            let video_element = web_sys::window()
+                                .unwrap()
+                                .document()
+                                .unwrap()
+                                .get_element_by_id("qr-video")
+                                .unwrap()
+                                .dyn_into::<HtmlVideoElement>()
+                                .unwrap();
+                            start_qr_scanner(video_element);
+                        });
+                    }>Start QR Scanner</button>
+                }
+            }"#};
+
+        let result = format_file_source(
+            source,
+            &FormatterSettings {
+                indentation_style: IndentationStyle::Spaces,
+                tab_spaces: 2,
+                max_width: 80,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+
+        insta::assert_snapshot!(result, @r###"
+        #[component]
+        pub fn QrScanner() -> impl IntoView {
+            view! {
+              <script src="js/qr-scanner.umd.min.js"></script>
+              <script src="js/qr_scanner_wrapper.js"></script>
+              <div id="qr-video-container">
+                <video id="qr-video"></video>
+              </div>
+              <button on:click=move |_| {
+                wasm_bindgen_futures::spawn_local(async {
+                  let video_element = web_sys::window()
+                    .unwrap()
+                    .document()
+                    .unwrap()
+                    .get_element_by_id("qr-video")
+                    .unwrap()
+                    .dyn_into::<HtmlVideoElement>()
+                    .unwrap();
+                  start_qr_scanner(video_element);
+                });
+              }>Start QR Scanner</button>
+            }
         }
         "###);
     }

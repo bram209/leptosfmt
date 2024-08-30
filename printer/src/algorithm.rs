@@ -46,6 +46,7 @@ enum PrintFrame {
 
 pub(crate) const SIZE_INFINITY: isize = 0xffff;
 
+#[derive(Debug)]
 pub struct PrinterSettings {
     // Target line width.
     pub margin: isize,
@@ -61,7 +62,7 @@ pub struct PrinterSettings {
 
 pub struct Printer {
     pub settings: PrinterSettings,
-    out: String,
+    pub out: String,
     // Number of spaces left on line
     space: isize,
     // Ring-buffer of tokens and calculated sizes
@@ -361,8 +362,8 @@ impl Printer {
         if !self.settings.hard_tabs {
             self.out.reserve(self.pending_indentation);
         } else {
-            let tabs = self.pending_indentation / self.settings.tab_spaces as usize;
-            let remaining_spaces = self.pending_indentation % self.settings.tab_spaces as usize;
+            let tabs = self.pending_indentation / 4;
+            let remaining_spaces = self.pending_indentation % 4;
             self.out.reserve(tabs + remaining_spaces);
             self.out.extend(iter::repeat('\t').take(tabs));
             self.pending_indentation = remaining_spaces
