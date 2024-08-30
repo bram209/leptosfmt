@@ -153,7 +153,6 @@ impl Formatter<'_> {
 
 #[cfg(test)]
 mod tests {
-    
 
     use crate::formatter::*;
     use crate::test_helpers::format_element_from_string;
