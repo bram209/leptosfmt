@@ -723,7 +723,6 @@ mod tests {
         }
         "};
 
-        print!("{result}");
         assert_eq!(result, expected);
     }
 
