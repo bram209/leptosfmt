@@ -131,9 +131,13 @@ mod tests {
 
     #[test]
     fn key_value_expr_attr_always_unless_lit_braces() {
-        // sinle expr without braces
+        // single expr without braces
         let f = format_attr_with_brace_style! { AlwaysUnlessLit => on:click=move |_| set_value(0) };
         assert_snapshot!(f, @"on:click={move |_| set_value(0)}");
+
+        // single expr without braces
+        let f = format_attr_with_brace_style! { AlwaysUnlessLit => foo=bar };
+        assert_snapshot!(f, @"foo={bar}");
 
         // single expr with braces
         let f =

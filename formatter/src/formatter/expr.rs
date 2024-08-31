@@ -153,12 +153,9 @@ impl Formatter<'_> {
 
 #[cfg(test)]
 mod tests {
-    use rstml::node::Node;
 
     use crate::formatter::*;
-    use crate::test_helpers::{
-        element, element_from_string, format_element_from_string, format_with,
-    };
+    use crate::test_helpers::format_element_from_string;
 
     macro_rules! format_element {
         ($($tt:tt)*) => {{

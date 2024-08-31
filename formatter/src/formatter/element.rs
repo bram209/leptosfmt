@@ -253,7 +253,7 @@ mod tests {
         let formatted = format_element_from_string!(indoc! {"
         <div key=a
             // width
-            width=100></div> 
+            width=100></div>
         "});
 
         insta::assert_snapshot!(formatted, @r###"
@@ -361,7 +361,7 @@ mod tests {
         let formatted = format_element_from_string!(indoc! {"
             <div>
             Unquoted text
-                    with  spaces 
+                    with  spaces
             </div>
         "});
 
