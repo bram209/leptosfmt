@@ -46,7 +46,6 @@ enum PrintFrame {
 
 pub(crate) const SIZE_INFINITY: isize = 0xffff;
 
-#[derive(Debug)]
 pub struct PrinterSettings {
     // Target line width.
     pub margin: isize,
@@ -62,7 +61,7 @@ pub struct PrinterSettings {
 
 pub struct Printer {
     pub settings: PrinterSettings,
-    pub out: String,
+    out: String,
     // Number of spaces left on line
     space: isize,
     // Ring-buffer of tokens and calculated sizes
