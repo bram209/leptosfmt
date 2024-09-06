@@ -359,8 +359,8 @@ impl Printer {
 
     fn print_indent(&mut self) {
         let (tabs, spaces) = if self.settings.hard_tabs {
-            // Note: we have to print the remainder in spaces, as pending_indentation does not only consist of tabs,
-            // but blank space of any inconsistent break, which could be a single space too, see `print_break` for implementation details.
+            // Note: we have to print the remainder in spaces, as pending_indentation consint of _any_ breakable token
+            // including break tokens with never_break set to 'true', meaning that indentation (e.g. a single space) can be printed in the middle of a line as well.
             let tabs = self.pending_indentation / self.settings.tab_spaces as usize;
             let remainder = self.pending_indentation % self.settings.tab_spaces as usize;
             (tabs, remainder)
