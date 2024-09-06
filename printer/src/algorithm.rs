@@ -358,17 +358,19 @@ impl Printer {
     }
 
     fn print_indent(&mut self) {
-        if !self.settings.hard_tabs {
-            self.out.reserve(self.pending_indentation);
-            self.out
-                .extend(iter::repeat(' ').take(self.pending_indentation));
-        } else {
+        let (tabs, spaces) = if self.settings.hard_tabs {
+            // Note: we have to print the remainder in spaces, as pending_indentation does not only consist of tabs,
+            // but blank space of any inconsistent break, which could be a single space too, see `print_break` for implementation details.
             let tabs = self.pending_indentation / self.settings.tab_spaces as usize;
-            let remaining_spaces = self.pending_indentation % self.settings.tab_spaces as usize;
-            self.out.reserve(tabs + remaining_spaces);
-            self.out.extend(iter::repeat('\t').take(tabs));
-            self.out.extend(iter::repeat(' ').take(remaining_spaces));
-        }
+            let remainder = self.pending_indentation % self.settings.tab_spaces as usize;
+            (tabs, remainder)
+        } else {
+            (0, self.pending_indentation)
+        };
+
+        self.out.reserve(tabs + spaces);
+        self.out.extend(iter::repeat('\t').take(tabs));
+        self.out.extend(iter::repeat(' ').take(spaces));
         self.pending_indentation = 0;
     }
 }
