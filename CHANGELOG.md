@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Bug Fixes
 
 - [**breaking**] Use view! indentation settings when formatting syn expression ([#141](https://github.com/bram209/leptosfmt/issues/141))
+- Use 'tab_spaces' for size of hard tabs instead of hardcoded 4 ([#143](https://github.com/bram209/leptosfmt/issues/143))
 
 ### Documentation
 
