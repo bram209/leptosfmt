@@ -104,7 +104,7 @@ impl Formatter<'_> {
             }
         }
 
-        self.expr(value, formatter)
+        self.expr(value, formatter);
     }
 
     fn expr(&mut self, expr: &syn::Expr, formatter: Option<ExpressionFormatter>) {
@@ -141,10 +141,10 @@ impl Formatter<'_> {
         leptosfmt_prettyplease::unparse_expr(
             expr,
             self.printer,
-            Some(&ViewMacroFormatter::new(
+            Some(&mut ViewMacroFormatter::new(
                 self.settings,
                 self.source,
-                self.line_offset,
+                &mut self.line_offset,
                 comments_or_whitespace,
             )),
         );

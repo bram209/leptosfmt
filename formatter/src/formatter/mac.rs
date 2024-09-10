@@ -18,7 +18,7 @@ pub struct ViewMacro<'a> {
     pub comma: Option<TokenTree>,
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct ParentIndent {
     pub tabs: usize,
     pub spaces: usize,
