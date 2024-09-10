@@ -499,6 +499,62 @@ mod tests {
     }
 
     #[test]
+    fn nested_comments_in_consecutive_view_macro() {
+        let source = indoc! {r#"
+            use leptos::*;
+
+            fn main() {
+                mount_to_body(|| {
+                    view! {
+                        {move || {
+                            if true {
+                                view! {
+                                    // comment in if condition.
+                                    <div>dummy text</div>
+                                }
+                                    .into_view()
+                            } else {
+                                view! {
+                                    // comment in else condition.
+                                    <div>dummy text</div>
+                                }
+                                    .into_view()
+                            }
+                        }}
+                    }
+                })
+            }
+        "#};
+
+        let result = format_file_source(source, &Default::default()).unwrap();
+        insta::assert_snapshot!(result, @r###"
+        use leptos::*;
+
+        fn main() {
+            mount_to_body(|| {
+                view! {
+                    {move || {
+                        if true {
+                            view! {
+                                // comment in if condition.
+                                <div>dummy text</div>
+                            }
+                                .into_view()
+                        } else {
+                            view! {
+                                // comment in else condition.
+                                <div>dummy text</div>
+                            }
+                                .into_view()
+                        }
+                    }}
+                }
+            })
+        }
+        "###);
+    }
+
+    #[test]
     fn multiple() {
         let source = indoc! {r#"
             fn main() {
