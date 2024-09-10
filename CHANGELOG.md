@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [unreleased]
+## [0.1.31] - 2024-09-10
 
 ### Bug Fixes
 
@@ -185,7 +185,7 @@ All notable changes to this project will be documented in this file.
 - Make macro collecting functionality public
 - Export token types ([#24](https://github.com/bram209/leptosfmt/issues/24))
 
-## [leptosfmt-v0.1.4] - 2023-03-27
+## [0.1.4] - 2023-03-27
 
 ### Bug Fixes
 
