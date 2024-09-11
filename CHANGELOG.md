@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### Bug Fixes
+
+- Correctly collect leading and trailing comments ([#145](https://github.com/bram209/leptosfmt/issues/145))
+
 ## [0.1.31] - 2024-09-10
 
 ### Bug Fixes
