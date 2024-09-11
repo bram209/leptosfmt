@@ -89,7 +89,7 @@ mod tests {
         // Valid Rust formatted code
         #[component]
         pub(crate) fn Error(cx: Scope, message: Option<String>) -> impl IntoView {
-            view! { cx,
+            view! {
               <div>
                 Example
               </div>
@@ -109,7 +109,7 @@ mod tests {
         // Valid Rust formatted code
         #[component]
         pub(crate) fn Error(cx: Scope, message: Option<String>) -> impl IntoView {
-            view! { cx, <div>Example</div> }
+            view! { <div>Example</div> }
         }
         "###);
     }
@@ -118,14 +118,14 @@ mod tests {
     fn it_works() {
         let source = indoc! {r#"
             fn main() {
-                view! {   cx ,  <div>  <span>"hello"</span></div>  };
+                view! {  <div>  <span>"hello"</span></div>  };
             }
         "#};
 
         let result = format_file_source(source, &Default::default()).unwrap();
         insta::assert_snapshot!(result, @r#"
         fn main() {
-            view! { cx,
+            view! {
                 <div>
                     <span>"hello"</span>
                 </div>
@@ -139,14 +139,14 @@ mod tests {
     fn fully_qualified_macro_path() {
         let source = indoc! {r#"
             fn main() {
-                leptos::view! {   cx ,  <div>  <span>"hello"</span></div>  };
+                leptos::view! {    <div>  <span>"hello"</span></div>  };
             }
         "#};
 
         let result = format_file_source(source, &Default::default()).unwrap();
         insta::assert_snapshot!(result, @r#"
         fn main() {
-            leptos::view! { cx,
+            leptos::view! {
                 <div>
                     <span>"hello"</span>
                 </div>
@@ -160,14 +160,14 @@ mod tests {
     fn ignore_other_macros() {
         let source = indoc! {r#"
             fn main() {
-                leptos::view! {   cx ,  <div class=format!("classy")>  <span>"hello"</span></div>  };
+                leptos::view! {    <div class=format!("classy")>  <span>"hello"</span></div>  };
             }
         "#};
 
         let result = format_file_source(source, &Default::default()).unwrap();
         insta::assert_snapshot!(result, @r#"
         fn main() {
-            leptos::view! { cx,
+            leptos::view! {
                 <div class=format!("classy")>
                     <span>"hello"</span>
                 </div>
@@ -236,7 +236,7 @@ mod tests {
     fn fully_qualified_macro_path_overridden() {
         let source = indoc! {r#"
             fn main() {
-                foo::bar::some_view! {   cx ,  <div>  <span>"hello"</span></div>  };
+                foo::bar::some_view! {    <div>  <span>"hello"</span></div>  };
             }
         "#};
 
@@ -250,7 +250,7 @@ mod tests {
         .unwrap();
         insta::assert_snapshot!(result, @r#"
         fn main() {
-            foo::bar::some_view! { cx,
+            foo::bar::some_view! {
                 <div>
                     <span>"hello"</span>
                 </div>
@@ -264,11 +264,11 @@ mod tests {
     fn fully_qualified_macro_path_with_indent() {
         let source = indoc! {r#"
             fn main() {
-                foo::bar::some_view! {   cx ,  <div>  <span>{
+                foo::bar::some_view! {    <div>  <span>{
                         let a = 12;
 
 
-                        foo::bar::some_view! { cx,
+                        foo::bar::some_view! {
 
                                          <span>{a}</span>
                         }
@@ -286,13 +286,13 @@ mod tests {
         .unwrap();
         insta::assert_snapshot!(result, @r#"
         fn main() {
-            foo::bar::some_view! { cx,
+            foo::bar::some_view! {
                 <div>
                     <span>
                         {
                             let a = 12;
 
-                            foo::bar::some_view! { cx, <span>{a}</span> }
+                            foo::bar::some_view! { <span>{a}</span> }
                         }
                     </span>
                 </div>
@@ -306,11 +306,11 @@ mod tests {
     fn override_macro_names() {
         let source = indoc! {r#"
             fn main() {
-                html! {   cx ,  <div>  <span>{
+                html! {    <div>  <span>{
                         let a = 12;
 
 
-                        html! { cx,
+                        html! {
 
                                          <span>{a}</span>
                         }
@@ -328,13 +328,13 @@ mod tests {
         .unwrap();
         insta::assert_snapshot!(result, @r#"
         fn main() {
-            html! { cx,
+            html! {
                 <div>
                     <span>
                         {
                             let a = 12;
 
-                            html! { cx, <span>{a}</span> }
+                            html! { <span>{a}</span> }
                         }
                     </span>
                 </div>
@@ -349,7 +349,7 @@ mod tests {
         let source = indoc! {r#"
             // comment outside view macro
             fn main() {
-                view! {   cx ,
+                view! {
                     // Top level comment
                     <div>
                         // This is one beautiful message
@@ -383,7 +383,7 @@ mod tests {
         insta::assert_snapshot!(result, @r###"
         // comment outside view macro
         fn main() {
-            view! { cx,
+            view! {
                 // Top level comment
                 <div>
                     // This is one beautiful message
@@ -423,11 +423,11 @@ mod tests {
     fn nested() {
         let source = indoc! {r#"
             fn main() {
-                view! {   cx ,  <div>  <span>{
+                view! {    <div>  <span>{
                         let a = 12;
 
 
-                        view! { cx,
+                        view! {
 
                                          <span>{a}</span>
                         }
@@ -438,13 +438,13 @@ mod tests {
         let result = format_file_source(source, &Default::default()).unwrap();
         insta::assert_snapshot!(result, @r###"
         fn main() {
-            view! { cx,
+            view! {
                 <div>
                     <span>
                         {
                             let a = 12;
 
-                            view! { cx, <span>{a}</span> }
+                            view! { <span>{a}</span> }
                         }
                     </span>
                 </div>
@@ -457,7 +457,8 @@ mod tests {
     fn nested_with_comments() {
         let source = indoc! {r#"
             fn main() {
-                view! {   cx ,
+                view! {
+
                     // parent div
                     <div>
 
@@ -465,7 +466,7 @@ mod tests {
                     <span>{ //ok
                         let a = 12;
 
-                        view! { cx,
+                        view! {
                             // wow, a span
                             <span>{a}</span>
                         }
@@ -476,7 +477,7 @@ mod tests {
         let result = format_file_source(source, &Default::default()).unwrap();
         insta::assert_snapshot!(result, @r###"
         fn main() {
-            view! { cx,
+            view! {
                 // parent div
                 <div>
 
@@ -486,7 +487,7 @@ mod tests {
                         {
                             let a = 12;
 
-                            view! { cx,
+                            view! {
                                 // wow, a span
                                 <span>{a}</span>
                             }
@@ -558,20 +559,20 @@ mod tests {
     fn multiple() {
         let source = indoc! {r#"
             fn main() {
-                view! {   cx ,  <div>  <span>"hello"</span></div>  };
-                view! {   cx ,  <div>  <span>"hello"</span></div>  };
+                view! {   <div>  <span>"hello"</span></div>  };
+                view! {     <div>  <span>"hello"</span></div>  };
             }
         "#};
 
         let result = format_file_source(source, &Default::default()).unwrap();
         insta::assert_snapshot!(result, @r#"
         fn main() {
-            view! { cx,
+            view! {
                 <div>
                     <span>"hello"</span>
                 </div>
             };
-            view! { cx,
+            view! {
                 <div>
                     <span>"hello"</span>
                 </div>
@@ -584,14 +585,14 @@ mod tests {
     fn with_special_characters() {
         let source = indoc! {r#"
             fn main() {
-                view! {   cx ,  <div>  <span>"hello²💣"</span></div>  };
+                view! {    <div>  <span>"hello²💣"</span></div>  };
             }
         "#};
 
         let result = format_file_source(source, &Default::default()).unwrap();
         insta::assert_snapshot!(result, @r#"
         fn main() {
-            view! { cx,
+            view! {
                 <div>
                     <span>"hello²💣"</span>
                 </div>
@@ -605,7 +606,7 @@ mod tests {
         let source = indoc! {r#"
         #[component]
         fn test2(cx: Scope) -> impl IntoView {
-            let x = view! { cx, <div><span>Hello</span></div> };
+            let x = view! { <div><span>Hello</span></div> };
         }
         "#};
 
@@ -613,7 +614,7 @@ mod tests {
         insta::assert_snapshot!(result, @r###"
         #[component]
         fn test2(cx: Scope) -> impl IntoView {
-            let x = view! { cx,
+            let x = view! {
                 <div>
                     <span>Hello</span>
                 </div>
@@ -636,12 +637,12 @@ mod tests {
             fn Component(cx: Scope, val: ExampleEnum) -> impl IntoView {
                 match val {
                     ExampleEnum::ValueOneWithAReallyLongName =>
-                        view! { cx,
+                        view! {
                                                                     <div>
                                                                         <div>"Value One"</div>
                                                                     </div>
                                                                 }.into_view(cx),
-                    ExampleEnum::ValueTwoWithAReallyLongName =>  view! { cx,
+                    ExampleEnum::ValueTwoWithAReallyLongName =>  view! {
                                                                     <div>
                                                                         <div>"Value Two"</div>
                                                                     </div>
@@ -663,12 +664,12 @@ mod tests {
         fn Component(cx: Scope, val: ExampleEnum) -> impl IntoView {
             match val {
                 ExampleEnum::ValueOneWithAReallyLongName =>
-                    view! { cx,
+                    view! {
                         <div>
                             <div>"Value One"</div>
                         </div>
                     }.into_view(cx),
-                ExampleEnum::ValueTwoWithAReallyLongName =>  view! { cx,
+                ExampleEnum::ValueTwoWithAReallyLongName =>  view! {
                     <div>
                         <div>"Value Two"</div>
                     </div>
@@ -710,7 +711,7 @@ mod tests {
     fn indent_with_tabs() {
         let source = indoc! {"
         fn main() {
-        \tview! { cx,
+        \tview! {
               <div>
                 <div>Example</div>
               </div>
@@ -730,7 +731,7 @@ mod tests {
 
         let expected = indoc! {"
         fn main() {
-        \tview! { cx,
+        \tview! {
         \t\t<div>
         \t\t\t<div>Example</div>
         \t\t</div>
@@ -745,7 +746,7 @@ mod tests {
     fn indent_with_tabs_including_code_blocks() {
         let source = indoc! {"
         fn main() {
-        \tview! { cx,
+        \tview! {
               <div>
                 <button onclick={|_| {
                  let x = 1;
@@ -768,7 +769,7 @@ mod tests {
 
         let expected = indoc! {"
         fn main() {
-        \tview! { cx,
+        \tview! {
         \t\t<div>
         \t\t\t<button onclick=|_| {
         \t\t\t\tlet x = 1;
@@ -786,7 +787,7 @@ mod tests {
     fn auto_detect_tabs() {
         let source = indoc! {"
         fn main() {
-        \tview! { cx,
+        \tview! {
               <div>
                 <div>Example</div>
               </div>
@@ -805,7 +806,7 @@ mod tests {
 
         let expected = indoc! {"
         fn main() {
-        \tview! { cx,
+        \tview! {
         \t\t<div>
         \t\t\t<div>Example</div>
         \t\t</div>
@@ -820,7 +821,7 @@ mod tests {
     fn auto_detect_spaces() {
         let source = indoc! {"
         fn main() {
-        \u{0020}view! { cx,
+        \u{0020}view! {
               <div>
                 <div>Example</div>
               </div>
@@ -840,7 +841,7 @@ mod tests {
 
         let expected = indoc! {"
         fn main() {
-        \u{0020}view! { cx,
+        \u{0020}view! {
         \u{0020}\u{0020}<div>
         \u{0020}\u{0020}\u{0020}<div>Example</div>
         \u{0020}\u{0020}</div>
