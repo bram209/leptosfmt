@@ -196,10 +196,6 @@ impl<'a> Formatter<'a> {
     pub fn flush_comments(&mut self, line_index: usize, skip_trailing_whitespace: bool) {
         let last = self.line_offset.unwrap_or(0);
 
-        if last > line_index {
-            return;
-        }
-
         let comments_or_empty_lines: Vec<_> = (last..=line_index)
             .filter_map(|l| self.whitespace_and_comments.remove(&l))
             .collect();

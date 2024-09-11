@@ -1,6 +1,7 @@
 use crop::Rope;
 use leptosfmt_pretty_printer::Printer;
 use proc_macro2::{token_stream, Span, TokenStream, TokenTree};
+use quote::ToTokens;
 use rstml::node::Node;
 use syn::{spanned::Spanned, Macro};
 
@@ -84,7 +85,15 @@ impl Formatter<'_> {
         self.printer
             .cbox((parent_indent.tabs * self.settings.tab_spaces + parent_indent.spaces) as isize);
 
-        self.flush_comments(cx.span().start().line - 1, false);
+        self.flush_comments(
+            cx.as_ref()
+                .map(|cx| cx.span())
+                .unwrap_or_else(|| view_mac.mac.delimiter.span().open())
+                .start()
+                .line
+                - 1,
+            false,
+        );
 
         let macro_word = format!("{}! {{", get_macro_full_path(view_mac.mac));
         self.printer.word(macro_word);
@@ -169,7 +178,7 @@ pub fn format_macro(
         Some(source) => {
             let whitespace = crate::collect_comments::extract_whitespace_and_comments(
                 source,
-                mac.mac.tokens.clone(),
+                mac.mac.to_token_stream(),
             );
 
             Formatter::with_source(settings, &mut printer, source, whitespace)
@@ -197,15 +206,15 @@ mod tests {
 
     #[test]
     fn one_liner() {
-        let formatted = view_macro!(view! { cx, <div>"hi"</div> });
-        insta::assert_snapshot!(formatted, @r#"view! { cx, <div>"hi"</div> }"#);
+        let formatted = view_macro!(view! { <div>"hi"</div> });
+        insta::assert_snapshot!(formatted, @r#"view! { <div>"hi"</div> }"#);
     }
 
     #[test]
     fn with_nested_nodes() {
-        let formatted = view_macro!(view! { cx, <div><span>"hi"</span></div> });
+        let formatted = view_macro!(view! { <div><span>"hi"</span></div> });
         insta::assert_snapshot!(formatted, @r#"
-        view! { cx,
+        view! {
             <div>
                 <span>"hi"</span>
             </div>
@@ -215,9 +224,9 @@ mod tests {
 
     #[test]
     fn with_global_class() {
-        let formatted = view_macro!(view! { cx, class = STYLE, <div><span>"hi"</span></div> });
+        let formatted = view_macro!(view! { class = STYLE, <div><span>"hi"</span></div> });
         insta::assert_snapshot!(formatted, @r#"
-        view! { cx, class=STYLE,
+        view! { class=STYLE,
             <div>
                 <span>"hi"</span>
             </div>
