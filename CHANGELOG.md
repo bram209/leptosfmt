@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Bug Fixes
 
 - Correctly collect leading and trailing comments ([#145](https://github.com/bram209/leptosfmt/issues/145))
+- Remove trailing space after doctype closing tag ([#147](https://github.com/bram209/leptosfmt/issues/147))
 
 ## [0.1.31] - 2024-09-10
 
