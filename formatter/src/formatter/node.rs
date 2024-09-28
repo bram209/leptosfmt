@@ -27,7 +27,7 @@ impl Formatter<'_> {
     pub fn doctype(&mut self, doctype: &NodeDoctype) {
         self.printer.word("<!DOCTYPE ");
         self.raw_text(&doctype.value, false);
-        self.printer.word("> ");
+        self.printer.word(">");
     }
 
     pub fn node_text(&mut self, text: &NodeText) {
