@@ -1,4 +1,4 @@
-use rstml::node::{KeyedAttribute, NodeAttribute};
+use rstml::node::{FnBinding, KeyedAttribute, KeyedAttributeValue, NodeAttribute};
 use syn::{spanned::Spanned, Expr};
 
 use crate::{formatter::Formatter, AttributeValueBraceStyle as Braces};
@@ -17,16 +17,33 @@ impl Formatter<'_> {
     pub fn keyed_attribute(&mut self, attribute: &KeyedAttribute) {
         self.node_name(&attribute.key);
 
-        if let Some(value) = attribute.value() {
-            let formatter = self
-                .settings
-                .attr_values
-                .get(&attribute.key.to_string())
-                .copied();
+        match &attribute.possible_value {
+            KeyedAttributeValue::None => {}
+            KeyedAttributeValue::Binding(binding) => self.attribute_binding(binding),
+            KeyedAttributeValue::Value(expr) => {
+                let formatter = self
+                    .settings
+                    .attr_values
+                    .get(&attribute.key.to_string())
+                    .copied();
 
-            self.printer.word("=");
-            self.attribute_value(value, formatter);
+                self.printer.word("=");
+                self.attribute_value(&expr.value, formatter);
+            }
         }
+    }
+
+    fn attribute_binding(&mut self, binding: &FnBinding) {
+        self.printer.word("(");
+        let mut iterator = binding.inputs.iter().peekable();
+        while let Some(input) = iterator.next() {
+            self.format_syn_pat(input);
+            if iterator.peek().is_some() {
+                self.printer.word(",");
+                self.printer.space();
+            }
+        }
+        self.printer.word(")");
     }
 
     fn attribute_value(&mut self, value: &Expr, formatter: Option<ExpressionFormatter>) {
@@ -189,5 +206,23 @@ mod tests {
         // literal string value
         let f = format_attr_with_brace_style! { WhenRequired => alt={"test img"} };
         assert_snapshot!(f, @r#"alt="test img""#);
+    }
+
+    #[test]
+    fn let_bindings_single() {
+        let f = format_attribute! {   let(name)  };
+        assert_snapshot!(f, @r#"let(name)"#)
+    }
+
+    #[test]
+    fn let_bindings_multiple() {
+        let f = format_attribute! { let(name, foo, bar) };
+        assert_snapshot!(f, @r#"let(name, foo, bar)"#)
+    }
+
+    #[test]
+    fn let_bindings_destructuring() {
+        let f = format_attribute! {   let(Item { name, value })  };
+        assert_snapshot!(f, @r#"let(Item { name, value })"#)
     }
 }
