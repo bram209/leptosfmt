@@ -18,6 +18,7 @@ pub use mac::{ParentIndent, ViewMacro};
 
 use serde::Deserialize;
 use serde::Serialize;
+use syn::{Expr, Generics, Pat};
 
 #[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
 pub enum ClosingTagStyle {
@@ -232,5 +233,13 @@ impl<'a> Formatter<'a> {
         }
 
         self.line_offset = Some(line_index);
+    }
+
+    pub fn format_syn_pat(&mut self, pat: &Pat) {
+        leptosfmt_prettyplease::unparse_fn(&mut self.printer, None, |p| p.pat(pat));
+    }
+
+    pub fn format_syn_generics(&mut self, generics: &Generics) {
+        leptosfmt_prettyplease::unparse_fn(&mut self.printer, None, |p| p.generics(generics));
     }
 }

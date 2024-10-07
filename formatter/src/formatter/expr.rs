@@ -138,8 +138,7 @@ impl Formatter<'_> {
             .map(|line| (line, self.whitespace_and_comments.remove(&line).unwrap()))
             .collect::<HashMap<_, _>>();
 
-        leptosfmt_prettyplease::unparse_expr(
-            expr,
+        leptosfmt_prettyplease::unparse_fn(
             self.printer,
             Some(&mut ViewMacroFormatter::new(
                 self.settings,
@@ -147,6 +146,7 @@ impl Formatter<'_> {
                 &mut self.line_offset,
                 comments_or_whitespace,
             )),
+            |p| p.expr(expr),
         );
     }
 }

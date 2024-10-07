@@ -20,7 +20,7 @@ impl Formatter<'_> {
     fn opening_tag(&mut self, element: &NodeElement, is_self_closing: bool) {
         self.printer.word("<");
         self.node_name(&element.open_tag.name);
-        leptosfmt_prettyplease::unparse_generics(&element.open_tag.generics, self.printer);
+        self.format_syn_generics(&element.open_tag.generics);
 
         self.attributes(element.attributes(), is_self_closing);
 
