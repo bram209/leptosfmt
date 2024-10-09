@@ -1,0 +1,9 @@
+- id: leptosfmt
+  name: leptosfmt
+  description: Format leptos view! macro
+  language: docker
+  entry: /leptosfmt
+  args: []
+  types: [file, rust]
+  stages: [pre-commit, pre-merge-commit, pre-push, manual]
+
