@@ -121,6 +121,17 @@ edition = "2021"
   For Emacs users, see the relevant [configuration option](https://emacs-lsp.github.io/lsp-mode/page/lsp-rust-analyzer/#lsp-rust-analyzer-rustfmt-override-command) for LSP Mode.
 </details>
 
+## Pre-Commit
+You can run leptosfmt as a git hook using [pre-commit](https://pre-commit.com):
+
+```yaml
+- repo: https://github.com/bram209/leptosfmt
+  rev: <branch, tag or commit>
+  hooks:
+    - id: leptosfmt
+      stages: ["pre-commit"]
+```
+
 ## Configuration
 
 You can configure all settings through a `leptosfmt.toml` file.
