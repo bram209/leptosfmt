@@ -17,7 +17,7 @@ thiserror = "1.0.61"
 crop = "0.3.0"
 serde = { version = "1.0.203", features = ["derive"] }
 quote = "1.0.36"
-rustywind_core = "0.1.2"
+rustywind_core = "= 0.1.2"
 
 [dev-dependencies]
 indoc = "2.0.5"
