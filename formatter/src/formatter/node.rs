@@ -51,7 +51,11 @@ impl Formatter<'_> {
     }
 
     pub fn node_name(&mut self, name: &NodeName) {
-        self.printer.word(name.to_string());
+        if let NodeName::Block(block) = name {
+            self.node_value_block_expr(block, false, false);
+        } else {
+            self.printer.word(name.to_string());
+        }
     }
 
     pub fn node_block(&mut self, block: &NodeBlock) {

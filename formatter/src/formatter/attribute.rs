@@ -225,4 +225,16 @@ mod tests {
         let f = format_attribute! {   let(Item { name, value })  };
         assert_snapshot!(f, @r#"let(Item { name, value })"#)
     }
+
+    #[test]
+    fn prop_spreading_unnamed() {
+        let f = format_attribute! {  {..}  };
+        assert_snapshot!(f, @r#"{..}"#)
+    }
+
+    #[test]
+    fn prop_spreading_named() {
+        let f = format_attribute! {  { ..some_props }  };
+        assert_snapshot!(f, @r#"{..some_props}"#)
+    }
 }

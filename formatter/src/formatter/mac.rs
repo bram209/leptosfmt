@@ -257,4 +257,16 @@ mod tests {
         }
         "#);
     }
+
+    #[test]
+    fn unnamed_element_empty_props_spreading() {
+        let formatted = view_macro!(view! { <{..} class="foo" /> });
+        insta::assert_snapshot!(formatted, @r#"view! { <{..} class="foo" /> }"#);
+    }
+
+    #[test]
+    fn unnamed_element_named_props_spreading() {
+        let formatted = view_macro!(view! { <{..some_props} class="foo" /> });
+        insta::assert_snapshot!(formatted, @r#"view! { <{..some_props} class="foo" /> }"#);
+    }
 }
