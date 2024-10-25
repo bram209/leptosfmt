@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### Bug Fixes
+
+- Formatting empty tags with prop spreading  ([#152](https://github.com/bram209/leptosfmt/issues/152))
+
 ## [0.1.32] - 2024-10-07
 
 ### Bug Fixes
