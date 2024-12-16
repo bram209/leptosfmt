@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Bug Fixes
 
 - Formatting empty tags with prop spreading  ([#152](https://github.com/bram209/leptosfmt/issues/152))
+- Closing tag with generics ([#159](https://github.com/bram209/leptosfmt/issues/159))
 
 ## [0.1.32] - 2024-10-07
 
