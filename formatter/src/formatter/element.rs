@@ -34,6 +34,7 @@ impl Formatter<'_> {
     fn closing_tag(&mut self, element: &NodeElement) {
         self.printer.word("</");
         self.node_name(element.name());
+        self.format_syn_generics(&element.open_tag.generics);
         self.printer.word(">");
     }
 
@@ -170,8 +171,7 @@ mod tests {
     use indoc::indoc;
 
     use crate::{
-        formatter::ClosingTagStyle,
-        formatter::FormatterSettings,
+        formatter::{ClosingTagStyle, FormatterSettings},
         test_helpers::{element, format_element_from_string, format_with},
     };
 
