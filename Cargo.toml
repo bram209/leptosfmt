@@ -3,15 +3,15 @@ members = ["printer", "cli", "formatter", "prettyplease"]
 resolver = "2"
 
 [workspace.package]
-version = "0.1.32"
+version = "0.1.33"
 license = "MIT OR Apache-2.0"
 
 [workspace.dependencies]
-leptosfmt-prettyplease = { path = "./prettyplease", version = "0.1.32", features = [
+leptosfmt-prettyplease = { path = "./prettyplease", version = "0.1.33", features = [
     "verbatim",
 ] }
-leptosfmt-formatter = { path = "./formatter", version = "0.1.32" }
-leptosfmt-pretty-printer = { version = "0.1.32" }
+leptosfmt-formatter = { path = "./formatter", version = "0.1.33" }
+leptosfmt-pretty-printer = { version = "0.1.33" }
 
 syn = { version = "2.0.96", features = ["visit", "full", "extra-traits"] }
 proc-macro2 = { version = "1.0.80", features = ["span-locations"] }
