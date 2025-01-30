@@ -1,20 +1,24 @@
-use rstml::node::{FnBinding, KeyedAttribute, KeyedAttributeValue, NodeAttribute};
-use syn::{spanned::Spanned, Expr};
+use rstml::node::{FnBinding, KeyedAttribute, KeyedAttributeValue, NodeAttribute, NodeBlock};
+use syn::{spanned::Spanned, Expr, RangeLimits, Stmt};
 
 use crate::{formatter::Formatter, AttributeValueBraceStyle as Braces};
 
 use super::ExpressionFormatter;
 
 impl Formatter<'_> {
-    pub fn attribute(&mut self, attribute: &NodeAttribute) {
+    pub fn attribute(&mut self, attribute: &NodeAttribute, next_attribute: Option<&NodeAttribute>) {
         self.flush_comments(attribute.span().start().line - 1, false);
         match attribute {
-            NodeAttribute::Attribute(k) => self.keyed_attribute(k),
+            NodeAttribute::Attribute(k) => self.keyed_attribute(k, next_attribute),
             NodeAttribute::Block(b) => self.node_block(b),
         }
     }
 
-    pub fn keyed_attribute(&mut self, attribute: &KeyedAttribute) {
+    fn keyed_attribute(
+        &mut self,
+        attribute: &KeyedAttribute,
+        next_attribute: Option<&NodeAttribute>,
+    ) {
         self.node_name(&attribute.key);
 
         match &attribute.possible_value {
@@ -28,7 +32,7 @@ impl Formatter<'_> {
                     .copied();
 
                 self.printer.word("=");
-                self.attribute_value(&expr.value, formatter);
+                self.attribute_value(&expr.value, formatter, next_attribute);
             }
         }
     }
@@ -46,23 +50,54 @@ impl Formatter<'_> {
         self.printer.word(")");
     }
 
-    fn attribute_value(&mut self, value: &Expr, formatter: Option<ExpressionFormatter>) {
-        match (self.settings.attr_value_brace_style, value) {
-            (Braces::Always, syn::Expr::Block(_)) => {
-                self.node_value_expr(value, false, false, formatter)
-            }
-            (Braces::AlwaysUnlessLit, syn::Expr::Block(_) | syn::Expr::Lit(_)) => {
+    fn attribute_value(
+        &mut self,
+        value: &Expr,
+        formatter: Option<ExpressionFormatter>,
+        next_attribute: Option<&NodeAttribute>,
+    ) {
+        match (self.settings.attr_value_brace_style, value, next_attribute) {
+            (Braces::WhenRequired, syn::Expr::Block(_), Some(next))
+                if is_spread_attribute(next) =>
+            {
+                // If the next attribute is a spread attribute, make sure that the braces are not stripped from the expression
+                // to avoid an ambiguity in the parser (i.e. `foo=bar {..}` could be interpreted as initialization of a struct called `bar`, instead of two separate attributes)
                 self.node_value_expr(value, false, true, formatter)
             }
-            (Braces::Always | Braces::AlwaysUnlessLit, _) => {
+            (Braces::Always, syn::Expr::Block(_), _) => {
+                self.node_value_expr(value, false, false, formatter)
+            }
+            (Braces::AlwaysUnlessLit, syn::Expr::Block(_) | syn::Expr::Lit(_), _) => {
+                self.node_value_expr(value, false, true, formatter)
+            }
+            (Braces::Always | Braces::AlwaysUnlessLit, _, _) => {
                 self.printer.word("{");
                 self.node_value_expr(value, false, false, formatter);
                 self.printer.word("}");
             }
-            (Braces::WhenRequired, _) => self.node_value_expr(value, true, true, formatter),
-            (Braces::Preserve, _) => self.node_value_expr(value, false, false, formatter),
+            (Braces::WhenRequired, _, _) => self.node_value_expr(value, true, true, formatter),
+            (Braces::Preserve, _, _) => self.node_value_expr(value, false, false, formatter),
         }
     }
+}
+
+fn is_spread_attribute(attr: &NodeAttribute) -> bool {
+    if let NodeAttribute::Block(NodeBlock::ValidBlock(block)) = attr {
+        if let [Stmt::Expr(
+            Expr::Range(syn::ExprRange {
+                start: None,
+                limits: RangeLimits::HalfOpen(..),
+                end,
+                ..
+            }),
+            None,
+        )] = block.stmts.as_slice()
+        {
+            return matches!(end.as_deref(), None | Some(Expr::Path(_)));
+        }
+    }
+
+    false
 }
 
 #[cfg(test)]
@@ -78,7 +113,7 @@ mod tests {
         ($($tt:tt)*) => {{
             let attr = attribute! { $($tt)* };
             format_with(FormatterSettings::default(), |formatter| {
-                formatter.attribute(&attr);
+                formatter.attribute(&attr, None);
             })
         }};
     }
@@ -92,7 +127,7 @@ mod tests {
             };
 
             format_with(settings, |formatter| {
-                formatter.attribute(&attr);
+                formatter.attribute(&attr, None);
             })
         }};
     }

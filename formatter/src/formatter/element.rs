@@ -48,7 +48,7 @@ impl Formatter<'_> {
             [attribute] => {
                 self.printer.cbox(0);
                 self.printer.nbsp();
-                self.attribute(attribute);
+                self.attribute(attribute, None);
 
                 if trailing_space {
                     self.printer.nbsp();
@@ -61,7 +61,7 @@ impl Formatter<'_> {
 
                 let mut iter = attributes.iter().peekable();
                 while let Some(attr) = iter.next() {
-                    self.attribute(attr);
+                    self.attribute(attr, iter.peek().copied());
 
                     if iter.peek().is_some() {
                         self.printer.space()
@@ -168,16 +168,27 @@ fn is_self_closing(element: &NodeElement, name: &str, closing_tag_style: Closing
 
 #[cfg(test)]
 mod tests {
+
     use indoc::indoc;
 
     use crate::{
         formatter::{ClosingTagStyle, FormatterSettings},
         test_helpers::{element, format_element_from_string, format_with},
+        AttributeValueBraceStyle,
     };
 
     macro_rules! format_element {
         ($($tt:tt)*) => {{
             format_element_with!(Default::default(), $($tt)*)
+        }};
+    }
+
+    macro_rules! format_element_with_brace_style {
+        ($style:expr, $($tt:tt)*) => {{
+            format_element_with!(FormatterSettings {
+                attr_value_brace_style: $style,
+                ..Default::default()
+            }, $($tt)*)
         }};
     }
 
@@ -563,5 +574,22 @@ mod tests {
         insta::assert_snapshot!(preserve_formatted, @"<div />");
         insta::assert_snapshot!(self_closing_formatted, @"<div />");
         insta::assert_snapshot!(non_self_closing_formatted, @"<div></div>");
+    }
+
+    #[test]
+    fn preserve_braces_before_spreading() {
+        // Note: This is a special case where the braces are preserved before the spreading, to avoid an ambiguity in the parser
+        // (i.e. `foo=bar {..}` could be interpreted as a struct 'bar' initialization)
+        let when_required = format_element_with_brace_style! { AttributeValueBraceStyle::WhenRequired, <div foo={bar} {..} a={b} /> };
+        let when_required_with_named_props = format_element_with_brace_style! { AttributeValueBraceStyle::WhenRequired, <div foo={bar} {..other_props} /> };
+        let when_required_with_lit = format_element_with_brace_style! { AttributeValueBraceStyle::WhenRequired, <div foo={12} {..} a={"test"} {..} /> };
+        let unless_lit = format_element_with_brace_style! { AttributeValueBraceStyle::AlwaysUnlessLit, <div foo={12} {..} a=||{} {..} /> };
+        let always = format_element_with_brace_style! { AttributeValueBraceStyle::Always, <div foo={bar} {..} a=12 {..} /> };
+
+        insta::assert_snapshot!(when_required, @"<div foo={bar} {..} a=b />");
+        insta::assert_snapshot!(when_required_with_named_props, @"<div foo={bar} {..other_props} />");
+        insta::assert_snapshot!(when_required_with_lit, @"<div foo=12 {..} a=\"test\" {..} />");
+        insta::assert_snapshot!(unless_lit, @"<div foo=12 {..} a={|| {}} {..} />");
+        insta::assert_snapshot!(always, @"<div foo={bar} {..} a={12} {..} />");
     }
 }
