@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 - Formatting empty tags with prop spreading  ([#152](https://github.com/bram209/leptosfmt/issues/152))
 - Closing tag with generics ([#159](https://github.com/bram209/leptosfmt/issues/159))
+- Avoid stripping attr value braces when consecutive attr is a spread ([#165](https://github.com/bram209/leptosfmt/issues/165))
 
 ## [0.1.32] - 2024-10-07
 
