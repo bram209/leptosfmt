@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file.
 - Closing tag with generics ([#159](https://github.com/bram209/leptosfmt/issues/159))
 - Avoid stripping attr value braces when consecutive attr is a spread ([#165](https://github.com/bram209/leptosfmt/issues/165))
 
+### Miscellaneous Tasks
+
+- Update prettyplease including latest upstream changes
+
 ## [0.1.32] - 2024-10-07
 
 ### Bug Fixes
