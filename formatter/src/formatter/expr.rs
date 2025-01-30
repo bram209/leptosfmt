@@ -146,7 +146,7 @@ impl Formatter<'_> {
                 &mut self.line_offset,
                 comments_or_whitespace,
             )),
-            |p| p.expr(expr),
+            |p| p.expr_without_fixup(expr),
         );
     }
 }
