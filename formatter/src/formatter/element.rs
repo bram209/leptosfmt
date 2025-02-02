@@ -1,8 +1,8 @@
 use crate::{formatter::Formatter, ClosingTagStyle};
 
 use rstml::{
-    atoms::{CloseTag, OpenTag},
-    node::{CustomNode, Node, NodeAttribute, NodeElement},
+    atoms::OpenTag,
+    node::{Node, NodeAttribute, NodeElement},
     Infallible,
 };
 use syn::spanned::Spanned;
