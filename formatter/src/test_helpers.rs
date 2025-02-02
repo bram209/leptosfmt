@@ -2,7 +2,10 @@ use std::str::FromStr;
 
 use crop::Rope;
 use leptosfmt_pretty_printer::Printer;
-use rstml::node::{Node, NodeAttribute, NodeComment, NodeDoctype, NodeElement, NodeFragment};
+use rstml::{
+    node::{Node, NodeAttribute, NodeComment, NodeDoctype, NodeElement, NodeFragment},
+    Infallible,
+};
 
 macro_rules! attribute {
     ($($tt:tt)*) => {
@@ -85,14 +88,14 @@ pub fn get_element_attribute(
         .clone()
 }
 
-pub fn get_element(mut nodes: Vec<Node>, element_index: usize) -> NodeElement {
+pub fn get_element(mut nodes: Vec<Node>, element_index: usize) -> NodeElement<Infallible> {
     let Node::Element(element) = nodes.swap_remove(element_index) else {
         panic!("expected element")
     };
     element
 }
 
-pub fn get_fragment(mut nodes: Vec<Node>, fragment_index: usize) -> NodeFragment {
+pub fn get_fragment(mut nodes: Vec<Node>, fragment_index: usize) -> NodeFragment<Infallible> {
     let Node::Fragment(fragment) = nodes.swap_remove(fragment_index) else {
         panic!("expected fragment")
     };

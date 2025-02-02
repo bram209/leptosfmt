@@ -1,4 +1,7 @@
-use rstml::node::{Node, NodeBlock, NodeComment, NodeDoctype, NodeName, NodeText, RawText};
+use rstml::{
+    node::{CustomNode, Node, NodeBlock, NodeComment, NodeDoctype, NodeName, NodeText, RawText},
+    Infallible,
+};
 use syn::spanned::Spanned;
 
 use crate::{formatter::Formatter, get_text_beween_spans};
@@ -15,6 +18,7 @@ impl Formatter<'_> {
             Node::Comment(comment) => self.comment(comment),
             Node::Doctype(doctype) => self.doctype(doctype),
             Node::Block(block) => self.node_block(block),
+            Node::Custom(_) => todo!(),
         };
     }
 
