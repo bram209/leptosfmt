@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Miscellaneous Tasks
+
+- Upgrade to rstml 12 ([#166](https://github.com/bram209/leptosfmt/issues/166))
+
+## [0.1.33] - 2025-01-30
+
 ### Bug Fixes
 
 - Formatting empty tags with prop spreading  ([#152](https://github.com/bram209/leptosfmt/issues/152))
