@@ -240,6 +240,18 @@ impl<'a> Formatter<'a> {
     }
 
     pub fn format_syn_generics(&mut self, generics: &Generics) {
-        leptosfmt_prettyplease::unparse_fn(self.printer, None, |p| p.generics(generics));
+        if generics.params.is_empty() {
+            return;
+        }
+
+        self.printer.word("<");
+        let mut params = generics.params.iter().peekable();
+        while let Some(param) = params.next() {
+            leptosfmt_prettyplease::unparse_fn(self.printer, None, |p| p.generic_param(param));
+            if params.peek().is_some() {
+                self.printer.word(", ");
+            }
+        }
+        self.printer.word(">");
     }
 }
