@@ -15,6 +15,7 @@ impl Formatter<'_> {
             Node::Comment(comment) => self.comment(comment),
             Node::Doctype(doctype) => self.doctype(doctype),
             Node::Block(block) => self.node_block(block),
+            Node::Custom(_) => todo!(),
         };
     }
 

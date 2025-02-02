@@ -1,10 +1,14 @@
 use crate::{formatter::Formatter, ClosingTagStyle};
 
-use rstml::node::{Node, NodeAttribute, NodeElement};
+use rstml::{
+    atoms::OpenTag,
+    node::{Node, NodeAttribute, NodeElement},
+    Infallible,
+};
 use syn::spanned::Spanned;
 
 impl Formatter<'_> {
-    pub fn element(&mut self, element: &NodeElement) {
+    pub fn element(&mut self, element: &NodeElement<Infallible>) {
         let name = element.name().to_string();
         let is_self_closing = is_self_closing(element, &name, self.settings.closing_tag_style);
 
@@ -13,11 +17,12 @@ impl Formatter<'_> {
         if !is_self_closing {
             self.children(&element.children, element.attributes().len());
             self.flush_comments(element.close_tag.span().end().line - 1, true);
-            self.closing_tag(element)
+            // Note: we pass open_tag instead of close_tag, such that we may auto-close non-self-closing elements
+            self.closing_tag(&element.open_tag);
         }
     }
 
-    fn opening_tag(&mut self, element: &NodeElement, is_self_closing: bool) {
+    fn opening_tag(&mut self, element: &NodeElement<Infallible>, is_self_closing: bool) {
         self.printer.word("<");
         self.node_name(&element.open_tag.name);
         self.format_syn_generics(&element.open_tag.generics);
@@ -31,10 +36,10 @@ impl Formatter<'_> {
         }
     }
 
-    fn closing_tag(&mut self, element: &NodeElement) {
+    fn closing_tag(&mut self, open_tag: &OpenTag) {
         self.printer.word("</");
-        self.node_name(element.name());
-        self.format_syn_generics(&element.open_tag.generics);
+        self.node_name(&open_tag.name);
+        self.format_syn_generics(&open_tag.generics);
         self.printer.word(">");
     }
 
@@ -149,7 +154,11 @@ fn is_void_element(name: &str) -> bool {
     )
 }
 
-fn is_self_closing(element: &NodeElement, name: &str, closing_tag_style: ClosingTagStyle) -> bool {
+fn is_self_closing(
+    element: &NodeElement<Infallible>,
+    name: &str,
+    closing_tag_style: ClosingTagStyle,
+) -> bool {
     if !element.children.is_empty() {
         return false;
     }

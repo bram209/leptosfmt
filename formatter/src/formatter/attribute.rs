@@ -1,4 +1,6 @@
-use rstml::node::{FnBinding, KeyedAttribute, KeyedAttributeValue, NodeAttribute, NodeBlock};
+use rstml::node::{
+    FnBinding, KVAttributeValue, KeyedAttribute, KeyedAttributeValue, NodeAttribute, NodeBlock,
+};
 use syn::{spanned::Spanned, Expr, RangeLimits, Stmt};
 
 use crate::{formatter::Formatter, AttributeValueBraceStyle as Braces};
@@ -52,31 +54,40 @@ impl Formatter<'_> {
 
     fn attribute_value(
         &mut self,
-        value: &Expr,
+        value: &KVAttributeValue,
         formatter: Option<ExpressionFormatter>,
         next_attribute: Option<&NodeAttribute>,
     ) {
-        match (self.settings.attr_value_brace_style, value, next_attribute) {
-            (Braces::WhenRequired, syn::Expr::Block(_), Some(next))
-                if is_spread_attribute(next) =>
-            {
-                // If the next attribute is a spread attribute, make sure that the braces are not stripped from the expression
-                // to avoid an ambiguity in the parser (i.e. `foo=bar {..}` could be interpreted as initialization of a struct called `bar`, instead of two separate attributes)
-                self.node_value_expr(value, false, true, formatter)
+        match value {
+            KVAttributeValue::InvalidBraced(invalid) => {
+                self.printer.word(invalid.span().source_text().unwrap());
             }
-            (Braces::Always, syn::Expr::Block(_), _) => {
-                self.node_value_expr(value, false, false, formatter)
+            KVAttributeValue::Expr(expr) => {
+                match (self.settings.attr_value_brace_style, expr, next_attribute) {
+                    (Braces::WhenRequired, syn::Expr::Block(_), Some(next))
+                        if is_spread_attribute(next) =>
+                    {
+                        // If the next attribute is a spread attribute, make sure that the braces are not stripped from the expression
+                        // to avoid an ambiguity in the parser (i.e. `foo=bar {..}` could be interpreted as initialization of a struct called `bar`, instead of two separate attributes)
+                        self.node_value_expr(expr, false, true, formatter)
+                    }
+                    (Braces::Always, syn::Expr::Block(_), _) => {
+                        self.node_value_expr(expr, false, false, formatter)
+                    }
+                    (Braces::AlwaysUnlessLit, syn::Expr::Block(_) | syn::Expr::Lit(_), _) => {
+                        self.node_value_expr(expr, false, true, formatter)
+                    }
+                    (Braces::Always | Braces::AlwaysUnlessLit, _, _) => {
+                        self.printer.word("{");
+                        self.node_value_expr(expr, false, false, formatter);
+                        self.printer.word("}");
+                    }
+                    (Braces::WhenRequired, _, _) => {
+                        self.node_value_expr(expr, true, true, formatter)
+                    }
+                    (Braces::Preserve, _, _) => self.node_value_expr(expr, false, false, formatter),
+                }
             }
-            (Braces::AlwaysUnlessLit, syn::Expr::Block(_) | syn::Expr::Lit(_), _) => {
-                self.node_value_expr(value, false, true, formatter)
-            }
-            (Braces::Always | Braces::AlwaysUnlessLit, _, _) => {
-                self.printer.word("{");
-                self.node_value_expr(value, false, false, formatter);
-                self.printer.word("}");
-            }
-            (Braces::WhenRequired, _, _) => self.node_value_expr(value, true, true, formatter),
-            (Braces::Preserve, _, _) => self.node_value_expr(value, false, false, formatter),
         }
     }
 }

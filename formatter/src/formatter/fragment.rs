@@ -1,9 +1,9 @@
-use rstml::node::NodeFragment;
+use rstml::{node::NodeFragment, Infallible};
 
 use crate::formatter::Formatter;
 
 impl Formatter<'_> {
-    pub fn fragment(&mut self, fragment: &NodeFragment) {
+    pub fn fragment(&mut self, fragment: &NodeFragment<Infallible>) {
         self.printer.word("<>");
         self.children(&fragment.children, 0);
         self.printer.word("</>");
