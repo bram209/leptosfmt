@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Bug Fixes
+
+- Don't break generic params into mulitple lines ([#167](https://github.com/bram209/leptosfmt/issues/167))
+
 ### Miscellaneous Tasks
 
 - Upgrade to rstml 12 ([#166](https://github.com/bram209/leptosfmt/issues/166))
