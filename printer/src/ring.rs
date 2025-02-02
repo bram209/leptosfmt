@@ -33,10 +33,6 @@ impl<T> RingBuffer<T> {
         self.data.clear();
     }
 
-    pub fn index_of_first(&self) -> usize {
-        self.offset
-    }
-
     pub fn index_range(&self) -> Range<usize> {
         self.offset..self.offset + self.data.len()
     }

@@ -480,6 +480,29 @@ mod tests {
         insta::assert_snapshot!(formatted, @"<SizeOf<String> />");
     }
 
+    #[test]
+    fn with_closing_tag_generics() {
+        let formatted = format_element! { <SizeOf<String>></SizeOf<String>> };
+        insta::assert_snapshot!(formatted, @"<SizeOf<String>></SizeOf<String>>");
+    }
+
+    #[test]
+    fn with_generics_and_attributes() {
+        let formatted = format_element! { <FormDialog<CreatePost> status="DRAFT" foo={bar} someeeee="looooeeeeeeeeeeeeeeong_attrr">
+            <Input label="Title" />
+           </FormDialog<CreatePost>>
+        };
+        insta::assert_snapshot!(formatted, @r###"
+        <FormDialog<CreatePost>
+            status="DRAFT"
+            foo=bar
+            someeeee="looooeeeeeeeeeeeeeeong_attrr"
+        >
+            <Input label="Title" />
+        </FormDialog<CreatePost>>
+        "###);
+    }
+
     // Closing Tags Behaviour
 
     #[test]
