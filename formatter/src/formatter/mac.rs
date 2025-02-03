@@ -111,12 +111,12 @@ impl Formatter<'_> {
         }
 
         self.trim_whitespace(nodes.first().span().start().line - 1);
-        self.view_macro_nodes(nodes);
+        self.view_macro_nodes(nodes, view_mac.mac.span());
         self.printer.word("}");
         self.printer.end();
     }
 
-    fn view_macro_nodes(&mut self, nodes: &[Node]) {
+    fn view_macro_nodes(&mut self, nodes: &[Node], mac_span: Span) {
         self.printer.cbox_indent();
         self.printer.space();
 
@@ -130,6 +130,7 @@ impl Formatter<'_> {
         }
 
         self.printer.space();
+        self.flush_comments(mac_span.end().line - 1, true);
         self.printer.end_dedent();
     }
 }

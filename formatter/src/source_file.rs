@@ -373,7 +373,9 @@ mod tests {
 
              // and some more
              // on the next line
-                    </div>  };
+                    </div>
+                   // trailing comment
+                    };
             }
 
             // comment after view macro
@@ -412,6 +414,7 @@ mod tests {
                 // and some more
                 // on the next line
                 </div>
+                // trailing comment
             };
         }
 
