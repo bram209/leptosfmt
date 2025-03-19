@@ -49,6 +49,10 @@ struct Args {
     #[arg(short, long, default_value = "false", requires = "stdin")]
     rustfmt: bool,
 
+    /// Use `rustfmt` with `+nightly` features (requires `rustfmt`)
+    #[arg(short, long, default_value = "false", requires = "rustfmt")]
+    nightly: bool,
+
     /// Override formatted macro names
     #[arg(long, num_args=1.., value_delimiter= ' ')]
     override_macro_names: Option<Vec<String>>,
@@ -117,7 +121,7 @@ fn main() {
                 mut formatted,
             }) => {
                 if args.rustfmt {
-                    formatted = run_rustfmt(&formatted).unwrap_or(formatted);
+                    formatted = run_rustfmt(&formatted, args.nightly).unwrap_or(formatted);
                 }
 
                 if args.check && check_if_diff(None, &original, &formatted, true) {
@@ -318,8 +322,11 @@ fn load_config(path: &PathBuf) -> anyhow::Result<FormatterSettings> {
         .with_context(|| format!("failed to load config file: {}", path.display()))
 }
 
-fn run_rustfmt(source: &str) -> Option<String> {
+fn run_rustfmt(source: &str, nightly: bool) -> Option<String> {
+    let args = if nightly { vec!["+nightly"] } else { vec![] };
+
     let mut child = process::Command::new("rustfmt")
+        .args(&args)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()
