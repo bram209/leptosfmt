@@ -38,8 +38,8 @@ Options:
           Format stdin and write to stdout
   -r, --rustfmt
           Format with rustfmt after formatting with leptosfmt (requires stdin)
-  -n, --nightly
-          Use rustfmt nightly after formatting with leptosfmt (requires rustfmt)
+      --rustfmt-args "<RUSTFMT_ARGS>..."
+          Pass additional arguments to `rustfmt` (requires `rustfmt`)
       --override-macro-names <OVERRIDE_MACRO_NAMES>...
           Override formatted macro names
   -e, --experimental-tailwind
