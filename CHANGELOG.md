@@ -9,6 +9,10 @@ All notable changes to this project will be documented in this file.
 - Don't break generic params into mulitple lines ([#167](https://github.com/bram209/leptosfmt/issues/167))
 - Don't strip trailing comment between last node and macro closing delimiter ([#168](https://github.com/bram209/leptosfmt/issues/168))
 
+### Features
+
+- Add option for passing extra arguments to `rustfmt` ([#174](https://github.com/bram209/leptosfmt/issues/174))
+
 ### Miscellaneous Tasks
 
 - Upgrade to rstml 12 ([#166](https://github.com/bram209/leptosfmt/issues/166))
