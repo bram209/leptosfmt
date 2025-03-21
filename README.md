@@ -38,6 +38,8 @@ Options:
           Format stdin and write to stdout
   -r, --rustfmt
           Format with rustfmt after formatting with leptosfmt (requires stdin)
+      --rustfmt-args "<RUSTFMT_ARGS>..."
+          Pass additional arguments to `rustfmt` (requires `rustfmt`)
       --override-macro-names <OVERRIDE_MACRO_NAMES>...
           Override formatted macro names
   -e, --experimental-tailwind
@@ -72,37 +74,37 @@ edition = "2021"
 <details>
   <summary>Option 1: Using `rust-analyzer.toml` (Recommended)</summary> <br />
   A new way to configure `rust-analyzer` to use `leptosfmt` is to use directory based `rust-analyzer` configuration.
-  
-  To do this, create a file named `rust-analyzer.toml` in the root of your project with the following content: 
+
+  To do this, create a file named `rust-analyzer.toml` in the root of your project with the following content:
   ```toml
-  [rustfmt] 
+  [rustfmt]
   overrideCommand = ["leptosfmt", "--stdin", "--rustfmt"]
   # (optional) other config...
   ```
-  
+
   This method of setting up rust-analyzer is editor agnostic to any editor that uses `rust-analyzer` for formatting rust code.
-  
+
   > Note: This feature of `rust-analyzer` is currently unstable and no guarantees are made that this will continue to work across versions. You have to use a recent version of `rust-analyzer` ([2024-06-10](https://github.com/rust-lang/rust-analyzer/releases/tag/2024-06-10) or newer).
 </details>
 
 <details>
   <summary>Option 2: Editor specific config</summary> <br />
-  
+
   **VSCode**:
-  
+
   For VSCode users, I recommend to use workpsace settings (CMD + shift + p -> Open workspace settings), so that you can only configure `leptosfmt` for workspaces that are using leptos.
-  
+
   Open your workspace settings and add the following configuration:
   ```json
   {
     "rust-analyzer.rustfmt.overrideCommand": ["leptosfmt", "--stdin", "--rustfmt"]
   }
   ```
-  
+
   **Neovim**:
-  
+
   For Neovim users, I recommend using [neoconf.nvim](https://github.com/folke/neoconf.nvim) for managing project-local LSP configuration, so that you can only configure `leptosfmt` for workspaces that are using leptos.
-  
+
   Alternatively, you may directly configure [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig) by appending the following to your `.setup{}` table:
   ```lua
   lspconfig["rust_analyzer"].setup {
