@@ -50,7 +50,7 @@ struct Args {
     rustfmt: bool,
 
     /// Pass additional arguments to `rustfmt` (requires `rustfmt`)
-    #[arg(long, default_value = "", value_delimiter = ' ', requires = "rustfmt")]
+    #[arg(long, default_values_t = Vec::<String>::new(), value_delimiter = ' ', requires = "rustfmt")]
     rustfmt_args: Vec<String>,
 
     /// Override formatted macro names
