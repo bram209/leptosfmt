@@ -74,8 +74,9 @@ jobs:
           echo "version=$next" >> "$GITHUB_OUTPUT"
 
       - name: Generate changelog
-        uses: orhun/git-cliff-action@v2
+        uses: orhun/git-cliff-action@v4
         with:
+          version: v2.14.2
           config: cliff.toml
           args: --verbose --tag ${{ steps.bump.outputs.version }}
         env:
