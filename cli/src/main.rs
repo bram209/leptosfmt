@@ -198,7 +198,7 @@ fn as_glob_pattern(pattern: String) -> String {
         .map(|meta| meta.is_dir())
         .unwrap_or(false);
     if is_dir {
-        return format!("{}/**/*.rs", &pattern.trim_end_matches('/'));
+        return format!("{}/**/*.rs", pattern.trim_end_matches('/'));
     }
     pattern
 }

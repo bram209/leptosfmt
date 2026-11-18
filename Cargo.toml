@@ -11,10 +11,7 @@ leptosfmt-prettyplease = { path = "./prettyplease", version = "0.1.33", features
     "verbatim",
 ] }
 leptosfmt-formatter = { path = "./formatter", version = "0.1.33" }
-leptosfmt-pretty-printer = { version = "0.1.33" }
+leptosfmt-pretty-printer = { path = "./printer", version = "0.1.33" }
 
 syn = { version = "2.0.96", features = ["visit", "full", "extra-traits"] }
 proc-macro2 = { version = "1.0.80", features = ["span-locations"] }
-
-[patch.crates-io]
-leptosfmt-pretty-printer = { path = "./printer" }

@@ -1,16 +1,24 @@
 name: Security audit
+
 on:
   push:
     paths:
       - "**/Cargo.toml"
       - "**/Cargo.lock"
+      - ".github/workflows/security-audit.yml"
+
+permissions:
+  contents: read
+  checks: write
+  issues: write
+
 jobs:
   security_audit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
         with:
           submodules: "true"
-      - uses: actions-rs/audit-check@v1
+      - uses: rustsec/audit-check@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

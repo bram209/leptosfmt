@@ -27,7 +27,7 @@ fn get_text_beween_spans(rope: &Rope, start: LineColumn, end: LineColumn) -> Rop
     let start_byte: usize = line_column_to_byte(rope, start);
     let end_byte = line_column_to_byte(rope, end);
 
-    return rope.byte_slice(start_byte..end_byte);
+    rope.byte_slice(start_byte..end_byte)
 }
 fn line_column_to_byte(source: &Rope, point: proc_macro2::LineColumn) -> usize {
     let line_byte = source.byte_of_line(point.line - 1);
