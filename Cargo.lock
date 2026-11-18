@@ -303,7 +303,7 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "leptosfmt"
-version = "0.1.33"
+version = "0.1.34"
 dependencies = [
  "anyhow",
  "clap",
@@ -317,7 +317,7 @@ dependencies = [
 
 [[package]]
 name = "leptosfmt-formatter"
-version = "0.1.33"
+version = "0.1.34"
 dependencies = [
  "crop",
  "indoc",
@@ -335,11 +335,11 @@ dependencies = [
 
 [[package]]
 name = "leptosfmt-pretty-printer"
-version = "0.1.33"
+version = "0.1.34"
 
 [[package]]
 name = "leptosfmt-prettyplease"
-version = "0.1.33"
+version = "0.1.34"
 dependencies = [
  "indoc",
  "leptosfmt-pretty-printer",
