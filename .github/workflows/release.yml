@@ -1,0 +1,233 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "patch, minor, major, or an explicit version (e.g. 0.2.0)"
+        required: true
+        default: patch
+      dry_run:
+        description: "Only verify (bump, changelog, tests, publish dry run); push and publish nothing"
+        type: boolean
+        default: false
+
+concurrency: release
+
+permissions:
+  contents: read
+
+env:
+  BIN_NAME: leptosfmt
+  CARGO_TERM_COLOR: always
+
+jobs:
+  prepare:
+    name: Bump, tag and verify
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: "true"
+          fetch-depth: 0
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Bump version
+        id: bump
+        env:
+          REQUESTED: ${{ inputs.version }}
+        run: |
+          current=$(cargo metadata --no-deps --format-version 1 \
+            | jq -r --arg name "$BIN_NAME" '.packages[] | select(.name == $name) | .version')
+          IFS=. read -r major minor patch <<< "$current"
+          case "$REQUESTED" in
+            patch) next="$major.$minor.$((patch + 1))" ;;
+            minor) next="$major.$((minor + 1)).0" ;;
+            major) next="$((major + 1)).0.0" ;;
+            *) next="$REQUESTED" ;;
+          esac
+
+          if ! [[ "$next" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::'$next' is not a valid version (expected patch, minor, major or x.y.z)"
+            exit 1
+          fi
+          if [ "$next" = "$current" ]; then
+            echo "::error::version is already $current"
+            exit 1
+          fi
+          if git rev-parse -q --verify "refs/tags/$next" > /dev/null; then
+            echo "::error::tag $next already exists"
+            exit 1
+          fi
+
+          sed -i "s/version = \"$current\"/version = \"$next\"/g" Cargo.toml
+          cargo update --workspace
+
+          echo "Releasing $current -> $next" | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "version=$next" >> "$GITHUB_OUTPUT"
+
+      - name: Generate changelog
+        uses: orhun/git-cliff-action@v2
+        with:
+          config: cliff.toml
+          args: --verbose --tag ${{ steps.bump.outputs.version }}
+        env:
+          OUTPUT: CHANGELOG.md
+
+      - name: Commit and tag
+        env:
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add Cargo.toml Cargo.lock CHANGELOG.md
+          git commit -m "chore: Release $VERSION"
+          git tag -a "$VERSION" -m "Release $VERSION"
+          git show --stat HEAD
+
+      - name: Test
+        run: cargo test --workspace --locked
+
+      - name: Verify that all crates can be published
+        run: cargo publish --workspace --dry-run --locked
+
+      - name: Push commit and tag
+        if: ${{ !inputs.dry_run }}
+        env:
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: git push --atomic origin HEAD:main "refs/tags/$VERSION"
+
+  build:
+    name: Build ${{ matrix.target }}
+    needs: prepare
+    if: ${{ !inputs.dry_run }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
+          - target: x86_64-apple-darwin
+            os: macos-latest
+          - target: aarch64-apple-darwin
+            os: macos-latest
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+      TARGET: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.version }}
+          submodules: "true"
+
+      - name: Install musl tools
+        if: contains(matrix.target, 'musl')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends musl-tools
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build release binary
+        run: cargo build --release --locked --target ${{ matrix.target }}
+
+      - name: Build archive
+        id: archive
+        shell: bash
+        run: |
+          staging="$BIN_NAME-$VERSION-$TARGET"
+          mkdir "$staging"
+          cp README.md CHANGELOG.md LICENSE-* "$staging/"
+          if [[ "$TARGET" == *windows* ]]; then
+            cp "target/$TARGET/release/$BIN_NAME.exe" "$staging/"
+            (cd "$staging" && 7z a "../$staging.zip" .)
+            echo "asset=$staging.zip" >> "$GITHUB_OUTPUT"
+          else
+            cp "target/$TARGET/release/$BIN_NAME" "$staging/"
+            tar czf "$staging.tar.gz" -C "$staging" .
+            echo "asset=$staging.tar.gz" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: ${{ steps.archive.outputs.asset }}
+          if-no-files-found: error
+
+  publish:
+    name: Publish to crates.io
+    needs: [prepare, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.version }}
+          submodules: "true"
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: rust-lang/crates-io-auth-action@v1
+        id: auth
+
+      - name: Publish crates in dependency order
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          for crate in leptosfmt-pretty-printer leptosfmt-prettyplease leptosfmt-formatter leptosfmt; do
+            status=$(curl -s -o /dev/null -w '%{http_code}' -A "leptosfmt-release-workflow" \
+              "https://crates.io/api/v1/crates/$crate/$VERSION")
+            if [ "$status" = "200" ]; then
+              echo "$crate $VERSION is already published, skipping"
+              continue
+            fi
+            cargo publish -p "$crate"
+          done
+
+  release:
+    name: Create GitHub release
+    needs: [prepare, build, publish]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.version }}
+
+      - name: Generate release notes
+        run: |
+          python3 .github/workflows/release-notes.py --tag "$VERSION" --output notes.md
+          cat notes.md
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$VERSION" > /dev/null 2>&1; then
+            gh release upload "$VERSION" dist/* --clobber
+          else
+            gh release create "$VERSION" dist/* --verify-tag --title "$VERSION" --notes-file notes.md
+          fi

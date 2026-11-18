@@ -379,8 +379,8 @@ impl Printer {
         };
 
         self.out.reserve(tabs + spaces);
-        self.out.extend(iter::repeat('\t').take(tabs));
-        self.out.extend(iter::repeat(' ').take(spaces));
+        self.out.extend(iter::repeat_n('\t', tabs));
+        self.out.extend(iter::repeat_n(' ', spaces));
         self.pending_indentation = 0;
     }
 }
