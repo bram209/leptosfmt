@@ -17,3 +17,11 @@ anyhow = "1.0.70"
 toml = "0.7.4"
 similar = "2.2.1"
 console = "0.15.7"
+
+# musl's mallocng allocator triggers an mprotect/IPI storm under high concurrency
+# on many-core systems (e.g. 32-core Ryzen): rayon workers spend most time in
+# cross-CPU TLB flushes instead of formatting. mimalloc's per-thread heaps avoid
+# the kernel hot path entirely. Restricted to musl targets so glibc/Darwin/MSVC
+# builds keep their native allocators and stay slim.
+[target.'cfg(target_env = "musl")'.dependencies]
+mimalloc = "0.1"
