@@ -12,7 +12,8 @@ use std::{
 use anyhow::Context;
 use clap::Parser;
 use console::Style;
-use glob::{glob, GlobError, Pattern};
+use glob::{MatchOptions, Pattern};
+use ignore::WalkBuilder;
 use leptosfmt_formatter::{format_file_source, FormatterSettings};
 use rayon::{iter::ParallelIterator, prelude::IntoParallelIterator};
 use similar::{ChangeTag, TextDiff};
@@ -36,6 +37,10 @@ struct Args {
     /// A space separated list of file or directory
     #[arg(short = 'x', long = "excludes")]
     exclude_patterns: Option<Vec<String>>,
+
+    /// Don't respect ignore files (.gitignore, .ignore) when expanding directories and globs
+    #[arg(long, default_value = "false")]
+    no_ignore: bool,
 
     /// Configuration file
     #[arg(short, long)]
@@ -151,7 +156,8 @@ fn main() {
 
     let input_patterns = args.input_patterns.unwrap();
     let exclude_patterns = args.exclude_patterns.unwrap_or_default();
-    let file_paths: Vec<_> = get_file_paths(input_patterns, exclude_patterns).unwrap();
+    let file_paths: Vec<_> =
+        get_file_paths(input_patterns, exclude_patterns, args.no_ignore).unwrap();
 
     let total_files = file_paths.len();
     let start_formatting = Instant::now();
@@ -193,42 +199,60 @@ fn main() {
     }
 }
 
-fn as_glob_pattern(pattern: String) -> String {
-    let is_dir = fs::metadata(&pattern)
-        .map(|meta| meta.is_dir())
-        .unwrap_or(false);
-    if is_dir {
-        return format!("{}/**/*.rs", pattern.trim_end_matches('/'));
+fn as_glob_pattern(pattern: String) -> anyhow::Result<Pattern> {
+    let pattern = if fs::metadata(&pattern).is_ok_and(|meta| meta.is_dir()) {
+        format!("{}/**/*.rs", pattern.trim_end_matches('/'))
+    } else {
+        pattern
+    };
+    Pattern::new(pattern.strip_prefix("./").unwrap_or(&pattern))
+        .context("failed to parse glob pattern")
+}
+
+/// The part of a glob pattern before its first wildcard: the directory to walk, or the file itself.
+fn glob_root(pattern: &str) -> &str {
+    match pattern.find(['*', '?', '[']) {
+        Some(idx) => pattern[..idx]
+            .rfind(['/', '\\'])
+            .map_or(".", |sep| &pattern[..=sep]),
+        None => pattern,
     }
-    pattern
 }
 
 fn get_file_paths(
     input_patterns: Vec<String>,
     exclude_patterns: Vec<String>,
-) -> Result<Vec<PathBuf>, GlobError> {
-    let exclude_patterns = exclude_patterns
-        .into_iter()
-        .map(as_glob_pattern)
-        .map(|p| Pattern::new(&p))
-        .collect::<Result<Vec<_>, _>>()
-        .expect("failed to parse exclude glob pattern");
+    no_ignore: bool,
+) -> anyhow::Result<Vec<PathBuf>> {
+    let as_glob_patterns = |patterns: Vec<String>| {
+        let patterns = patterns.into_iter().map(as_glob_pattern);
+        patterns.collect::<anyhow::Result<Vec<_>>>()
+    };
+    let input_patterns = as_glob_patterns(input_patterns)?;
+    let exclude_patterns = as_glob_patterns(exclude_patterns)?;
 
-    input_patterns
-        .into_iter()
-        .map(as_glob_pattern)
-        .flat_map(|glob_pattern| {
-            glob(&glob_pattern)
-                .expect("failed to read glob pattern")
-                .filter(|is_file| {
-                    is_file.as_ref().is_ok_and(|file| {
-                        !exclude_patterns
-                            .iter()
-                            .any(|pattern| pattern.matches_path(file))
-                    })
-                })
-        })
-        .collect()
+    let match_options = MatchOptions {
+        require_literal_separator: true,
+        ..Default::default()
+    };
+
+    let file_paths = input_patterns.iter().flat_map(|pattern| {
+        WalkBuilder::new(glob_root(pattern.as_str()))
+            .standard_filters(!no_ignore)
+            .hidden(false)
+            .require_git(false)
+            .follow_links(true)
+            .filter_entry(|entry| entry.file_name() != ".git")
+            .sort_by_file_name(|a, b| a.cmp(b))
+            .build()
+            .flatten()
+            .filter(|entry| entry.file_type().is_some_and(|ty| ty.is_file()))
+            .map(|entry| entry.into_path())
+            .map(|path| path.strip_prefix("./").map(Into::into).unwrap_or(path))
+            .filter(|path| pattern.matches_path_with(path, match_options))
+            .filter(|path| !exclude_patterns.iter().any(|p| p.matches_path(path)))
+    });
+    Ok(file_paths.collect())
 }
 
 struct FormatOutput {
