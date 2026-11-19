@@ -32,6 +32,8 @@ Options:
           Number of spaces per tab
   -x, --excludes <EXCLUDE_PATTERNS>
           A space separated list of file, directory or glob
+      --no-ignore
+          Don't respect ignore files (.gitignore, .ignore) when expanding directories and globs
   -c, --config-file <CONFIG_FILE>
           Configuration file
   -s, --stdin
