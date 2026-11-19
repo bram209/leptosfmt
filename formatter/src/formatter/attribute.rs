@@ -1,3 +1,5 @@
+use proc_macro2::TokenTree;
+use quote::ToTokens;
 use rstml::node::{
     FnBinding, KVAttributeValue, KeyedAttribute, KeyedAttributeValue, NodeAttribute, NodeBlock,
 };
@@ -71,6 +73,12 @@ impl Formatter<'_> {
                         // to avoid an ambiguity in the parser (i.e. `foo=bar {..}` could be interpreted as initialization of a struct called `bar`, instead of two separate attributes)
                         self.node_value_expr(expr, false, true, formatter)
                     }
+                    (Braces::WhenRequired, syn::Expr::Block(block), _)
+                        if contains_tag_end(block) =>
+                    {
+                        // A `>` outside of braces would be parsed as the end of the tag (i.e. `foo=|a: Vec<u8>| a`)
+                        self.node_value_expr(expr, false, true, formatter)
+                    }
                     (Braces::Always, syn::Expr::Block(_), _) => {
                         self.node_value_expr(expr, false, false, formatter)
                     }
@@ -90,6 +98,17 @@ impl Formatter<'_> {
             }
         }
     }
+}
+
+fn contains_tag_end(block: &syn::ExprBlock) -> bool {
+    let tokens = block
+        .block
+        .stmts
+        .iter()
+        .flat_map(|stmt| stmt.to_token_stream());
+    tokens
+        .into_iter()
+        .any(|token| matches!(token, TokenTree::Punct(p) if p.as_char() == '>'))
 }
 
 fn is_spread_attribute(attr: &NodeAttribute) -> bool {
@@ -252,6 +271,21 @@ mod tests {
         // literal string value
         let f = format_attr_with_brace_style! { WhenRequired => alt={"test img"} };
         assert_snapshot!(f, @r#"alt="test img""#);
+    }
+
+    #[test]
+    fn key_value_expr_attr_braces_required_for_tag_end() {
+        let f = format_attr_with_brace_style! { WhenRequired => children={move |index: ReadSignal<usize>| index.get()} };
+        assert_snapshot!(f, @"children={move |index: ReadSignal<usize>| index.get()}");
+
+        let f = format_attr_with_brace_style! { WhenRequired => disabled={a > b} };
+        assert_snapshot!(f, @"disabled={a > b}");
+
+        let f = format_attr_with_brace_style! { WhenRequired => items={foo::<Vec<u8>>(bar)} };
+        assert_snapshot!(f, @"items={foo::<Vec<u8>>(bar)}");
+
+        let f = format_attr_with_brace_style! { WhenRequired => disabled={foo(a > b)} };
+        assert_snapshot!(f, @"disabled=foo(a > b)");
     }
 
     #[test]
