@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### Bug Fixes
+
+- Keep braces around attribute values that contain '>' ([#196](https://github.com/bram209/leptosfmt/issues/196))
+
 ## [0.1.34] - 2026-11-18
 
 ### Bug Fixes
